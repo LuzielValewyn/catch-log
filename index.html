@@ -730,10 +730,12 @@
     if (e.target.id === "aboutModal") document.getElementById("aboutModal").classList.remove("open");
   });
 
-  // Edit mode gate
-  const EDIT_KEY = "catchlog_edit_unlocked";
+  // Edit mode gate — session-only, never persisted across visits.
+  // Accessing New Catch always requires the owner link + password, every time.
+  let editUnlocked = false;
   const editLinks = [document.getElementById("editModeLink"), document.getElementById("editModeLinkTop")];
   function unlockEditMode() {
+    editUnlocked = true;
     document.getElementById("addNavBtn").style.display = "";
     document.getElementById("addNavBtnMobile").style.display = "";
     editLinks.forEach(el => {
@@ -742,6 +744,7 @@
     });
   }
   function lockEditMode() {
+    editUnlocked = false;
     document.getElementById("addNavBtn").style.display = "none";
     document.getElementById("addNavBtnMobile").style.display = "none";
     editLinks.forEach(el => {
@@ -753,21 +756,16 @@
       switchTab("dashboard");
     }
   }
-  if (IS_OWNER || localStorage.getItem(EDIT_KEY) === "true") {
-    localStorage.setItem(EDIT_KEY, "true");
-    unlockEditMode();
-  }
+  if (IS_OWNER) unlockEditMode();
   function toggleEditMode(e) {
     e.preventDefault();
-    if (localStorage.getItem(EDIT_KEY) === "true") {
-      localStorage.removeItem(EDIT_KEY);
+    if (editUnlocked) {
       lockEditMode();
       return;
     }
     const input = prompt("Enter edit mode password:");
     if (input === null) return;
     if (input === EDIT_PASSWORD) {
-      localStorage.setItem(EDIT_KEY, "true");
       unlockEditMode();
     } else {
       alert("Incorrect password.");
