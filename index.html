@@ -462,6 +462,9 @@
     <!-- NEW GEAR (owner only) -->
     <section id="panel-newgear" class="panel">
       <div class="form-wrap">
+        <div id="editGearBanner" style="display:none; background:rgba(193,84,63,0.15); border:1px solid var(--rust); border-radius:5px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:var(--text);">
+          Editing an existing gear set. <a href="#" id="cancelGearEditLink" style="color:var(--brass); text-decoration:underline;">Cancel and start a new one</a>
+        </div>
         <label class="field-wrap"><span class="field-label">Gear set name</span>
           <input class="input" type="text" id="g-name" placeholder="e.g. Set 4"></label>
         <label class="field-wrap"><span class="field-label">Rod</span>
@@ -469,6 +472,11 @@
         <label class="field-wrap"><span class="field-label">Reel</span>
           <input class="input" type="text" id="g-reel" placeholder="e.g. Shimano Nexave 4000"></label>
         <button class="submit-btn" id="gearSubmitBtn" disabled>Save gear set</button>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title-row"><span class="card-title">Existing gear sets</span></div>
+        <div id="ownerGearList"></div>
       </div>
     </section>
   </main>
@@ -639,6 +647,7 @@
     renderDashboard();
     renderLog();
     renderSpecies();
+    renderOwnerGearList();
   }
 
   function populateGearOptions() {
@@ -1229,6 +1238,7 @@
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
       if (btn.dataset.tab !== "add" && editingCatchId !== null) resetCatchForm();
+      if (btn.dataset.tab !== "newgear" && editingGearName !== null) resetGearForm();
       switchTab(btn.dataset.tab);
     });
   });
@@ -1312,6 +1322,7 @@
     if (document.getElementById("panel-add").classList.contains("active") ||
         document.getElementById("panel-newgear").classList.contains("active")) {
       if (editingCatchId !== null) resetCatchForm();
+      if (editingGearName !== null) resetGearForm();
       switchTab("dashboard");
     }
   }
@@ -1449,25 +1460,92 @@
   });
 
 
-  // New Gear form (owner only)
+  // New/Edit Gear form (owner only)
   const gearFormIds = ["g-name", "g-rod", "g-reel"];
+  let editingGearName = null;
+
+  function resetGearForm() {
+    editingGearName = null;
+    gearFormIds.forEach(id => document.getElementById(id).value = "");
+    document.getElementById("editGearBanner").style.display = "none";
+    document.getElementById("gearSubmitBtn").textContent = "Save gear set";
+    checkGearFormValid();
+  }
   function checkGearFormValid() {
     document.getElementById("gearSubmitBtn").disabled = !document.getElementById("g-name").value.trim();
   }
   gearFormIds.forEach(id => document.getElementById(id).addEventListener("input", checkGearFormValid));
+
+  function startEditGear(name) {
+    const info = state.gear[name];
+    if (!info) return;
+    editingGearName = name;
+    document.getElementById("g-name").value = name;
+    document.getElementById("g-rod").value = info.rod || "";
+    document.getElementById("g-reel").value = info.reel || "";
+    document.getElementById("editGearBanner").style.display = "block";
+    document.getElementById("gearSubmitBtn").textContent = "Update gear set";
+    checkGearFormValid();
+  }
+  document.getElementById("cancelGearEditLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    resetGearForm();
+  });
+
   document.getElementById("gearSubmitBtn").addEventListener("click", () => {
     const name = document.getElementById("g-name").value.trim();
     if (!name) return;
-    state.gear[name] = {
+    const info = {
       rod: document.getElementById("g-rod").value.trim(),
       reel: document.getElementById("g-reel").value.trim(),
     };
-    gearFormIds.forEach(id => document.getElementById(id).value = "");
-    checkGearFormValid();
-    switchTab("dashboard");
+    // if renaming an existing set, drop the old key
+    if (editingGearName !== null && editingGearName !== name) {
+      delete state.gear[editingGearName];
+    }
+    state.gear[name] = info;
+    resetGearForm();
     render();
     scheduleSave();
   });
+
+  function renderOwnerGearList() {
+    const wrap = document.getElementById("ownerGearList");
+    if (!wrap) return;
+    const sets = Object.keys(state.gear).sort((a, b) => {
+      const na = parseInt(a.replace(/\D/g, "")) || 0;
+      const nb = parseInt(b.replace(/\D/g, "")) || 0;
+      return na - nb;
+    });
+    wrap.innerHTML = sets.map(name => {
+      const info = state.gear[name] || {};
+      return `
+        <div class="gear-list-row">
+          <div class="gear-list-name">${escapeHtml(name)}</div>
+          <div class="gear-list-detail"><span>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
+          <div class="gear-list-detail"><span>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
+          <div class="owner-action-row">
+            <button class="edit-catch-btn" data-edit-gear="${escapeHtml(name)}">✎ Edit</button>
+            <button class="delete-catch-btn" data-delete-gear="${escapeHtml(name)}">🗑 Delete</button>
+          </div>
+        </div>`;
+    }).join("") || `<p class="empty-state">No gear sets yet.</p>`;
+
+    wrap.querySelectorAll("[data-edit-gear]").forEach(btn => {
+      btn.addEventListener("click", () => startEditGear(btn.dataset.editGear));
+    });
+    wrap.querySelectorAll("[data-delete-gear]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.deleteGear;
+        const ok = confirm(`Delete gear set "${name}"?\n\nThis can't be undone. Catches already logged with this gear will keep the name as text, but it won't appear as a selectable option anymore.`);
+        if (!ok) return;
+        delete state.gear[name];
+        if (editingGearName === name) resetGearForm();
+        render();
+        scheduleSave();
+      });
+    });
+  }
 
   initFirebase().then(() => {
     firebaseReady = true;
