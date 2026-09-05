@@ -111,8 +111,8 @@
   .card-title { font-size: 13.5px; font-weight: 600; }
   .card-link { font-size: 11.5px; color: var(--text-muted); cursor: pointer; }
 
-  .donut-wrap { display: flex; flex-direction: column; align-items: center; min-height: 190px; justify-content: space-between; }
-  .donut-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: auto; padding-top: 20px; font-size: 11.5px; }
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; min-height: 230px; justify-content: space-between; }
+  .donut-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: auto; padding-top: 32px; font-size: 11.5px; }
   .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
   .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -309,7 +309,7 @@
         <div class="card">
           <div class="card-title-row"><span class="card-title">Water type split</span></div>
           <div class="donut-wrap">
-            <svg id="donutChart" viewBox="0 0 140 140" style="width:150px; height:150px;"></svg>
+            <svg id="donutChart" viewBox="0 0 140 140" style="width:180px; height:180px;"></svg>
             <div class="donut-legend">
               <span><span class="legend-dot" style="background:var(--salt);"></span>Saltwater</span>
               <span><span class="legend-dot" style="background:var(--fresh);"></span>Freshwater</span>
@@ -319,7 +319,7 @@
         <div class="card">
           <div class="card-title-row"><span class="card-title">Time of day</span></div>
           <div class="donut-wrap">
-            <svg id="todDonutChart" viewBox="0 0 140 140" style="width:150px; height:150px;"></svg>
+            <svg id="todDonutChart" viewBox="0 0 140 140" style="width:180px; height:180px;"></svg>
             <div class="donut-legend" id="todLegend"></div>
           </div>
         </div>
@@ -898,7 +898,7 @@
       if (cat) counts[cat]++; else unclassified++;
     });
     const total = catches.length || 1;
-    const r = 48, cx = 60, cy = 60, circ = 2 * Math.PI * r, strokeW = 14;
+    const r = 55, cx = 70, cy = 70, circ = 2 * Math.PI * r, strokeW = 16;
     let offset = 0;
     let segments = "";
     TOD_CATEGORIES.forEach(c => {
@@ -912,8 +912,8 @@
     const svg = `
       <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2A5055" stroke-width="${strokeW}" />
       ${segments}
-      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="20" font-weight="600" fill="#EFE7D8" font-family="Fraunces, serif">${catches.length}</text>
-      <text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="8" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
+      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="24" font-weight="600" fill="#EFE7D8" font-family="Fraunces, serif">${catches.length}</text>
+      <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="9" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
     `;
     document.getElementById("todDonutChart").innerHTML = svg;
     document.getElementById("todLegend").innerHTML = TOD_CATEGORIES.map(c => `
