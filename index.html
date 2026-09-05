@@ -749,6 +749,10 @@
     `;
     document.getElementById("lineChart").innerHTML = svgLine;
 
+    // always land on the most recent period by default
+    const scrollEl = document.querySelector(".chart-scroll");
+    if (scrollEl) scrollEl.scrollLeft = scrollEl.scrollWidth;
+
     if (canDrill) {
       document.querySelectorAll("#lineChart .chart-point").forEach(el => {
         el.addEventListener("click", () => {
