@@ -533,11 +533,12 @@
   let chartFilter = {};
 
   function getWeekStart(dateStr) {
-    const d = new Date(dateStr + "T00:00:00");
-    const day = d.getDay();
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const utcMs = Date.UTC(y, m - 1, d);
+    const day = new Date(utcMs).getUTCDay();
     const diffToMonday = (day === 0 ? -6 : 1 - day);
-    d.setDate(d.getDate() + diffToMonday);
-    return d.toISOString().slice(0, 10);
+    const monday = new Date(utcMs + diffToMonday * 86400000);
+    return `${monday.getUTCFullYear()}-${String(monday.getUTCMonth()+1).padStart(2,"0")}-${String(monday.getUTCDate()).padStart(2,"0")}`;
   }
   function getGroupKey(dateStr, level) {
     if (level === "year") return dateStr.slice(0, 4);
@@ -565,9 +566,9 @@
     return true;
   }
   function addDays(dateStr, n) {
-    const d = new Date(dateStr + "T00:00:00");
-    d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d) + n * 86400000);
+    return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,"0")}-${String(dt.getUTCDate()).padStart(2,"0")}`;
   }
   const VALID_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const MAX_KEYS = 400; // hard safety cap — never generate more than this many periods
@@ -683,8 +684,6 @@
 
     // fill in every period in range, even ones with zero catches, so gaps are visible
     const keys = generateKeyRange(chartLevel, chartFilter, state.catches);
-    const validDates = state.catches.map(c=>c.date).filter(d=>VALID_DATE_RE.test(d)).sort();
-    document.getElementById("chartBreadcrumb").innerHTML += ` <span style="color:#C1543F;">[debug: ${state.catches.length} total catches, ${validDates.length} valid dates, range ${validDates[0]} → ${validDates[validDates.length-1]}, ${keys.length} periods generated]</span>`;
     const counts = {};
     keys.forEach(k => { counts[k] = rawCounts[k] || 0; });
     const maxCount = Math.max(...Object.values(counts), 1);
