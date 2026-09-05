@@ -715,10 +715,24 @@
     document.getElementById("editModeLink").textContent = "Edit mode: on";
     document.getElementById("editModeLink").style.color = "var(--brass)";
   }
+  function lockEditMode() {
+    document.getElementById("addNavBtn").style.display = "none";
+    document.getElementById("addNavBtnMobile").style.display = "none";
+    document.getElementById("editModeLink").textContent = "Edit mode";
+    document.getElementById("editModeLink").style.color = "";
+    // if currently viewing the New Catch tab, bounce back to the dashboard
+    if (document.getElementById("panel-add").classList.contains("active")) {
+      switchTab("dashboard");
+    }
+  }
   if (localStorage.getItem(EDIT_KEY) === "true") unlockEditMode();
   document.getElementById("editModeLink").addEventListener("click", (e) => {
     e.preventDefault();
-    if (localStorage.getItem(EDIT_KEY) === "true") return;
+    if (localStorage.getItem(EDIT_KEY) === "true") {
+      localStorage.removeItem(EDIT_KEY);
+      lockEditMode();
+      return;
+    }
     const input = prompt("Enter edit mode password:");
     if (input === null) return;
     if (input === EDIT_PASSWORD) {
