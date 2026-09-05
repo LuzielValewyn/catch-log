@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Buku Catatan Pancing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0E2A2E;
+    --paper: #F2ECDD;
+    --paper-dark: #E9E0C8;
+    --line: #C8BFA0;
+    --brass: #B8863B;
+    --brass-bright: #C9922B;
+    --rust: #C1543F;
+    --text-dark: #16343A;
+    --text-muted: #8A7F63;
+    --text-light: #EFE7D8;
+    --text-teal-muted: #8AA3A6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--text-light);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+  }
+  ::selection { background: var(--brass-bright); color: var(--ink); }
+  .container { max-width: 640px; margin: 0 auto; padding: 28px 20px 40px; }
+
+  .hero { padding: 8px 0 24px; }
+  .hero-top-line { height: 2px; background: linear-gradient(90deg, var(--brass-bright), transparent); margin-bottom: 18px; }
+  .hero-bottom-line { height: 1px; background: #3A5459; margin-top: 22px; }
+  .hero-label { font-family: 'Fraunces', Georgia, serif; font-size: 15px; letter-spacing: 0.02em; color: #B8A97E; margin: 0 0 14px; font-style: italic; }
+  .hero-row { display: flex; align-items: baseline; gap: 18px; }
+  .hero-number { font-family: 'Fraunces', Georgia, serif; font-size: 76px; line-height: 1; color: var(--text-light); font-weight: 600; }
+  .hero-sub { margin: 0 0 4px; font-size: 14px; }
+  .hero-sub2 { margin: 0; font-size: 12px; color: var(--text-teal-muted); }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid #3A5459; }
+  .tab-btn { background: none; border: none; color: var(--text-teal-muted); font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; padding: 10px 4px; margin-right: 18px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--brass-bright); border-bottom: 2px solid var(--brass-bright); }
+
+  .error-note { font-size: 12px; color: var(--rust); background: rgba(193,84,63,0.12); padding: 10px 12px; border-radius: 3px; margin-bottom: 16px; }
+  .empty-state { color: var(--text-teal-muted); font-size: 13px; line-height: 1.6; padding: 20px 0; }
+
+  .card { background: var(--paper); border-radius: 3px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+  .card-head { width: 100%; background: none; border: none; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; font-family: inherit; }
+  .card-head-left { display: flex; align-items: center; gap: 12px; }
+  .card-stamp { font-size: 11px; color: var(--brass); border: 1px solid var(--brass); border-radius: 2px; padding: 2px 6px; font-weight: 500; }
+  .card-species { margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: var(--text-dark); font-weight: 600; }
+  .card-english { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); font-style: italic; }
+  .card-head-right { display: flex; align-items: center; gap: 10px; }
+  .card-date { font-size: 11.5px; color: var(--text-muted); }
+  .chevron { font-size: 18px; color: var(--brass); width: 16px; text-align: center; }
+  .card-body { padding: 4px 16px 16px; border-top: 1px solid #DDD3B8; display: none; }
+  .card-body.open { display: block; }
+  .data-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #DDD3B8; font-size: 12.5px; }
+  .data-label { color: var(--text-muted); }
+  .data-value { color: var(--text-dark); text-align: right; max-width: 65%; }
+  .notes-block { margin-top: 12px; padding: 10px 12px; background: var(--paper-dark); border-radius: 2px; border-left: 3px solid var(--brass-bright); }
+  .notes-label { margin: 0 0 4px; font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.03em; }
+  .notes-text { margin: 0; font-size: 13px; color: var(--text-dark); line-height: 1.55; font-style: italic; }
+
+  .form-wrap { background: var(--paper); border-radius: 3px; padding: 20px 18px; }
+  .field-wrap { display: block; margin-bottom: 14px; }
+  .field-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+  .input { width: 100%; padding: 9px 10px; font-size: 13.5px; background: #FFFDF7; border: 1px solid var(--line); border-radius: 2px; color: var(--text-dark); font-family: 'IBM Plex Mono', monospace; }
+  .input:focus { outline: 2px solid var(--brass-bright); outline-offset: 1px; }
+  .submit-btn { width: 100%; padding: 13px; margin-top: 6px; background: var(--brass); color: var(--ink); border: none; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .species-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 4px; border-bottom: 1px solid #3A5459; font-size: 13px; }
+  .species-id { font-family: 'Fraunces', Georgia, serif; font-style: italic; flex-shrink: 0; }
+  .species-en { color: var(--text-teal-muted); text-align: right; }
+
+  .gear-card { background: var(--paper); border-radius: 3px; padding: 16px; margin-bottom: 10px; }
+  .gear-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; color: var(--text-dark); margin: 0 0 8px; font-weight: 600; }
+
+  .footer { text-align: center; font-size: 10.5px; color: #5A7377; margin-top: 24px; letter-spacing: 0.03em; }
+  section.tabpanel { display: none; }
+  section.tabpanel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header class="hero">
+    <div class="hero-top-line"></div>
+    <p class="hero-label">Buku Catatan Pancing</p>
+    <div class="hero-row">
+      <span class="hero-number" id="speciesCount">0</span>
+      <div>
+        <p class="hero-sub">spesies unik tercatat</p>
+        <p class="hero-sub2">Karimun &amp; Kepulauan Riau</p>
+      </div>
+    </div>
+    <div class="hero-bottom-line"></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="log">Catatan</button>
+    <button class="tab-btn" data-tab="add">Tangkapan Baru</button>
+    <button class="tab-btn" data-tab="species">Spesies</button>
+    <button class="tab-btn" data-tab="gear">Alat</button>
+  </nav>
+
+  <p id="errorNote" class="error-note" style="display:none;"></p>
+
+  <section id="tab-log" class="tabpanel active">
+    <div id="logList"></div>
+  </section>
+
+  <section id="tab-add" class="tabpanel">
+    <div class="form-wrap">
+      <label class="field-wrap"><span class="field-label">Tanggal</span>
+        <input class="input" type="date" id="f-date"></label>
+      <label class="field-wrap"><span class="field-label">Waktu</span>
+        <select class="input" id="f-time">
+          <option>Subuh</option><option selected>Pagi</option><option>Siang</option><option>Sore</option><option>Malam</option>
+        </select></label>
+      <label class="field-wrap"><span class="field-label">Nama ikan (Indonesia)</span>
+        <input class="input" type="text" id="f-species" placeholder="cth. Kakap"></label>
+      <label class="field-wrap"><span class="field-label">Tipe air</span>
+        <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
+      <label class="field-wrap"><span class="field-label">Lokasi</span>
+        <input class="input" type="text" id="f-location" placeholder="cth. Laut Karimun, Pulau Assan"></label>
+      <label class="field-wrap"><span class="field-label">Cuaca</span>
+        <input class="input" type="text" id="f-weather"></label>
+      <label class="field-wrap"><span class="field-label">Berat (kg)</span>
+        <input class="input" type="text" id="f-weight" placeholder="-"></label>
+      <label class="field-wrap"><span class="field-label">Umpan/Lure</span>
+        <input class="input" type="text" id="f-bait"></label>
+      <label class="field-wrap"><span class="field-label">Metode</span>
+        <input class="input" type="text" id="f-method" placeholder="cth. Bottom fishing"></label>
+      <label class="field-wrap"><span class="field-label">Gear Set</span>
+        <select class="input" id="f-gear"><option>Set 1</option><option>Set 2</option><option>Set 3</option></select></label>
+      <label class="field-wrap"><span class="field-label">Catatan</span>
+        <textarea class="input" id="f-notes" rows="3"></textarea></label>
+      <button class="submit-btn" id="submitBtn" disabled>Catat tangkapan</button>
+    </div>
+  </section>
+
+  <section id="tab-species" class="tabpanel">
+    <div id="speciesList"></div>
+  </section>
+
+  <section id="tab-gear" class="tabpanel">
+    <div id="gearList"></div>
+  </section>
+
+  <footer class="footer"><span id="statusText">Memuat...</span></footer>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  // =====================================================================
+  // PASTE FIREBASE CONFIG DI SINI (lihat panduan langkah 2)
+  // =====================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDdcnK_u3w9qKXj4IWoXSDzFkl9YBFVQzI",
+    authDomain: "del-s-catch-log.firebaseapp.com",
+    projectId: "del-s-catch-log",
+    storageBucket: "del-s-catch-log.firebasestorage.app",
+    messagingSenderId: "359707023049",
+    appId: "1:359707023049:web:e3ed201094de3bc7e35f18"
+  };
+  // =====================================================================
+
+  const SEED_CATCHES = [
+    { id: 1, date: "2026-05-03", time: "Siang", species: "Puyut", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun, Depan Pulau Jaga", weather: "Cerah", weight: "", bait: "Cumi potong", method: "Bottom fishing", gear: "Set 1", notes: "my first catch, doesnt matter if its small, start the journey with the smallest one" },
+    { id: 2, date: "2026-05-24", time: "Subuh", species: "Ikan Tanda", waterType: "Air Laut", fight: "Easy", location: "Laut Karimun, Pulau Assan", weather: "Ok", weight: "", bait: "Udang", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 3, date: "2026-06-21", time: "Subuh", species: "Pari", waterType: "Air Laut", fight: "Medium", location: "Laut Karimun, Pulau Assan", weather: "Tidak Hujan", weight: "", bait: "Udang", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 4, date: "2026-06-21", time: "Pagi (08.13)", species: "Kerisi Baju Besi", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun, Pulau Nangoi", weather: "Cerah", weight: "", bait: "Udang", method: "Bottom fishing", gear: "Set 1", notes: "Ikan cantik pertama saya, pakai kail kecil ini baru naik." },
+    { id: 5, date: "2026-06-21", time: "Pagi (08.47)", species: "Sabit-Sabit", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun, Pulau Nangoi", weather: "Cerah", weight: "", bait: "Udang", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 6, date: "2026-07-19", time: "Malam", species: "Ikan Lencam", waterType: "Air Laut", fight: "Very Easy", location: "Laut Kepri, Pulau Lobam", weather: "Ok", weight: "", bait: "Cumi", method: "Bottom fishing", gear: "Set 1", notes: "Ikan pertama waktu mancing dari Batam lewat Piayu." },
+    { id: 7, date: "2026-07-19", time: "Malam", species: "Belut Laut", waterType: "Air Laut", fight: "Easy", location: "Laut Kepri, Pulau Lobam", weather: "Ok", weight: "", bait: "Cumi", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 8, date: "2026-07-19", time: "Malam", species: "Hiu Tokek", waterType: "Air Laut", fight: "Easy", location: "Laut Kepri, Pulau Lobam", weather: "Ok", weight: "", bait: "Cumi", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 9, date: "2026-07-11", time: "Pagi", species: "Gulamah", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun", weather: "Ok", weight: "", bait: "Udang", method: "Bottom fishing", gear: "Set 1", notes: "" },
+    { id: 10, date: "2026-08-01", time: "Subuh", species: "Betok", waterType: "Air Tawar", fight: "Very Easy", location: "Danau Dang Merdu, Karimun", weather: "Ok", weight: "", bait: "Pelet", method: "Float fishing", gear: "Set 2", notes: "" },
+    { id: 11, date: "2026-08-01", time: "Subuh", species: "Keting", waterType: "Air Tawar", fight: "Easy", location: "Danau Dang Merdu, Karimun", weather: "Ok", weight: "", bait: "Pelet", method: "Float fishing", gear: "Set 2", notes: "Ikan tawar pertama ku seumur hidup." },
+    { id: 12, date: "2026-08-08", time: "Malam (22.00)", species: "Patin", waterType: "Air Tawar", fight: "", location: "Kolam Pancing Restu Bumi, Karimun", weather: "Ok", weight: "", bait: "Pelet", method: "Float fishing", gear: "Set 2", notes: "Ikan Kolam Pemancingan Pertama" },
+  ];
+  const SEED_SPECIES = {
+    "Puyut": "Small Grouper (local name: Puyut)",
+    "Ikan Tanda": "Russell's Snapper (Lutjanus russellii)",
+    "Pari": "Stingray",
+    "Kerisi Baju Besi": "Whitecheek Monocle Bream (Scolopsis vosmeri)",
+    "Sabit-Sabit": "Spotted Sicklefish (Drepane punctata)",
+    "Ikan Lencam": "Emperor (Lethrinus sp.)",
+    "Belut Laut": "Conger Eel (Congridae)",
+    "Hiu Tokek": "Coral Catshark (Atelomycterus marmoratus)",
+    "Gulamah": "Silver Croaker (Pennahia argentata)",
+    "Betok": "Climbing Perch (Anabas testudineus)",
+    "Keting": "Bagrid Catfish (Mystus nigriceps)",
+    "Patin": "Pangasius / Silver Catfish",
+  };
+  const SEED_GEAR = {
+    "Set 1": { rod: "Daiwa Blue Backer LJ 63MHS", reel: "Shimano Nexave 4000" },
+    "Set 2": { rod: "Shikari SXC602", reel: "Iroly Valor 2000" },
+    "Set 3": { rod: "", reel: "" },
+  };
+
+  let state = { catches: SEED_CATCHES, species: SEED_SPECIES, gear: SEED_GEAR };
+  let db = null;
+  const DOC_PATH = ["fishing_logbook", "main"];
+  let expandedId = null;
+
+  function setStatus(text) { document.getElementById("statusText").textContent = text; }
+  function showError(msg) {
+    const el = document.getElementById("errorNote");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  async function initFirebase() {
+    try {
+      if (firebaseConfig.apiKey.startsWith("PASTE_")) {
+        showError("Firebase belum dikonfigurasi — data hanya tersimpan sementara di browser ini. Ikuti panduan untuk hubungkan cloud.");
+        setStatus("Mode lokal (belum tersambung cloud)");
+        return;
+      }
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      const ref = doc(db, DOC_PATH[0], DOC_PATH[1]);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        state = snap.data();
+      } else {
+        await setDoc(ref, state);
+      }
+      setStatus("Tersinkron ke cloud");
+    } catch (e) {
+      console.error(e);
+      showError("Gagal konek ke Firebase. Cek konfigurasi & aturan keamanan Firestore.");
+      setStatus("Error koneksi cloud");
+    }
+  }
+
+  let saveTimer = null;
+  function scheduleSave() {
+    if (!db) return;
+    clearTimeout(saveTimer);
+    setStatus("Menyimpan...");
+    saveTimer = setTimeout(async () => {
+      try {
+        const ref = doc(db, DOC_PATH[0], DOC_PATH[1]);
+        await setDoc(ref, state);
+        setStatus("Tersimpan ke cloud");
+      } catch (e) {
+        console.error(e);
+        setStatus("Gagal menyimpan");
+      }
+    }, 400);
+  }
+
+  function render() {
+    document.getElementById("speciesCount").textContent = Object.keys(state.species).length;
+    renderLog();
+    renderSpecies();
+    renderGear();
+  }
+
+  function renderLog() {
+    const list = document.getElementById("logList");
+    const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : -1));
+    if (sorted.length === 0) {
+      list.innerHTML = `<p class="empty-state">Belum ada catatan. Mulai dari tangkapan pertamamu di tab "Tangkapan Baru".</p>`;
+      return;
+    }
+    list.innerHTML = sorted.map(c => {
+      const isOpen = expandedId === c.id;
+      const en = state.species[c.species] || "—";
+      return `
+        <article class="card">
+          <button class="card-head" data-id="${c.id}">
+            <div class="card-head-left">
+              <span class="card-stamp">#${String(c.id).padStart(2, "0")}</span>
+              <div>
+                <p class="card-species">${escapeHtml(c.species)}</p>
+                <p class="card-english">${escapeHtml(en)}</p>
+              </div>
+            </div>
+            <div class="card-head-right">
+              <span class="card-date">${c.date}</span>
+              <span class="chevron">${isOpen ? "−" : "+"}</span>
+            </div>
+          </button>
+          <div class="card-body ${isOpen ? "open" : ""}">
+            <div class="data-row"><span class="data-label">Waktu</span><span class="data-value">${escapeHtml(c.time)}</span></div>
+            <div class="data-row"><span class="data-label">Air</span><span class="data-value">${escapeHtml(c.waterType)}</span></div>
+            ${c.fight ? `<div class="data-row"><span class="data-label">Fight Level</span><span class="data-value">${escapeHtml(c.fight)}</span></div>` : ""}
+            <div class="data-row"><span class="data-label">Lokasi</span><span class="data-value">${escapeHtml(c.location)}</span></div>
+            <div class="data-row"><span class="data-label">Cuaca</span><span class="data-value">${escapeHtml(c.weather)}</span></div>
+            ${c.weight ? `<div class="data-row"><span class="data-label">Berat</span><span class="data-value">${escapeHtml(c.weight)} kg</span></div>` : ""}
+            <div class="data-row"><span class="data-label">Umpan</span><span class="data-value">${escapeHtml(c.bait)}</span></div>
+            <div class="data-row"><span class="data-label">Metode</span><span class="data-value">${escapeHtml(c.method)}</span></div>
+            <div class="data-row"><span class="data-label">Gear</span><span class="data-value">${escapeHtml(c.gear)}${state.gear[c.gear]?.rod ? " · " + escapeHtml(state.gear[c.gear].rod) : ""}</span></div>
+            ${c.notes ? `<div class="notes-block"><p class="notes-label">Catatan</p><p class="notes-text">${escapeHtml(c.notes)}</p></div>` : ""}
+          </div>
+        </article>`;
+    }).join("");
+
+    list.querySelectorAll(".card-head").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = Number(btn.dataset.id);
+        expandedId = expandedId === id ? null : id;
+        renderLog();
+      });
+    });
+  }
+
+  function renderSpecies() {
+    const list = document.getElementById("speciesList");
+    list.innerHTML = Object.entries(state.species).map(([id, en]) => `
+      <div class="species-row">
+        <span class="species-id">${escapeHtml(id)}</span>
+        <span class="species-en">${escapeHtml(en)}</span>
+      </div>`).join("");
+  }
+
+  function renderGear() {
+    const list = document.getElementById("gearList");
+    list.innerHTML = ["Set 1", "Set 2", "Set 3"].map(g => `
+      <div class="gear-card">
+        <p class="gear-title">${g}</p>
+        <div class="data-row"><span class="data-label">Rod</span><span class="data-value">${escapeHtml(state.gear[g]?.rod || "—")}</span></div>
+        <div class="data-row"><span class="data-label">Reel</span><span class="data-value">${escapeHtml(state.gear[g]?.reel || "—")}</span></div>
+      </div>`).join("");
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
+
+  // Tabs
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  // Form validation + submit
+  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-gear","f-notes"];
+  function checkFormValid() {
+    const date = document.getElementById("f-date").value;
+    const species = document.getElementById("f-species").value.trim();
+    document.getElementById("submitBtn").disabled = !(date && species);
+  }
+  formIds.forEach(id => document.getElementById(id).addEventListener("input", checkFormValid));
+
+  document.getElementById("submitBtn").addEventListener("click", () => {
+    const date = document.getElementById("f-date").value;
+    const species = document.getElementById("f-species").value.trim();
+    if (!date || !species) return;
+
+    const nextId = state.catches.length ? Math.max(...state.catches.map(c => c.id)) + 1 : 1;
+    const entry = {
+      id: nextId,
+      date,
+      time: document.getElementById("f-time").value,
+      species,
+      waterType: document.getElementById("f-water").value,
+      location: document.getElementById("f-location").value,
+      weather: document.getElementById("f-weather").value,
+      weight: document.getElementById("f-weight").value,
+      bait: document.getElementById("f-bait").value,
+      method: document.getElementById("f-method").value,
+      gear: document.getElementById("f-gear").value,
+      notes: document.getElementById("f-notes").value,
+    };
+    state.catches.push(entry);
+    if (!state.species[species]) state.species[species] = species;
+
+    formIds.forEach(id => document.getElementById(id).value = "");
+    document.getElementById("f-time").value = "Pagi";
+    document.getElementById("f-water").value = "Air Laut";
+    document.getElementById("f-gear").value = "Set 1";
+    checkFormValid();
+
+    expandedId = nextId;
+    document.querySelector('[data-tab="log"]').click();
+    render();
+    scheduleSave();
+  });
+
+  initFirebase().then(render);
+</script>
+</body>
+</html>
