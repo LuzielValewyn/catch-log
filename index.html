@@ -96,6 +96,13 @@
   .chart-breadcrumb .clear-link { color: var(--rust); text-decoration: underline; cursor: pointer; margin-left: 8px; }
   .chart-point { cursor: pointer; }
   .chart-point:hover circle { r: 5.5; }
+  .chart-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+  .chart-scroll svg { display: block; }
+  .chart-scroll::-webkit-scrollbar { height: 6px; }
+  .chart-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .chart-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+  .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .legend-swatch.line { border-radius: 50%; }
   .card-title { font-size: 13.5px; font-weight: 600; }
   .card-link { font-size: 11.5px; color: var(--text-muted); cursor: pointer; }
 
@@ -276,7 +283,13 @@
             </div>
           </div>
           <div id="chartBreadcrumb" class="chart-breadcrumb"></div>
-          <svg id="lineChart" viewBox="0 0 560 190" style="width:100%; height:auto;"></svg>
+          <div class="chart-scroll">
+            <svg id="lineChart"></svg>
+          </div>
+          <div class="chart-legend">
+            <span><span class="legend-swatch" style="background:var(--brass);"></span>Catches</span>
+            <span><span class="legend-swatch line" style="background:var(--salt);"></span>Cumulative</span>
+          </div>
         </div>
         <div class="card">
           <div class="card-title-row"><span class="card-title">Water type split</span></div>
@@ -594,40 +607,55 @@
     });
     const keys = Object.keys(counts).sort();
     const maxCount = Math.max(...Object.values(counts), 1);
-    const w = 560, h = 190, padL = 30, padR = 10, padT = 15, padB = 40;
-    const plotW = w - padL - padR, plotH = h - padT - padB;
+
+    // running cumulative total across the currently visible periods
+    let running = 0;
+    const cumValues = keys.map(k => (running += counts[k]));
+    const maxCum = Math.max(...cumValues, 1);
+
+    const minSpacing = 56; // px per category, so labels never overlap or get clipped
+    const padL = 32, padR = 28, padT = 24, padB = 40;
+    const plotW = Math.max(560 - padL - padR, (keys.length - 1) * minSpacing);
+    const w = plotW + padL + padR;
+    const h = 190;
+    const plotH = h - padT - padB;
     const stepX = keys.length > 1 ? plotW / (keys.length - 1) : 0;
-    const points = keys.map((k, i) => {
-      const x = padL + i * stepX;
-      const y = padT + plotH - (counts[k] / maxCount) * plotH;
-      return [x, y];
-    });
-    const pointsStr = points.map(p => p.join(",")).join(" ");
-    const areaStr = points.length ? `${padL},${padT+plotH} ${pointsStr} ${padL + (keys.length-1)*stepX},${padT+plotH}` : "";
-    const rotateLabels = keys.length > 7;
+    const barW = Math.min(28, stepX * 0.5, 28);
     const canDrill = chartLevel !== "day";
 
+    const svgEl = document.getElementById("lineChart");
+    svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svgEl.setAttribute("width", w);
+    svgEl.setAttribute("height", h);
+
+    const barX = (i) => padL + (keys.length > 1 ? i * stepX : plotW / 2);
+    const cumPoints = keys.map((k, i) => {
+      const x = barX(i);
+      const y = padT + plotH - (cumValues[i] / maxCum) * plotH;
+      return [x, y];
+    });
+    const cumPointsStr = cumPoints.map(p => p.join(",")).join(" ");
+
     let svgLine = `
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#C9922B" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="#C9922B" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${areaStr ? `<polygon points="${areaStr}" fill="url(#areaGrad)" />` : ""}
-      <polyline points="${pointsStr}" fill="none" stroke="#C9922B" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
-      ${points.map(([x,y], i) => `
-        <g class="chart-point" data-key="${keys[i]}" style="cursor:${canDrill ? 'pointer' : 'default'};">
-          <circle cx="${x}" cy="${y}" r="10" fill="transparent" />
-          <circle cx="${x}" cy="${y}" r="3.5" fill="#0B1F22" stroke="#C9922B" stroke-width="2" />
-          <text x="${x}" y="${y - 10}" font-size="9" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${counts[keys[i]]}</text>
-        </g>`).join("")}
+      <polyline points="${cumPointsStr}" fill="none" stroke="var(--salt)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4 3" />
+      ${cumPoints.map(([x,y], i) => `
+        <circle cx="${x}" cy="${y}" r="2.5" fill="#0B1F22" stroke="#3E8FA3" stroke-width="1.6" />
+      `).join("")}
       ${keys.map((k, i) => {
-        const x = padL + i * stepX;
+        const x = barX(i);
+        const bh = (counts[k] / maxCount) * plotH;
+        const y = padT + plotH - bh;
+        return `
+          <g class="chart-point" data-key="${k}" style="cursor:${canDrill ? 'pointer' : 'default'};">
+            <rect x="${x - barW/2}" y="${padT}" width="${barW}" height="${plotH}" fill="transparent" />
+            <rect x="${x - barW/2}" y="${y}" width="${barW}" height="${Math.max(bh,2)}" rx="2" fill="#C9922B" />
+            <text x="${x}" y="${y - 6}" font-size="9" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${counts[k]}</text>
+          </g>`;
+      }).join("")}
+      ${keys.map((k, i) => {
+        const x = barX(i);
         const label = formatLabel(k, chartLevel);
-        return rotateLabels
-          ? `<text x="${x}" y="${h-8}" font-size="8.5" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace" transform="rotate(-40 ${x} ${h-8})">${label}</text>`
-          : `<text x="${x}" y="${h-8}" font-size="9" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${label}</text>`;
+        return `<text x="${x}" y="${h-8}" font-size="9" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${label}</text>`;
       }).join("")}
     `;
     document.getElementById("lineChart").innerHTML = svgLine;
