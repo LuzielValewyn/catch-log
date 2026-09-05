@@ -572,6 +572,29 @@
   const VALID_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const MAX_KEYS = 400; // hard safety cap — never generate more than this many periods
 
+  // Guards against a single stray/incorrect date blowing up the whole date range.
+  // Finds the largest gap between consecutive sorted dates; if that gap dominates
+  // the overall span, keeps only the larger cluster on either side of it.
+  function getRobustBounds(sortedDates) {
+    if (sortedDates.length <= 1) return [sortedDates[0], sortedDates[0]];
+    const toNum = d => Math.floor(new Date(d + "T00:00:00").getTime() / 86400000);
+    const nums = sortedDates.map(toNum);
+    const totalSpan = nums[nums.length - 1] - nums[0];
+    let biggestGap = { idx: -1, size: 0 };
+    for (let i = 1; i < nums.length; i++) {
+      const size = nums[i] - nums[i - 1];
+      if (size > biggestGap.size) biggestGap = { idx: i, size };
+    }
+    if (biggestGap.size > 45 && biggestGap.size > totalSpan * 0.5) {
+      const leftCount = biggestGap.idx;
+      const rightCount = sortedDates.length - biggestGap.idx;
+      return leftCount >= rightCount
+        ? [sortedDates[0], sortedDates[biggestGap.idx - 1]]
+        : [sortedDates[biggestGap.idx], sortedDates[sortedDates.length - 1]];
+    }
+    return [sortedDates[0], sortedDates[sortedDates.length - 1]];
+  }
+
   function generateKeyRange(level, filter, allCatches) {
     let start, end;
     if (filter.week) {
@@ -589,8 +612,7 @@
       // only trust well-formed YYYY-MM-DD strings; ignore any bad/blank data
       const dates = allCatches.map(c => c.date).filter(d => VALID_DATE_RE.test(d)).sort();
       if (dates.length === 0) return [];
-      start = dates[0];
-      end = dates[dates.length - 1];
+      [start, end] = getRobustBounds(dates);
     }
     if (!VALID_DATE_RE.test(start) || !VALID_DATE_RE.test(end) || start > end) return [];
 
