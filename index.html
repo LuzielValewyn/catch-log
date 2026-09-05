@@ -694,7 +694,7 @@
     const maxCum = Math.max(...cumValues, 1);
 
     const minSpacing = 44; // px per category minimum, so labels never overlap or get clipped
-    const padL = 46, padR = 56, padT = 24, padB = 40;
+    const padL = 54, padR = 56, padT = 24, padB = 40;
     const container = document.querySelector(".chart-scroll");
     const availWidth = (container && container.clientWidth) || 560;
     const plotW = Math.max(availWidth - padL - padR, (keys.length - 1) * minSpacing);
@@ -729,12 +729,12 @@
     let svgLine = `
       ${ticks.map(v => `
         <line x1="${padL}" y1="${yForValue(v)}" x2="${padL + plotW}" y2="${yForValue(v)}" stroke="var(--border)" stroke-width="1" />
-        <text x="${padL - 8}" y="${yForValue(v) + 3}" font-size="9" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace">${v}</text>
+        <text x="${padL - 10}" y="${yForValue(v) + 3}" font-size="9" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace">${v}</text>
       `).join("")}
       ${ticks.map((v, i) => `
         <text x="${padL + plotW + barW/2 + 8}" y="${yForValue(v) + 3}" font-size="9" fill="var(--salt)" text-anchor="start" font-family="IBM Plex Mono, monospace">${cumTicks[i]}</text>
       `).join("")}
-      <text x="14" y="${padT + plotH/2}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(-90 14 ${padT + plotH/2})">Catches</text>
+      <text x="10" y="${padT + plotH/2}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(-90 10 ${padT + plotH/2})">Catches</text>
       <text x="${w - 14}" y="${padT + plotH/2}" font-size="9.5" fill="var(--salt)" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(90 ${w - 14} ${padT + plotH/2})">Cumulative</text>
       <polyline points="${cumPointsStr}" fill="none" stroke="var(--salt)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4 3" />
       ${cumPoints.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#0B1F22" stroke="#3E8FA3" stroke-width="1.6" />`).join("")}
