@@ -710,7 +710,11 @@
     svgEl.setAttribute("width", w);
     svgEl.setAttribute("height", h);
 
-    const barX = (i) => padL + (keys.length > 1 ? i * stepX : plotW / 2);
+    const barX = (i) => {
+      const edgeMargin = barW / 2 + 6;
+      const usableW = Math.max(plotW - edgeMargin * 2, 0);
+      return padL + edgeMargin + (keys.length > 1 ? i * (usableW / (keys.length - 1)) : usableW / 2);
+    };
 
     // primary y-axis ticks (bar counts, left side)
     const tickStep = Math.max(1, Math.ceil(maxCount / 5));
@@ -732,7 +736,7 @@
         <text x="${padL - 10}" y="${yForValue(v) + 3}" font-size="9" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace">${v}</text>
       `).join("")}
       ${ticks.map((v, i) => `
-        <text x="${padL + plotW + barW/2 + 8}" y="${yForValue(v) + 3}" font-size="9" fill="var(--salt)" text-anchor="start" font-family="IBM Plex Mono, monospace">${cumTicks[i]}</text>
+        <text x="${padL + plotW + 8}" y="${yForValue(v) + 3}" font-size="9" fill="var(--salt)" text-anchor="start" font-family="IBM Plex Mono, monospace">${cumTicks[i]}</text>
       `).join("")}
       <text x="10" y="${padT + plotH/2}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(-90 10 ${padT + plotH/2})">Catches</text>
       <text x="${w - 14}" y="${padT + plotH/2}" font-size="9.5" fill="var(--salt)" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(90 ${w - 14} ${padT + plotH/2})">Cumulative</text>
