@@ -115,15 +115,24 @@
   .donut-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin-top: auto; padding-top: 32px; font-size: 11.5px; }
   .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
 
-  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch; }
+  .bottom-row .card { display: flex; flex-direction: column; min-height: 380px; }
   .highlight-card {
     background: linear-gradient(135deg, var(--rust), var(--brass));
     border-radius: 8px; padding: 18px; color: #1B1105;
   }
-  .highlight-label { display: flex; justify-content: space-between; font-size: 11.5px; opacity: 0.85; margin-bottom: 14px; }
-  .highlight-species { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 700; }
-  .highlight-en { font-size: 12px; font-style: italic; margin-top: 2px; opacity: 0.85; }
-  .highlight-meta { font-size: 11px; margin-top: 12px; opacity: 0.85; }
+  .scroll-list { overflow-y: auto; flex: 1; padding-right: 4px; }
+  .scroll-list::-webkit-scrollbar { width: 6px; }
+  .scroll-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .highlight-scroll-list::-webkit-scrollbar-thumb { background: rgba(27,17,5,0.3); }
+
+  .recent-row { padding: 10px 0; border-bottom: 1px solid rgba(27,17,5,0.15); }
+  .recent-row:last-child { border-bottom: none; }
+  .recent-row-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .recent-species { font-family: 'Fraunces', Georgia, serif; font-size: 15px; font-weight: 700; }
+  .recent-date { font-size: 10.5px; font-family: 'IBM Plex Mono', monospace; opacity: 0.75; }
+  .recent-en { font-size: 11px; font-style: italic; opacity: 0.85; margin-top: 1px; }
+  .recent-loc { font-size: 10.5px; opacity: 0.8; margin-top: 3px; }
 
   .top-loc-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
   .top-loc-row:last-child { border-bottom: none; }
@@ -338,9 +347,12 @@
       <div class="bottom-row">
         <div class="card">
           <div class="card-title-row"><span class="card-title">Top locations</span></div>
-          <div id="topLocations"></div>
+          <div id="topLocations" class="scroll-list"></div>
         </div>
-        <div class="highlight-card" id="highlightCard"></div>
+        <div class="card highlight-card">
+          <div class="card-title-row"><span class="card-title" style="color:#1B1105;">Recent catches</span></div>
+          <div id="recentCatches" class="scroll-list highlight-scroll-list"></div>
+        </div>
       </div>
     </section>
 
@@ -852,30 +864,32 @@
     renderTimeOfDayDonut(catches);
     renderGearChart(catches);
 
-    // Top locations
+    // Top locations (all of them, scrollable)
     const locCounts = {};
     catches.forEach(c => {
       const loc = c.location.split(",")[0].trim();
       locCounts[loc] = (locCounts[loc] || 0) + 1;
     });
-    const topLocs = Object.entries(locCounts).sort((a,b) => b[1]-a[1]).slice(0, 5);
-    document.getElementById("topLocations").innerHTML = topLocs.map(([loc, count]) => `
+    const allLocs = Object.entries(locCounts).sort((a,b) => b[1]-a[1]);
+    document.getElementById("topLocations").innerHTML = allLocs.map(([loc, count]) => `
       <div class="top-loc-row">
         <span class="top-loc-name">${escapeHtml(loc)}</span>
         <span class="top-loc-count">${count}</span>
       </div>`).join("") || `<p class="empty-state">No data yet.</p>`;
 
-    // Highlight card: latest catch
+    // Recent catches (up to 7 most recent, scrollable)
     const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : -1);
-    const latest = sorted[0];
-    if (latest) {
-      document.getElementById("highlightCard").innerHTML = `
-        <div class="highlight-label"><span>Latest catch</span><span>${latest.date}</span></div>
-        <div class="highlight-species">${escapeHtml(latest.species)}</div>
-        <div class="highlight-en">${escapeHtml(state.species[latest.species] || "")}</div>
-        <div class="highlight-meta">${escapeHtml(latest.location)}</div>
-      `;
-    }
+    const recent = sorted.slice(0, 7);
+    document.getElementById("recentCatches").innerHTML = recent.map(c => `
+      <div class="recent-row">
+        <div class="recent-row-top">
+          <span class="recent-species">${escapeHtml(c.species)}</span>
+          <span class="recent-date">${c.date}</span>
+        </div>
+        <div class="recent-en">${escapeHtml(state.species[c.species] || "")}</div>
+        <div class="recent-loc">${escapeHtml(c.location)}</div>
+      </div>
+    `).join("") || `<p class="empty-state" style="color:#1B1105;">No catches yet.</p>`;
   }
 
   const TOD_CATEGORIES = [
