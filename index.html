@@ -363,9 +363,19 @@
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   // Owner link detection: visit with ?owner=1 to get the owner view.
-  const IS_OWNER = new URLSearchParams(window.location.search).get("owner") === "1";
-  if (IS_OWNER) document.body.classList.add("is-owner");
-  if (IS_OWNER) document.getElementById("nameGate").classList.remove("open");
+  const EDIT_PASSWORD = "Mancingcangdaging";
+  const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
+  let IS_OWNER = false;
+  if (OWNER_REQUESTED) {
+    const pw = prompt("Owner access — enter password:");
+    if (pw === EDIT_PASSWORD) {
+      IS_OWNER = true;
+      document.body.classList.add("is-owner");
+      document.getElementById("nameGate").classList.remove("open");
+    } else {
+      alert("Incorrect password. Continuing as a regular visitor.");
+    }
+  }
 
   const firebaseConfig = {
     apiKey: "AIzaSyDdcnK_u3w9qKXj4IWoXSDzFkl9YBFVQzI",
@@ -721,7 +731,6 @@
   });
 
   // Edit mode gate
-  const EDIT_PASSWORD = "Mancingcangdaging";
   const EDIT_KEY = "catchlog_edit_unlocked";
   const editLinks = [document.getElementById("editModeLink"), document.getElementById("editModeLinkTop")];
   function unlockEditMode() {
@@ -744,7 +753,10 @@
       switchTab("dashboard");
     }
   }
-  if (localStorage.getItem(EDIT_KEY) === "true") unlockEditMode();
+  if (IS_OWNER || localStorage.getItem(EDIT_KEY) === "true") {
+    localStorage.setItem(EDIT_KEY, "true");
+    unlockEditMode();
+  }
   function toggleEditMode(e) {
     e.preventDefault();
     if (localStorage.getItem(EDIT_KEY) === "true") {
