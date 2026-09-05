@@ -103,7 +103,7 @@
 
   <nav class="tabs">
     <button class="tab-btn active" data-tab="log">Catatan</button>
-    <button class="tab-btn" data-tab="add">Tangkapan Baru</button>
+    <button class="tab-btn" data-tab="add" id="addTabBtn" style="display:none;">Tangkapan Baru</button>
     <button class="tab-btn" data-tab="species">Spesies</button>
     <button class="tab-btn" data-tab="gear">Alat</button>
   </nav>
@@ -152,7 +152,11 @@
     <div id="gearList"></div>
   </section>
 
-  <footer class="footer"><span id="statusText">Memuat...</span></footer>
+  <footer class="footer">
+    <span id="statusText">Memuat...</span>
+    <span> · </span>
+    <a href="#" id="editModeLink" style="color:#5A7377; text-decoration:underline; cursor:pointer;">Mode edit</a>
+  </footer>
 </div>
 
 <script type="module">
@@ -339,6 +343,33 @@
     div.textContent = str ?? "";
     return div.innerHTML;
   }
+
+  // Edit mode gate
+  const EDIT_PASSWORD = "Mancingcangdaging";
+  const EDIT_KEY = "catchlog_edit_unlocked";
+
+  function unlockEditMode() {
+    document.getElementById("addTabBtn").style.display = "";
+    document.getElementById("editModeLink").textContent = "Mode edit aktif";
+    document.getElementById("editModeLink").style.color = "#B8863B";
+  }
+
+  if (localStorage.getItem(EDIT_KEY) === "true") {
+    unlockEditMode();
+  }
+
+  document.getElementById("editModeLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    if (localStorage.getItem(EDIT_KEY) === "true") return;
+    const input = prompt("Masukkan password mode edit:");
+    if (input === null) return;
+    if (input === EDIT_PASSWORD) {
+      localStorage.setItem(EDIT_KEY, "true");
+      unlockEditMode();
+    } else {
+      alert("Password salah.");
+    }
+  });
 
   // Tabs
   document.querySelectorAll(".tab-btn").forEach(btn => {
