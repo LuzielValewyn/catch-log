@@ -160,6 +160,12 @@
   .data-label { color: #8A7F63; }
   .data-value { color: #16343A; text-align: right; max-width: 65%; font-family: 'IBM Plex Mono', monospace; }
   .notes-block { margin-top: 12px; padding: 10px 12px; background: #E9E0C8; border-radius: 4px; border-left: 3px solid var(--brass); }
+  .edit-catch-btn {
+    width: 100%; margin-top: 14px; padding: 9px; background: none; border: 1px dashed var(--brass);
+    border-radius: 5px; color: var(--brass); font-size: 11.5px; font-weight: 600; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .edit-catch-btn:hover { background: rgba(201,146,43,0.12); }
   .notes-label { font-size: 10.5px; color: #8A7F63; margin-bottom: 4px; }
   .notes-text { font-size: 13px; color: #16343A; line-height: 1.55; font-style: italic; }
 
@@ -245,8 +251,8 @@
     <nav class="nav-group">
       <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dashboard</button>
       <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Catch Log</button>
-      <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">+</span>New Catch</button>
       <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
+      <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">✎</span>Log Entry</button>
       <button class="nav-item" data-tab="newgear" id="newGearNavBtn" style="display:none;"><span class="nav-icon">†</span>New Gear</button>
     </nav>
     <div class="sidebar-foot">
@@ -379,6 +385,9 @@
     <!-- NEW CATCH -->
     <section id="panel-add" class="panel">
       <div class="form-wrap">
+        <div id="editBanner" style="display:none; background:rgba(193,84,63,0.15); border:1px solid var(--rust); border-radius:5px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:var(--text);">
+          Editing an existing catch. <a href="#" id="cancelEditLink" style="color:var(--brass); text-decoration:underline;">Cancel and start a new entry</a>
+        </div>
         <label class="field-wrap"><span class="field-label">Date</span>
           <input class="input" type="date" id="f-date"></label>
         <label class="field-wrap"><span class="field-label">Time of day</span>
@@ -465,8 +474,8 @@
 <nav class="bottom-nav">
   <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dash</button>
   <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Log</button>
-  <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">+</span>New</button>
   <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
+  <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">✎</span>Log</button>
   <button class="nav-item" data-tab="newgear" id="newGearNavBtnMobile" style="display:none;"><span class="nav-icon">†</span>Gear+</button>
 </nav>
 
@@ -1074,7 +1083,7 @@
     const list = document.getElementById("logList");
     const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : -1));
     if (sorted.length === 0) {
-      list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "New Catch".</p>`;
+      list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "Log Entry".</p>`;
       return;
     }
     list.innerHTML = sorted.map(c => {
@@ -1107,6 +1116,7 @@
             <div class="data-row"><span class="data-label">Method</span><span class="data-value">${escapeHtml(c.method)}</span></div>
             <div class="data-row"><span class="data-label">Gear</span><span class="data-value">${escapeHtml(c.gear)}${state.gear[c.gear]?.rod ? " · " + escapeHtml(state.gear[c.gear].rod) : ""}</span></div>
             ${c.notes ? `<div class="notes-block"><div class="notes-label">Notes</div><div class="notes-text">${escapeHtml(c.notes)}</div></div>` : ""}
+            ${editUnlocked ? `<button class="edit-catch-btn" data-edit-id="${c.id}">✎ Edit this catch</button>` : ""}
           </div>
         </article>`;
     }).join("");
@@ -1116,6 +1126,12 @@
         const id = Number(btn.dataset.id);
         expandedId = expandedId === id ? null : id;
         renderLog();
+      });
+    });
+    list.querySelectorAll(".edit-catch-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        startEditCatch(Number(btn.dataset.editId));
       });
     });
   }
@@ -1140,19 +1156,28 @@
     species: ["Species", "Local name to English"],
     newgear: ["New Gear", "Add or update a gear set"],
   };
+  let editingCatchId = null;
   function switchTab(tab) {
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
     document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
     let title = pageMeta[tab][0];
+    let sub = pageMeta[tab][1];
     if (tab === "dashboard") {
       if (IS_OWNER) title = "Welcome Del to your dashboard";
       else if (visitorName) title = `Welcome ${visitorName} to my Catch Log`;
     }
+    if (tab === "add") {
+      title = editingCatchId !== null ? "Edit Catch" : "New Catch";
+      sub = editingCatchId !== null ? "Update the details below" : "Log today's catch";
+    }
     document.getElementById("pageTitle").textContent = title;
-    document.getElementById("pageSub").textContent = pageMeta[tab][1];
+    document.getElementById("pageSub").textContent = sub;
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
-    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    btn.addEventListener("click", () => {
+      if (btn.dataset.tab !== "add" && editingCatchId !== null) resetCatchForm();
+      switchTab(btn.dataset.tab);
+    });
   });
 
   // Name gate
@@ -1233,6 +1258,7 @@
     // if currently viewing an owner-only tab, bounce back to the dashboard
     if (document.getElementById("panel-add").classList.contains("active") ||
         document.getElementById("panel-newgear").classList.contains("active")) {
+      if (editingCatchId !== null) resetCatchForm();
       switchTab("dashboard");
     }
   }
@@ -1277,14 +1303,55 @@
     document.getElementById("manualNameFields").style.display = "block";
   });
 
+  function resetCatchForm() {
+    editingCatchId = null;
+    formIds.forEach(id => document.getElementById(id).value = "");
+    document.getElementById("f-english").value = "";
+    document.getElementById("f-latin").value = "";
+    document.getElementById("f-time").value = "Pagi (Morning)";
+    document.getElementById("f-water").value = "Air Laut";
+    document.getElementById("f-gear").value = "Set 1";
+    document.getElementById("nameModeAuto").click();
+    document.getElementById("editBanner").style.display = "none";
+    document.getElementById("submitBtn").textContent = "Log this catch";
+    checkFormValid();
+  }
+
+  function startEditCatch(id) {
+    const c = state.catches.find(x => x.id === id);
+    if (!c) return;
+    editingCatchId = id;
+    document.getElementById("f-date").value = c.date;
+    document.getElementById("f-time").value = c.time;
+    document.getElementById("f-species").value = c.species;
+    document.getElementById("f-water").value = c.waterType;
+    document.getElementById("f-location").value = c.location;
+    document.getElementById("f-weather").value = c.weather;
+    document.getElementById("f-weight").value = c.weight;
+    document.getElementById("f-bait").value = c.bait;
+    document.getElementById("f-method").value = c.method;
+    populateGearOptions();
+    document.getElementById("f-gear").value = c.gear;
+    document.getElementById("f-notes").value = c.notes;
+    document.getElementById("nameModeAuto").click(); // editing catch details only; species mapping untouched by default
+    document.getElementById("editBanner").style.display = "block";
+    document.getElementById("submitBtn").textContent = "Update catch";
+    checkFormValid();
+    switchTab("add");
+  }
+  document.getElementById("cancelEditLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    resetCatchForm();
+    switchTab("log");
+  });
+
   document.getElementById("submitBtn").addEventListener("click", () => {
     const date = document.getElementById("f-date").value;
     const species = document.getElementById("f-species").value.trim();
     if (!date || !species) return;
 
-    const nextId = state.catches.length ? Math.max(...state.catches.map(c => c.id)) + 1 : 1;
-    const entry = {
-      id: nextId, date,
+    const fields = {
+      date,
       time: document.getElementById("f-time").value,
       species,
       waterType: document.getElementById("f-water").value,
@@ -1296,7 +1363,16 @@
       gear: document.getElementById("f-gear").value,
       notes: document.getElementById("f-notes").value,
     };
-    state.catches.push(entry);
+
+    let targetId;
+    if (editingCatchId !== null) {
+      const idx = state.catches.findIndex(c => c.id === editingCatchId);
+      if (idx !== -1) state.catches[idx] = { ...state.catches[idx], ...fields };
+      targetId = editingCatchId;
+    } else {
+      targetId = state.catches.length ? Math.max(...state.catches.map(c => c.id)) + 1 : 1;
+      state.catches.push({ id: targetId, ...fields });
+    }
 
     if (nameMode === "manual") {
       const eng = document.getElementById("f-english").value.trim();
@@ -1310,20 +1386,13 @@
       state.species[species] = species;
     }
 
-    formIds.forEach(id => document.getElementById(id).value = "");
-    document.getElementById("f-english").value = "";
-    document.getElementById("f-latin").value = "";
-    document.getElementById("f-time").value = "Pagi (Morning)";
-    document.getElementById("f-water").value = "Air Laut";
-    document.getElementById("f-gear").value = "Set 1";
-    document.getElementById("nameModeAuto").click();
-    checkFormValid();
-
-    expandedId = nextId;
+    resetCatchForm();
+    expandedId = targetId;
     switchTab("log");
     render();
     scheduleSave();
   });
+
 
   // New Gear form (owner only)
   const gearFormIds = ["g-name", "g-rod", "g-reel"];
