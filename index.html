@@ -1211,14 +1211,19 @@
     document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
     let title = pageMeta[tab][0];
     let sub = pageMeta[tab][1];
+    let titleIsHtml = false;
     if (tab === "dashboard") {
-      if (!IS_OWNER && visitorName) title = `Welcome ${visitorName} to my Catch Log`;
+      if (!IS_OWNER && visitorName) {
+        title = `Welcome <span style="color:var(--brass);">${escapeHtml(visitorName)}</span> to my Catch Log`;
+        titleIsHtml = true;
+      }
     }
     if (tab === "add") {
       title = editingCatchId !== null ? "Edit Catch" : "New Catch";
       sub = editingCatchId !== null ? "Update the details below" : "Log today's catch";
     }
-    document.getElementById("pageTitle").textContent = title;
+    const titleEl = document.getElementById("pageTitle");
+    if (titleIsHtml) titleEl.innerHTML = title; else titleEl.textContent = title;
     document.getElementById("pageSub").textContent = sub;
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
