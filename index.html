@@ -683,6 +683,8 @@
 
     // fill in every period in range, even ones with zero catches, so gaps are visible
     const keys = generateKeyRange(chartLevel, chartFilter, state.catches);
+    const validDates = state.catches.map(c=>c.date).filter(d=>VALID_DATE_RE.test(d)).sort();
+    document.getElementById("chartBreadcrumb").innerHTML += ` <span style="color:#C1543F;">[debug: ${state.catches.length} total catches, ${validDates.length} valid dates, range ${validDates[0]} → ${validDates[validDates.length-1]}, ${keys.length} periods generated]</span>`;
     const counts = {};
     keys.forEach(k => { counts[k] = rawCounts[k] || 0; });
     const maxCount = Math.max(...Object.values(counts), 1);
