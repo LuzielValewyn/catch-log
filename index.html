@@ -86,6 +86,16 @@
   .mid-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-bottom: 14px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
   .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .level-tabs { display: flex; gap: 4px; background: var(--ink); border-radius: 6px; padding: 3px; }
+  .level-tabs button {
+    background: none; border: none; color: var(--text-muted); font-size: 10.5px;
+    padding: 4px 9px; border-radius: 4px; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .level-tabs button.active { background: var(--surface-alt); color: var(--brass); }
+  .chart-breadcrumb { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; min-height: 14px; }
+  .chart-breadcrumb .clear-link { color: var(--rust); text-decoration: underline; cursor: pointer; margin-left: 8px; }
+  .chart-point { cursor: pointer; }
+  .chart-point:hover circle { r: 5.5; }
   .card-title { font-size: 13.5px; font-weight: 600; }
   .card-link { font-size: 11.5px; color: var(--text-muted); cursor: pointer; }
 
@@ -256,8 +266,17 @@
 
       <div class="mid-row">
         <div class="card">
-          <div class="card-title-row"><span class="card-title">Catches over time</span></div>
-          <svg id="lineChart" viewBox="0 0 560 180" style="width:100%; height:auto;"></svg>
+          <div class="card-title-row">
+            <span class="card-title">Catches over time</span>
+            <div class="level-tabs" id="levelTabs">
+              <button data-level="year">Year</button>
+              <button data-level="month" class="active">Month</button>
+              <button data-level="week">Week</button>
+              <button data-level="day">Day</button>
+            </div>
+          </div>
+          <div id="chartBreadcrumb" class="chart-breadcrumb"></div>
+          <svg id="lineChart" viewBox="0 0 560 190" style="width:100%; height:auto;"></svg>
         </div>
         <div class="card">
           <div class="card-title-row"><span class="card-title">Water type split</span></div>
@@ -495,6 +514,131 @@
     renderGear();
   }
 
+  // ---- Drillable "Catches over time" chart (Year > Month > Week > Day) ----
+  const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  let chartLevel = "month";
+  let chartFilter = {};
+
+  function getWeekStart(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    const day = d.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate() + diffToMonday);
+    return d.toISOString().slice(0, 10);
+  }
+  function getGroupKey(dateStr, level) {
+    if (level === "year") return dateStr.slice(0, 4);
+    if (level === "month") return dateStr.slice(0, 7);
+    if (level === "week") return getWeekStart(dateStr);
+    return dateStr;
+  }
+  function formatLabel(key, level) {
+    if (level === "year") return key;
+    if (level === "month") {
+      const [y, m] = key.split("-");
+      return `${MONTH_NAMES[+m - 1]} '${y.slice(2)}`;
+    }
+    if (level === "week") {
+      const [y, m, d] = key.split("-");
+      return `${MONTH_NAMES[+m - 1]} ${+d}`;
+    }
+    const [y, m, d] = key.split("-");
+    return `${+d} ${MONTH_NAMES[+m - 1]}`;
+  }
+  function passesChartFilter(c) {
+    if (chartFilter.year && c.date.slice(0, 4) !== chartFilter.year) return false;
+    if (chartFilter.month && c.date.slice(0, 7) !== chartFilter.month) return false;
+    if (chartFilter.week && getWeekStart(c.date) !== chartFilter.week) return false;
+    return true;
+  }
+  function renderBreadcrumb() {
+    const parts = [];
+    if (chartFilter.year) parts.push(chartFilter.year);
+    if (chartFilter.month) parts.push(MONTH_NAMES[+chartFilter.month.split("-")[1] - 1]);
+    if (chartFilter.week) parts.push("Week of " + formatLabel(chartFilter.week, "week"));
+    const el = document.getElementById("chartBreadcrumb");
+    if (parts.length === 0) {
+      el.innerHTML = "All time";
+    } else {
+      el.innerHTML = `Viewing: ${parts.join(" › ")} <span class="clear-link" id="chartClear">✕ Clear</span>`;
+      document.getElementById("chartClear").addEventListener("click", () => {
+        chartFilter = {};
+        renderLineChart();
+      });
+    }
+  }
+  function drillDown(key) {
+    if (chartLevel === "year") { chartFilter = { year: key }; chartLevel = "month"; }
+    else if (chartLevel === "month") { chartFilter = { ...chartFilter, month: key }; chartLevel = "week"; }
+    else if (chartLevel === "week") { chartFilter = { ...chartFilter, week: key }; chartLevel = "day"; }
+    else return;
+    document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b.dataset.level === chartLevel));
+    renderLineChart();
+  }
+  document.querySelectorAll("#levelTabs button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      chartLevel = btn.dataset.level;
+      chartFilter = {};
+      document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b === btn));
+      renderLineChart();
+    });
+  });
+
+  function renderLineChart() {
+    renderBreadcrumb();
+    const filtered = state.catches.filter(passesChartFilter);
+    const counts = {};
+    filtered.forEach(c => {
+      const key = getGroupKey(c.date, chartLevel);
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    const keys = Object.keys(counts).sort();
+    const maxCount = Math.max(...Object.values(counts), 1);
+    const w = 560, h = 190, padL = 30, padR = 10, padT = 15, padB = 40;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const stepX = keys.length > 1 ? plotW / (keys.length - 1) : 0;
+    const points = keys.map((k, i) => {
+      const x = padL + i * stepX;
+      const y = padT + plotH - (counts[k] / maxCount) * plotH;
+      return [x, y];
+    });
+    const pointsStr = points.map(p => p.join(",")).join(" ");
+    const areaStr = points.length ? `${padL},${padT+plotH} ${pointsStr} ${padL + (keys.length-1)*stepX},${padT+plotH}` : "";
+    const rotateLabels = keys.length > 7;
+    const canDrill = chartLevel !== "day";
+
+    let svgLine = `
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C9922B" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#C9922B" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${areaStr ? `<polygon points="${areaStr}" fill="url(#areaGrad)" />` : ""}
+      <polyline points="${pointsStr}" fill="none" stroke="#C9922B" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+      ${points.map(([x,y], i) => `
+        <g class="chart-point" data-key="${keys[i]}" style="cursor:${canDrill ? 'pointer' : 'default'};">
+          <circle cx="${x}" cy="${y}" r="10" fill="transparent" />
+          <circle cx="${x}" cy="${y}" r="3.5" fill="#0B1F22" stroke="#C9922B" stroke-width="2" />
+          <text x="${x}" y="${y - 10}" font-size="9" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${counts[keys[i]]}</text>
+        </g>`).join("")}
+      ${keys.map((k, i) => {
+        const x = padL + i * stepX;
+        const label = formatLabel(k, chartLevel);
+        return rotateLabels
+          ? `<text x="${x}" y="${h-8}" font-size="8.5" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace" transform="rotate(-40 ${x} ${h-8})">${label}</text>`
+          : `<text x="${x}" y="${h-8}" font-size="9" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${label}</text>`;
+      }).join("")}
+    `;
+    document.getElementById("lineChart").innerHTML = svgLine;
+
+    if (canDrill) {
+      document.querySelectorAll("#lineChart .chart-point").forEach(el => {
+        el.addEventListener("click", () => drillDown(el.dataset.key));
+      });
+    }
+  }
+
   function renderDashboard() {
     const catches = state.catches;
     const speciesCount = Object.keys(state.species).length;
@@ -509,37 +653,7 @@
     document.getElementById("statSaltPct").textContent = Math.round(salt / total * 100) + "% of total";
     document.getElementById("statFreshPct").textContent = Math.round(fresh / total * 100) + "% of total";
 
-    // Line chart: catches per month
-    const monthCounts = {};
-    catches.forEach(c => {
-      const m = c.date.slice(0, 7);
-      monthCounts[m] = (monthCounts[m] || 0) + 1;
-    });
-    const months = Object.keys(monthCounts).sort();
-    const maxCount = Math.max(...Object.values(monthCounts), 1);
-    const w = 560, h = 180, padL = 30, padR = 10, padT = 15, padB = 25;
-    const plotW = w - padL - padR, plotH = h - padT - padB;
-    const stepX = months.length > 1 ? plotW / (months.length - 1) : 0;
-    const points = months.map((m, i) => {
-      const x = padL + i * stepX;
-      const y = padT + plotH - (monthCounts[m] / maxCount) * plotH;
-      return [x, y];
-    });
-    const pointsStr = points.map(p => p.join(",")).join(" ");
-    const areaStr = points.length ? `${padL},${padT+plotH} ${pointsStr} ${padL + (months.length-1)*stepX},${padT+plotH}` : "";
-    let svgLine = `
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#C9922B" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="#C9922B" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      ${areaStr ? `<polygon points="${areaStr}" fill="url(#areaGrad)" />` : ""}
-      <polyline points="${pointsStr}" fill="none" stroke="#C9922B" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
-      ${points.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#0B1F22" stroke="#C9922B" stroke-width="2"/>`).join("")}
-      ${months.map((m, i) => `<text x="${padL + i*stepX}" y="${h-6}" font-size="9" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${m.slice(5)}</text>`).join("")}
-    `;
-    document.getElementById("lineChart").innerHTML = svgLine;
+    renderLineChart();
 
     // Donut
     const saltPct = salt / total;
