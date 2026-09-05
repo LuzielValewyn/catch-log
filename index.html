@@ -323,6 +323,15 @@
   </main>
 </div>
 
+<div id="nameGate" class="modal-overlay open">
+  <div class="modal-box">
+    <div class="modal-title" style="margin-bottom:8px;">Welcome</div>
+    <p class="modal-text" style="margin-bottom:16px;">What's your name? It'll be shown when you visit, and logged so Del knows who's been checking out the catch log.</p>
+    <input type="text" id="nameGateInput" class="input" placeholder="Your name" style="text-align:center; margin-bottom:12px;" />
+    <button id="nameGateSubmit" class="submit-btn">Enter</button>
+  </div>
+</div>
+
 <div id="aboutModal" class="modal-overlay">
   <div class="modal-box">
     <button id="closeModal" class="modal-close">×</button>
@@ -391,7 +400,7 @@
     "Set 3": { rod: "", reel: "" },
   };
 
-  let state = { catches: SEED_CATCHES, species: SEED_SPECIES, gear: SEED_GEAR };
+  let state = { catches: SEED_CATCHES, species: SEED_SPECIES, gear: SEED_GEAR, visitors: [] };
   let db = null;
   const DOC_PATH = ["fishing_logbook", "main"];
   let expandedId = null;
@@ -623,6 +632,7 @@
   }
 
   // Navigation (sidebar + bottom nav share data-tab attr)
+  let visitorName = "";
   const pageMeta = {
     dashboard: ["Dashboard", "Karimun & Riau Islands"],
     log: ["Catch Log", "Every species, in order"],
@@ -633,11 +643,56 @@
   function switchTab(tab) {
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
     document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
-    document.getElementById("pageTitle").textContent = pageMeta[tab][0];
+    const title = tab === "dashboard" && visitorName
+      ? `Welcome ${visitorName} to my Catch Log`
+      : pageMeta[tab][0];
+    document.getElementById("pageTitle").textContent = title;
     document.getElementById("pageSub").textContent = pageMeta[tab][1];
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+
+  // Name gate
+  const VISITOR_NAME_KEY = "catchlog_visitor_name";
+  let pendingVisits = [];
+  let firebaseReady = false;
+  function flushPendingVisits() {
+    if (pendingVisits.length === 0) return;
+    state.visitors = (state.visitors || []).concat(pendingVisits);
+    pendingVisits = [];
+    scheduleSave();
+  }
+  function recordVisit(name) {
+    const now = new Date();
+    pendingVisits.push({
+      name,
+      date: now.toISOString().slice(0, 10),
+      time: now.toTimeString().slice(0, 5),
+    });
+    if (firebaseReady) flushPendingVisits();
+  }
+  function closeNameGate(name) {
+    visitorName = name;
+    document.getElementById("nameGate").classList.remove("open");
+    switchTab("dashboard");
+  }
+  const savedName = localStorage.getItem(VISITOR_NAME_KEY);
+  if (savedName) {
+    visitorName = savedName;
+    document.getElementById("nameGate").classList.remove("open");
+    recordVisit(savedName);
+    switchTab("dashboard");
+  }
+  document.getElementById("nameGateSubmit").addEventListener("click", () => {
+    const val = document.getElementById("nameGateInput").value.trim();
+    if (!val) return;
+    localStorage.setItem(VISITOR_NAME_KEY, val);
+    recordVisit(val);
+    closeNameGate(val);
+  });
+  document.getElementById("nameGateInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("nameGateSubmit").click();
   });
 
   // About modal
@@ -717,7 +772,11 @@
     scheduleSave();
   });
 
-  initFirebase().then(render);
+  initFirebase().then(() => {
+    firebaseReady = true;
+    flushPendingVisits();
+    render();
+  });
 </script>
 </body>
 </html>
