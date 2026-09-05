@@ -694,7 +694,7 @@
     const maxCum = Math.max(...cumValues, 1);
 
     const minSpacing = 44; // px per category minimum, so labels never overlap or get clipped
-    const padL = 40, padR = 24, padT = 24, padB = 40;
+    const padL = 40, padR = 40, padT = 24, padB = 40;
     const container = document.querySelector(".chart-scroll");
     const availWidth = (container && container.clientWidth) || 560;
     const plotW = Math.max(availWidth - padL - padR, (keys.length - 1) * minSpacing);
@@ -712,12 +712,16 @@
 
     const barX = (i) => padL + (keys.length > 1 ? i * stepX : plotW / 2);
 
-    // y-axis ticks (integers, 0..maxCount)
+    // primary y-axis ticks (bar counts, left side)
     const tickStep = Math.max(1, Math.ceil(maxCount / 5));
     const ticks = [];
     for (let v = 0; v <= maxCount; v += tickStep) ticks.push(v);
     if (ticks[ticks.length - 1] !== maxCount) ticks.push(maxCount);
     const yForValue = (v) => padT + plotH - (v / maxCount) * plotH;
+
+    // secondary y-axis ticks (cumulative total, right side) — same tick count as primary for aligned gridlines
+    const cumTicks = ticks.map(v => Math.round((v / maxCount) * maxCum));
+    const yForCum = (v) => padT + plotH - (v / maxCum) * plotH; // reuse primary positions
 
     const cumPoints = keys.map((k, i) => [barX(i), padT + plotH - (cumValues[i] / maxCum) * plotH]);
     const cumPointsStr = cumPoints.map(p => p.join(",")).join(" ");
@@ -727,7 +731,11 @@
         <line x1="${padL}" y1="${yForValue(v)}" x2="${padL + plotW}" y2="${yForValue(v)}" stroke="var(--border)" stroke-width="1" />
         <text x="${padL - 8}" y="${yForValue(v) + 3}" font-size="9" fill="#7FA0A3" text-anchor="end" font-family="IBM Plex Mono, monospace">${v}</text>
       `).join("")}
+      ${ticks.map((v, i) => `
+        <text x="${padL + plotW + 8}" y="${yForValue(v) + 3}" font-size="9" fill="var(--salt)" text-anchor="start" font-family="IBM Plex Mono, monospace">${cumTicks[i]}</text>
+      `).join("")}
       <text x="${12}" y="${padT + plotH/2}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(-90 12 ${padT + plotH/2})">Catches</text>
+      <text x="${w - 12}" y="${padT + plotH/2}" font-size="9.5" fill="var(--salt)" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" transform="rotate(90 ${w - 12} ${padT + plotH/2})">Cumulative</text>
       <polyline points="${cumPointsStr}" fill="none" stroke="var(--salt)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="4 3" />
       ${cumPoints.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#0B1F22" stroke="#3E8FA3" stroke-width="1.6" />`).join("")}
       ${keys.map((k, i) => {
