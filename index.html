@@ -170,6 +170,12 @@
   .input { width: 100%; padding: 9px 11px; font-size: 13.5px; background: var(--ink); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
   .input:focus { outline: 2px solid var(--brass); outline-offset: 1px; }
   .submit-btn { width: 100%; padding: 12px; margin-top: 8px; background: linear-gradient(135deg, var(--brass), var(--rust)); color: #1B1105; border: none; border-radius: 5px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .toggle-row { display: flex; gap: 6px; margin-top: 4px; }
+  .toggle-btn {
+    flex: 1; padding: 8px; background: var(--ink); border: 1px solid var(--border); border-radius: 5px;
+    color: var(--text-muted); font-size: 12px; font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;
+  }
+  .toggle-btn.active { background: var(--brass); border-color: var(--brass); color: #1B1105; font-weight: 600; }
   .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
   /* Species / Gear */
@@ -381,6 +387,19 @@
           </select></label>
         <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span>
           <input class="input" type="text" id="f-species" placeholder="e.g. Kakap"></label>
+        <div class="field-wrap">
+          <span class="field-label">English / Latin name</span>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn active" id="nameModeAuto">Automatic</button>
+            <button type="button" class="toggle-btn" id="nameModeManual">Manual</button>
+          </div>
+          <div id="manualNameFields" style="display:none; margin-top:10px;">
+            <label class="field-wrap"><span class="field-label">English name</span>
+              <input class="input" type="text" id="f-english" placeholder="e.g. Red Snapper"></label>
+            <label class="field-wrap"><span class="field-label">Latin name</span>
+              <input class="input" type="text" id="f-latin" placeholder="e.g. Lutjanus campechanus"></label>
+          </div>
+        </div>
         <label class="field-wrap"><span class="field-label">Water type</span>
           <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
         <label class="field-wrap"><span class="field-label">Location</span>
@@ -1243,6 +1262,21 @@
   }
   formIds.forEach(id => document.getElementById(id).addEventListener("input", checkFormValid));
 
+  // Automatic / Manual name toggle
+  let nameMode = "automatic";
+  document.getElementById("nameModeAuto").addEventListener("click", () => {
+    nameMode = "automatic";
+    document.getElementById("nameModeAuto").classList.add("active");
+    document.getElementById("nameModeManual").classList.remove("active");
+    document.getElementById("manualNameFields").style.display = "none";
+  });
+  document.getElementById("nameModeManual").addEventListener("click", () => {
+    nameMode = "manual";
+    document.getElementById("nameModeManual").classList.add("active");
+    document.getElementById("nameModeAuto").classList.remove("active");
+    document.getElementById("manualNameFields").style.display = "block";
+  });
+
   document.getElementById("submitBtn").addEventListener("click", () => {
     const date = document.getElementById("f-date").value;
     const species = document.getElementById("f-species").value.trim();
@@ -1263,12 +1297,26 @@
       notes: document.getElementById("f-notes").value,
     };
     state.catches.push(entry);
-    if (!state.species[species]) state.species[species] = species;
+
+    if (nameMode === "manual") {
+      const eng = document.getElementById("f-english").value.trim();
+      const lat = document.getElementById("f-latin").value.trim();
+      if (eng || lat) {
+        state.species[species] = eng && lat ? `${eng} (${lat})` : (eng || lat);
+      } else if (!state.species[species]) {
+        state.species[species] = species;
+      }
+    } else if (!state.species[species]) {
+      state.species[species] = species;
+    }
 
     formIds.forEach(id => document.getElementById(id).value = "");
+    document.getElementById("f-english").value = "";
+    document.getElementById("f-latin").value = "";
     document.getElementById("f-time").value = "Pagi (Morning)";
     document.getElementById("f-water").value = "Air Laut";
     document.getElementById("f-gear").value = "Set 1";
+    document.getElementById("nameModeAuto").click();
     checkFormValid();
 
     expandedId = nextId;
