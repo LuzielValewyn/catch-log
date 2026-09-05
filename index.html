@@ -165,6 +165,7 @@
   .data-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #DDD3B8; font-size: 12.5px; }
   .data-label { color: #8A7F63; }
   .data-value { color: #16343A; text-align: right; max-width: 65%; font-family: 'IBM Plex Mono', monospace; }
+  .catch-photo { width: 100%; max-height: 280px; object-fit: cover; border-radius: 5px; margin: 4px 0 12px; display: block; }
   .notes-block { margin-top: 12px; padding: 10px 12px; background: #E9E0C8; border-radius: 4px; border-left: 3px solid var(--brass); }
   .edit-catch-btn {
     width: 100%; margin-top: 14px; padding: 9px; background: none; border: 1px dashed var(--brass);
@@ -449,6 +450,14 @@
           <select class="input" id="f-gear"></select></label>
         <label class="field-wrap"><span class="field-label">Notes</span>
           <textarea class="input" id="f-notes" rows="3"></textarea></label>
+        <div class="field-wrap">
+          <span class="field-label">Photo</span>
+          <input class="input" type="file" accept="image/*" id="f-photo" style="padding:9px 8px;">
+          <div id="photoPreviewWrap" style="display:none; margin-top:10px; position:relative;">
+            <img id="photoPreview" style="width:100%; max-height:220px; object-fit:cover; border-radius:5px; display:block;" />
+            <button type="button" id="removePhotoBtn" style="position:absolute; top:6px; right:6px; background:rgba(11,31,34,0.75); color:var(--text); border:1px solid var(--border); border-radius:4px; padding:4px 8px; font-size:11px; cursor:pointer;">Remove</button>
+          </div>
+        </div>
         <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
       </div>
     </section>
@@ -1140,6 +1149,7 @@
             </div>
           </button>
           <div class="catch-body ${isOpen ? "open" : ""}">
+            ${c.photo ? `<img src="${c.photo}" alt="${escapeHtml(c.species)}" class="catch-photo" />` : ""}
             <div class="data-row"><span class="data-label">Time of day</span><span class="data-value">${escapeHtml(c.time)}</span></div>
             <div class="data-row"><span class="data-label">Water type</span><span class="data-value">${escapeHtml(c.waterType)}</span></div>
             ${c.fight ? `<div class="data-row"><span class="data-label">Fight level</span><span class="data-value">${escapeHtml(c.fight)}</span></div>` : ""}
@@ -1345,6 +1355,52 @@
 
   // Form
   const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-fight","f-gear","f-notes"];
+  let pendingPhotoData = "";
+
+  function compressImage(file, maxDim, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showPhotoPreview(dataUrl) {
+    pendingPhotoData = dataUrl;
+    document.getElementById("photoPreview").src = dataUrl;
+    document.getElementById("photoPreviewWrap").style.display = dataUrl ? "block" : "none";
+  }
+
+  document.getElementById("f-photo").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file, 800, 0.6);
+      showPhotoPreview(compressed);
+    } catch (err) {
+      console.error("Photo processing failed:", err);
+      alert("Could not process that photo. Try a different one.");
+    }
+  });
+  document.getElementById("removePhotoBtn").addEventListener("click", () => {
+    document.getElementById("f-photo").value = "";
+    showPhotoPreview("");
+  });
+
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
     const species = document.getElementById("f-species").value.trim();
@@ -1375,6 +1431,8 @@
     document.getElementById("f-time").value = "Pagi (Morning)";
     document.getElementById("f-water").value = "Air Laut";
     document.getElementById("f-gear").value = "Set 1";
+    document.getElementById("f-photo").value = "";
+    showPhotoPreview("");
     document.getElementById("nameModeAuto").click();
     document.getElementById("editBanner").style.display = "none";
     document.getElementById("submitBtn").textContent = "Log this catch";
@@ -1398,6 +1456,7 @@
     populateGearOptions();
     document.getElementById("f-gear").value = c.gear;
     document.getElementById("f-notes").value = c.notes;
+    showPhotoPreview(c.photo || "");
     document.getElementById("nameModeAuto").click(); // editing catch details only; species mapping untouched by default
     document.getElementById("editBanner").style.display = "block";
     document.getElementById("submitBtn").textContent = "Update catch";
@@ -1428,6 +1487,7 @@
       fight: document.getElementById("f-fight").value,
       gear: document.getElementById("f-gear").value,
       notes: document.getElementById("f-notes").value,
+      photo: pendingPhotoData,
     };
 
     let targetId;
