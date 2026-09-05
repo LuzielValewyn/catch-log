@@ -1,171 +1,310 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Buku Catatan Pancing</title>
+<title>Del's Catch Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0E2A2E;
-    --paper: #F2ECDD;
-    --paper-dark: #E9E0C8;
-    --line: #C8BFA0;
-    --brass: #B8863B;
-    --brass-bright: #C9922B;
+    --ink: #0B1F22;
+    --surface: #16373A;
+    --surface-alt: #1C4448;
+    --border: #2A5055;
+    --text: #EFE7D8;
+    --text-muted: #7FA0A3;
+    --text-dim: #52787B;
+    --brass: #C9922B;
     --rust: #C1543F;
-    --text-dark: #16343A;
-    --text-muted: #8A7F63;
-    --text-light: #EFE7D8;
-    --text-teal-muted: #8AA3A6;
+    --salt: #3E8FA3;
+    --fresh: #6B9E5E;
+    --paper: #F2ECDD;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    margin: 0;
     background: var(--ink);
-    color: var(--text-light);
-    font-family: 'IBM Plex Mono', monospace;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
     min-height: 100vh;
   }
-  ::selection { background: var(--brass-bright); color: var(--ink); }
-  .container { max-width: 640px; margin: 0 auto; padding: 28px 20px 40px; }
+  ::selection { background: var(--brass); color: var(--ink); }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+  a { color: inherit; }
 
-  .hero { padding: 8px 0 24px; }
-  .hero-top-line { height: 2px; background: linear-gradient(90deg, var(--brass-bright), transparent); margin-bottom: 18px; }
-  .hero-bottom-line { height: 1px; background: #3A5459; margin-top: 22px; }
-  .hero-label { font-family: 'Fraunces', Georgia, serif; font-size: 15px; letter-spacing: 0.02em; color: #B8A97E; margin: 0 0 14px; font-style: italic; }
-  .hero-row { display: flex; align-items: baseline; gap: 18px; }
-  .hero-number { font-family: 'Fraunces', Georgia, serif; font-size: 76px; line-height: 1; color: var(--text-light); font-weight: 600; }
-  .hero-sub { margin: 0 0 4px; font-size: 14px; }
-  .hero-sub2 { margin: 0; font-size: 12px; color: var(--text-teal-muted); }
+  .app { display: flex; min-height: 100vh; }
 
-  .tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid #3A5459; }
-  .tab-btn { background: none; border: none; color: var(--text-teal-muted); font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; padding: 10px 4px; margin-right: 18px; cursor: pointer; border-bottom: 2px solid transparent; }
-  .tab-btn.active { color: var(--brass-bright); border-bottom: 2px solid var(--brass-bright); }
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; padding: 0 8px; }
+  .brand-mark { font-size: 22px; }
+  .brand-text { font-family: 'Fraunces', Georgia, serif; font-size: 16px; font-weight: 600; }
+  .nav-group { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 6px;
+    color: var(--text-muted); font-size: 13.5px; font-weight: 500;
+    cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .nav-item:hover { background: var(--surface-alt); color: var(--text); }
+  .nav-item.active { background: var(--surface-alt); color: var(--brass); }
+  .nav-icon { width: 18px; text-align: center; flex-shrink: 0; }
+  .nav-item[data-locked="true"] { opacity: 0.45; }
+  .sidebar-foot { padding-top: 16px; border-top: 1px solid var(--border); margin-top: 12px; }
+  .edit-link { font-size: 11.5px; color: var(--text-dim); text-decoration: underline; cursor: pointer; }
 
-  .error-note { font-size: 12px; color: var(--rust); background: rgba(193,84,63,0.12); padding: 10px 12px; border-radius: 3px; margin-bottom: 16px; }
-  .empty-state { color: var(--text-teal-muted); font-size: 13px; line-height: 1.6; padding: 20px 0; }
+  /* Main */
+  .main { flex: 1; min-width: 0; padding: 28px 32px 90px; }
+  .topbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  .page-title { font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 600; }
+  .page-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+  .topbar-right { text-align: right; font-size: 12px; color: var(--text-muted); }
+  .topbar-date { font-family: 'IBM Plex Mono', monospace; color: var(--text); font-size: 13px; }
 
-  .card { background: var(--paper); border-radius: 3px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
-  .card-head { width: 100%; background: none; border: none; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; font-family: inherit; }
-  .card-head-left { display: flex; align-items: center; gap: 12px; }
-  .card-stamp { font-size: 11px; color: var(--brass); border: 1px solid var(--brass); border-radius: 2px; padding: 2px 6px; font-weight: 500; }
-  .card-species { margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: var(--text-dark); font-weight: 600; }
-  .card-english { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); font-style: italic; }
-  .card-head-right { display: flex; align-items: center; gap: 10px; }
-  .card-date { font-size: 11.5px; color: var(--text-muted); }
-  .chevron { font-size: 18px; color: var(--brass); width: 16px; text-align: center; }
-  .card-body { padding: 4px 16px 16px; border-top: 1px solid #DDD3B8; display: none; }
-  .card-body.open { display: block; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Dashboard grid */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .stat-label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px; }
+  .stat-number { font-family: 'Fraunces', Georgia, serif; font-size: 32px; font-weight: 600; }
+  .stat-delta { font-size: 11px; color: var(--fresh); margin-top: 4px; }
+
+  .mid-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .card-title { font-size: 13.5px; font-weight: 600; }
+  .card-link { font-size: 11.5px; color: var(--text-muted); cursor: pointer; }
+
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; }
+  .donut-legend { display: flex; gap: 16px; margin-top: 14px; font-size: 11.5px; }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .highlight-card {
+    background: linear-gradient(135deg, var(--rust), var(--brass));
+    border-radius: 8px; padding: 18px; color: #1B1105;
+  }
+  .highlight-label { display: flex; justify-content: space-between; font-size: 11.5px; opacity: 0.85; margin-bottom: 14px; }
+  .highlight-species { font-family: 'Fraunces', Georgia, serif; font-size: 20px; font-weight: 700; }
+  .highlight-en { font-size: 12px; font-style: italic; margin-top: 2px; opacity: 0.85; }
+  .highlight-meta { font-size: 11px; margin-top: 12px; opacity: 0.85; }
+
+  .top-loc-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .top-loc-row:last-child { border-bottom: none; }
+  .top-loc-name { color: var(--text); }
+  .top-loc-count { font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); }
+
+  /* Catch log list */
+  .empty-state { color: var(--text-muted); font-size: 13px; line-height: 1.6; padding: 20px 0; }
+  .catch-card { background: var(--paper); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+  .catch-head { width: 100%; background: none; border: none; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; font-family: inherit; }
+  .catch-head-left { display: flex; align-items: center; gap: 12px; }
+  .water-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .catch-species { font-family: 'Fraunces', Georgia, serif; font-size: 16px; color: #16343A; font-weight: 600; }
+  .catch-en { font-size: 11.5px; color: #6B6250; font-style: italic; }
+  .catch-date { font-size: 11.5px; color: #6B6250; font-family: 'IBM Plex Mono', monospace; }
+  .chevron { font-size: 18px; color: #B8863B; width: 16px; text-align: center; }
+  .catch-body { padding: 4px 16px 16px; border-top: 1px solid #DDD3B8; display: none; }
+  .catch-body.open { display: block; }
   .data-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #DDD3B8; font-size: 12.5px; }
-  .data-label { color: var(--text-muted); }
-  .data-value { color: var(--text-dark); text-align: right; max-width: 65%; }
-  .notes-block { margin-top: 12px; padding: 10px 12px; background: var(--paper-dark); border-radius: 2px; border-left: 3px solid var(--brass-bright); }
-  .notes-label { margin: 0 0 4px; font-size: 10.5px; color: var(--text-muted); letter-spacing: 0.03em; }
-  .notes-text { margin: 0; font-size: 13px; color: var(--text-dark); line-height: 1.55; font-style: italic; }
+  .data-label { color: #8A7F63; }
+  .data-value { color: #16343A; text-align: right; max-width: 65%; font-family: 'IBM Plex Mono', monospace; }
+  .notes-block { margin-top: 12px; padding: 10px 12px; background: #E9E0C8; border-radius: 4px; border-left: 3px solid var(--brass); }
+  .notes-label { font-size: 10.5px; color: #8A7F63; margin-bottom: 4px; }
+  .notes-text { font-size: 13px; color: #16343A; line-height: 1.55; font-style: italic; }
 
-  .form-wrap { background: var(--paper); border-radius: 3px; padding: 20px 18px; }
+  /* Form */
+  .form-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; max-width: 480px; }
   .field-wrap { display: block; margin-bottom: 14px; }
-  .field-label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.02em; }
-  .input { width: 100%; padding: 9px 10px; font-size: 13.5px; background: #FFFDF7; border: 1px solid var(--line); border-radius: 2px; color: var(--text-dark); font-family: 'IBM Plex Mono', monospace; }
-  .input:focus { outline: 2px solid var(--brass-bright); outline-offset: 1px; }
-  .submit-btn { width: 100%; padding: 13px; margin-top: 6px; background: var(--brass); color: var(--ink); border: none; border-radius: 2px; font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .field-label { display: block; font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .input { width: 100%; padding: 9px 11px; font-size: 13.5px; background: var(--ink); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+  .input:focus { outline: 2px solid var(--brass); outline-offset: 1px; }
+  .submit-btn { width: 100%; padding: 12px; margin-top: 8px; background: linear-gradient(135deg, var(--brass), var(--rust)); color: #1B1105; border: none; border-radius: 5px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .species-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 4px; border-bottom: 1px solid #3A5459; font-size: 13px; }
-  .species-id { font-family: 'Fraunces', Georgia, serif; font-style: italic; flex-shrink: 0; }
-  .species-en { color: var(--text-teal-muted); text-align: right; }
+  /* Species / Gear */
+  .species-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .species-id { font-family: 'Fraunces', Georgia, serif; font-style: italic; min-width: 140px; }
+  .species-en { color: var(--text-muted); flex: 1; }
+  .gear-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 10px; }
+  .gear-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; margin-bottom: 8px; }
 
-  .gear-card { background: var(--paper); border-radius: 3px; padding: 16px; margin-bottom: 10px; }
-  .gear-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; color: var(--text-dark); margin: 0 0 8px; font-weight: 600; }
+  .error-note { font-size: 12px; color: var(--rust); background: rgba(193,84,63,0.12); padding: 10px 12px; border-radius: 5px; margin-bottom: 16px; }
 
-  .footer { text-align: center; font-size: 10.5px; color: #5A7377; margin-top: 24px; letter-spacing: 0.03em; }
-  section.tabpanel { display: none; }
-  section.tabpanel.active { display: block; }
+  /* Mobile: bottom nav */
+  .bottom-nav { display: none; }
+
+  @media (max-width: 760px) {
+    .sidebar { display: none; }
+    .main { padding: 20px 16px 90px; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .mid-row, .bottom-row { grid-template-columns: 1fr; }
+    .bottom-nav {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--surface); border-top: 1px solid var(--border);
+      justify-content: space-around; padding: 10px 4px 14px; z-index: 10;
+    }
+    .bottom-nav .nav-item { flex-direction: column; align-items: center; gap: 4px; font-size: 9.5px; padding: 4px; width: auto; }
+    .bottom-nav .nav-icon { font-size: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <header class="hero">
-    <div class="hero-top-line"></div>
-    <p class="hero-label">Buku Catatan Pancing</p>
-    <div class="hero-row">
-      <span class="hero-number" id="speciesCount">0</span>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">🎣</span>
+      <span class="brand-text">Del's Catch Log</span>
+    </div>
+    <nav class="nav-group">
+      <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dashboard</button>
+      <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Catch Log</button>
+      <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">+</span>New Catch</button>
+      <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
+      <button class="nav-item" data-tab="gear"><span class="nav-icon">†</span>Gear</button>
+    </nav>
+    <div class="sidebar-foot">
+      <a href="#" id="editModeLink" class="edit-link">Edit mode</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
       <div>
-        <p class="hero-sub">spesies unik tercatat</p>
-        <p class="hero-sub2">Karimun &amp; Kepulauan Riau</p>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Karimun &amp; Riau Islands</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date mono" id="clockDate">—</div>
+        <div id="statusText" style="margin-top:4px;">Loading...</div>
       </div>
     </div>
-    <div class="hero-bottom-line"></div>
-  </header>
 
-  <nav class="tabs">
-    <button class="tab-btn active" data-tab="log">Catatan</button>
-    <button class="tab-btn" data-tab="add" id="addTabBtn" style="display:none;">Tangkapan Baru</button>
-    <button class="tab-btn" data-tab="species">Spesies</button>
-    <button class="tab-btn" data-tab="gear">Alat</button>
-  </nav>
+    <p id="errorNote" class="error-note" style="display:none;"></p>
 
-  <p id="errorNote" class="error-note" style="display:none;"></p>
+    <!-- DASHBOARD -->
+    <section id="panel-dashboard" class="panel active">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Species logged</div>
+          <div class="stat-number mono" id="statSpecies">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total catches</div>
+          <div class="stat-number mono" id="statCatches">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Saltwater</div>
+          <div class="stat-number mono" id="statSalt">0</div>
+          <div class="stat-delta" id="statSaltPct" style="color: var(--salt);"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Freshwater</div>
+          <div class="stat-number mono" id="statFresh">0</div>
+          <div class="stat-delta" id="statFreshPct" style="color: var(--fresh);"></div>
+        </div>
+      </div>
 
-  <section id="tab-log" class="tabpanel active">
-    <div id="logList"></div>
-  </section>
+      <div class="mid-row">
+        <div class="card">
+          <div class="card-title-row"><span class="card-title">Catches over time</span></div>
+          <svg id="lineChart" viewBox="0 0 560 180" style="width:100%; height:auto;"></svg>
+        </div>
+        <div class="card">
+          <div class="card-title-row"><span class="card-title">Water type split</span></div>
+          <div class="donut-wrap">
+            <svg id="donutChart" viewBox="0 0 140 140" style="width:150px; height:150px;"></svg>
+            <div class="donut-legend">
+              <span><span class="legend-dot" style="background:var(--salt);"></span>Saltwater</span>
+              <span><span class="legend-dot" style="background:var(--fresh);"></span>Freshwater</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <section id="tab-add" class="tabpanel">
-    <div class="form-wrap">
-      <label class="field-wrap"><span class="field-label">Tanggal</span>
-        <input class="input" type="date" id="f-date"></label>
-      <label class="field-wrap"><span class="field-label">Waktu</span>
-        <select class="input" id="f-time">
-          <option>Subuh</option><option selected>Pagi</option><option>Siang</option><option>Sore</option><option>Malam</option>
-        </select></label>
-      <label class="field-wrap"><span class="field-label">Nama ikan (Indonesia)</span>
-        <input class="input" type="text" id="f-species" placeholder="cth. Kakap"></label>
-      <label class="field-wrap"><span class="field-label">Tipe air</span>
-        <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
-      <label class="field-wrap"><span class="field-label">Lokasi</span>
-        <input class="input" type="text" id="f-location" placeholder="cth. Laut Karimun, Pulau Assan"></label>
-      <label class="field-wrap"><span class="field-label">Cuaca</span>
-        <input class="input" type="text" id="f-weather"></label>
-      <label class="field-wrap"><span class="field-label">Berat (kg)</span>
-        <input class="input" type="text" id="f-weight" placeholder="-"></label>
-      <label class="field-wrap"><span class="field-label">Umpan/Lure</span>
-        <input class="input" type="text" id="f-bait"></label>
-      <label class="field-wrap"><span class="field-label">Metode</span>
-        <input class="input" type="text" id="f-method" placeholder="cth. Bottom fishing"></label>
-      <label class="field-wrap"><span class="field-label">Gear Set</span>
-        <select class="input" id="f-gear"><option>Set 1</option><option>Set 2</option><option>Set 3</option></select></label>
-      <label class="field-wrap"><span class="field-label">Catatan</span>
-        <textarea class="input" id="f-notes" rows="3"></textarea></label>
-      <button class="submit-btn" id="submitBtn" disabled>Catat tangkapan</button>
-    </div>
-  </section>
+      <div class="bottom-row">
+        <div class="card">
+          <div class="card-title-row"><span class="card-title">Top locations</span></div>
+          <div id="topLocations"></div>
+        </div>
+        <div class="highlight-card" id="highlightCard"></div>
+      </div>
+    </section>
 
-  <section id="tab-species" class="tabpanel">
-    <div id="speciesList"></div>
-  </section>
+    <!-- CATCH LOG -->
+    <section id="panel-log" class="panel">
+      <div id="logList"></div>
+    </section>
 
-  <section id="tab-gear" class="tabpanel">
-    <div id="gearList"></div>
-  </section>
+    <!-- NEW CATCH -->
+    <section id="panel-add" class="panel">
+      <div class="form-wrap">
+        <label class="field-wrap"><span class="field-label">Date</span>
+          <input class="input" type="date" id="f-date"></label>
+        <label class="field-wrap"><span class="field-label">Time of day</span>
+          <select class="input" id="f-time">
+            <option>Subuh (Dawn)</option><option selected>Pagi (Morning)</option><option>Siang (Midday)</option><option>Sore (Afternoon)</option><option>Malam (Night)</option>
+          </select></label>
+        <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span>
+          <input class="input" type="text" id="f-species" placeholder="e.g. Kakap"></label>
+        <label class="field-wrap"><span class="field-label">Water type</span>
+          <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
+        <label class="field-wrap"><span class="field-label">Location</span>
+          <input class="input" type="text" id="f-location" placeholder="e.g. Laut Karimun, Pulau Assan"></label>
+        <label class="field-wrap"><span class="field-label">Weather</span>
+          <input class="input" type="text" id="f-weather"></label>
+        <label class="field-wrap"><span class="field-label">Weight (kg)</span>
+          <input class="input" type="text" id="f-weight" placeholder="-"></label>
+        <label class="field-wrap"><span class="field-label">Bait / Lure</span>
+          <input class="input" type="text" id="f-bait"></label>
+        <label class="field-wrap"><span class="field-label">Method</span>
+          <input class="input" type="text" id="f-method" placeholder="e.g. Bottom fishing"></label>
+        <label class="field-wrap"><span class="field-label">Gear set</span>
+          <select class="input" id="f-gear"><option>Set 1</option><option>Set 2</option><option>Set 3</option></select></label>
+        <label class="field-wrap"><span class="field-label">Notes</span>
+          <textarea class="input" id="f-notes" rows="3"></textarea></label>
+        <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
+      </div>
+    </section>
 
-  <footer class="footer">
-    <span id="statusText">Memuat...</span>
-    <span> · </span>
-    <a href="#" id="editModeLink" style="color:#5A7377; text-decoration:underline; cursor:pointer;">Mode edit</a>
-  </footer>
+    <!-- SPECIES -->
+    <section id="panel-species" class="panel">
+      <div id="speciesList"></div>
+    </section>
+
+    <!-- GEAR -->
+    <section id="panel-gear" class="panel">
+      <div id="gearList"></div>
+    </section>
+  </main>
 </div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dash</button>
+  <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Log</button>
+  <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">+</span>New</button>
+  <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
+  <button class="nav-item" data-tab="gear"><span class="nav-icon">†</span>Gear</button>
+</nav>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  // =====================================================================
-  // PASTE FIREBASE CONFIG DI SINI (lihat panduan langkah 2)
-  // =====================================================================
   const firebaseConfig = {
     apiKey: "AIzaSyDdcnK_u3w9qKXj4IWoXSDzFkl9YBFVQzI",
     authDomain: "del-s-catch-log.firebaseapp.com",
@@ -174,7 +313,6 @@
     messagingSenderId: "359707023049",
     appId: "1:359707023049:web:e3ed201094de3bc7e35f18"
   };
-  // =====================================================================
 
   const SEED_CATCHES = [
     { id: 1, date: "2026-05-03", time: "Siang", species: "Puyut", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun, Depan Pulau Jaga", weather: "Cerah", weight: "", bait: "Cumi potong", method: "Bottom fishing", gear: "Set 1", notes: "my first catch, doesnt matter if its small, start the journey with the smallest one" },
@@ -221,12 +359,17 @@
     el.textContent = msg;
     el.style.display = "block";
   }
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML;
+  }
 
   async function initFirebase() {
     try {
       if (firebaseConfig.apiKey.startsWith("PASTE_")) {
-        showError("Firebase belum dikonfigurasi — data hanya tersimpan sementara di browser ini. Ikuti panduan untuk hubungkan cloud.");
-        setStatus("Mode lokal (belum tersambung cloud)");
+        showError("Firebase not configured yet — data is only stored temporarily in this browser.");
+        setStatus("Local mode (no cloud)");
         return;
       }
       const app = initializeApp(firebaseConfig);
@@ -238,11 +381,11 @@
       } else {
         await setDoc(ref, state);
       }
-      setStatus("Tersinkron ke cloud");
+      setStatus("Synced to cloud");
     } catch (e) {
       console.error(e);
-      showError("Gagal konek ke Firebase. Cek konfigurasi & aturan keamanan Firestore.");
-      setStatus("Error koneksi cloud");
+      showError("Could not connect to Firebase. Check config & Firestore rules.");
+      setStatus("Cloud connection error");
     }
   }
 
@@ -250,67 +393,165 @@
   function scheduleSave() {
     if (!db) return;
     clearTimeout(saveTimer);
-    setStatus("Menyimpan...");
+    setStatus("Saving...");
     saveTimer = setTimeout(async () => {
       try {
         const ref = doc(db, DOC_PATH[0], DOC_PATH[1]);
         await setDoc(ref, state);
-        setStatus("Tersimpan ke cloud");
+        setStatus("Saved to cloud");
       } catch (e) {
         console.error(e);
-        setStatus("Gagal menyimpan");
+        setStatus("Save failed");
       }
     }, 400);
   }
 
+  function updateClock() {
+    const now = new Date();
+    const opts = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', opts);
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("clockDate").textContent = `${dateStr}  ${timeStr}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
   function render() {
-    document.getElementById("speciesCount").textContent = Object.keys(state.species).length;
+    renderDashboard();
     renderLog();
     renderSpecies();
     renderGear();
+  }
+
+  function renderDashboard() {
+    const catches = state.catches;
+    const speciesCount = Object.keys(state.species).length;
+    const salt = catches.filter(c => c.waterType === "Air Laut").length;
+    const fresh = catches.filter(c => c.waterType === "Air Tawar").length;
+    const total = catches.length || 1;
+
+    document.getElementById("statSpecies").textContent = speciesCount;
+    document.getElementById("statCatches").textContent = catches.length;
+    document.getElementById("statSalt").textContent = salt;
+    document.getElementById("statFresh").textContent = fresh;
+    document.getElementById("statSaltPct").textContent = Math.round(salt / total * 100) + "% of total";
+    document.getElementById("statFreshPct").textContent = Math.round(fresh / total * 100) + "% of total";
+
+    // Line chart: catches per month
+    const monthCounts = {};
+    catches.forEach(c => {
+      const m = c.date.slice(0, 7);
+      monthCounts[m] = (monthCounts[m] || 0) + 1;
+    });
+    const months = Object.keys(monthCounts).sort();
+    const maxCount = Math.max(...Object.values(monthCounts), 1);
+    const w = 560, h = 180, padL = 30, padR = 10, padT = 15, padB = 25;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const stepX = months.length > 1 ? plotW / (months.length - 1) : 0;
+    const points = months.map((m, i) => {
+      const x = padL + i * stepX;
+      const y = padT + plotH - (monthCounts[m] / maxCount) * plotH;
+      return [x, y];
+    });
+    const pointsStr = points.map(p => p.join(",")).join(" ");
+    const areaStr = points.length ? `${padL},${padT+plotH} ${pointsStr} ${padL + (months.length-1)*stepX},${padT+plotH}` : "";
+    let svgLine = `
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#C9922B" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#C9922B" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${areaStr ? `<polygon points="${areaStr}" fill="url(#areaGrad)" />` : ""}
+      <polyline points="${pointsStr}" fill="none" stroke="#C9922B" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+      ${points.map(([x,y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#0B1F22" stroke="#C9922B" stroke-width="2"/>`).join("")}
+      ${months.map((m, i) => `<text x="${padL + i*stepX}" y="${h-6}" font-size="9" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${m.slice(5)}</text>`).join("")}
+    `;
+    document.getElementById("lineChart").innerHTML = svgLine;
+
+    // Donut
+    const saltPct = salt / total;
+    const r = 55, cx = 70, cy = 70, circ = 2 * Math.PI * r;
+    const saltLen = circ * saltPct;
+    let svgDonut = `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2A5055" stroke-width="16" />
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#3E8FA3" stroke-width="16"
+        stroke-dasharray="${saltLen} ${circ - saltLen}" stroke-dashoffset="${circ/4}" transform="rotate(0 ${cx} ${cy})" />
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#6B9E5E" stroke-width="16"
+        stroke-dasharray="${circ - saltLen} ${saltLen}" stroke-dashoffset="${circ/4 - saltLen}" transform="rotate(0 ${cx} ${cy})" />
+      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="24" font-weight="600" fill="#EFE7D8" font-family="Fraunces, serif">${catches.length}</text>
+      <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="9" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
+    `;
+    document.getElementById("donutChart").innerHTML = svgDonut;
+
+    // Top locations
+    const locCounts = {};
+    catches.forEach(c => {
+      const loc = c.location.split(",")[0].trim();
+      locCounts[loc] = (locCounts[loc] || 0) + 1;
+    });
+    const topLocs = Object.entries(locCounts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+    document.getElementById("topLocations").innerHTML = topLocs.map(([loc, count]) => `
+      <div class="top-loc-row">
+        <span class="top-loc-name">${escapeHtml(loc)}</span>
+        <span class="top-loc-count">${count}</span>
+      </div>`).join("") || `<p class="empty-state">No data yet.</p>`;
+
+    // Highlight card: latest catch
+    const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : -1);
+    const latest = sorted[0];
+    if (latest) {
+      document.getElementById("highlightCard").innerHTML = `
+        <div class="highlight-label"><span>Latest catch</span><span>${latest.date}</span></div>
+        <div class="highlight-species">${escapeHtml(latest.species)}</div>
+        <div class="highlight-en">${escapeHtml(state.species[latest.species] || "")}</div>
+        <div class="highlight-meta">${escapeHtml(latest.location)}</div>
+      `;
+    }
   }
 
   function renderLog() {
     const list = document.getElementById("logList");
     const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : -1));
     if (sorted.length === 0) {
-      list.innerHTML = `<p class="empty-state">Belum ada catatan. Mulai dari tangkapan pertamamu di tab "Tangkapan Baru".</p>`;
+      list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "New Catch".</p>`;
       return;
     }
     list.innerHTML = sorted.map(c => {
       const isOpen = expandedId === c.id;
       const en = state.species[c.species] || "—";
+      const dotColor = c.waterType === "Air Laut" ? "var(--salt)" : "var(--fresh)";
       return `
-        <article class="card">
-          <button class="card-head" data-id="${c.id}">
-            <div class="card-head-left">
-              <span class="card-stamp">#${String(c.id).padStart(2, "0")}</span>
+        <article class="catch-card">
+          <button class="catch-head" data-id="${c.id}">
+            <div class="catch-head-left">
+              <span class="water-dot" style="background:${dotColor};"></span>
               <div>
-                <p class="card-species">${escapeHtml(c.species)}</p>
-                <p class="card-english">${escapeHtml(en)}</p>
+                <div class="catch-species">${escapeHtml(c.species)}</div>
+                <div class="catch-en">${escapeHtml(en)}</div>
               </div>
             </div>
-            <div class="card-head-right">
-              <span class="card-date">${c.date}</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="catch-date">${c.date}</span>
               <span class="chevron">${isOpen ? "−" : "+"}</span>
             </div>
           </button>
-          <div class="card-body ${isOpen ? "open" : ""}">
-            <div class="data-row"><span class="data-label">Waktu</span><span class="data-value">${escapeHtml(c.time)}</span></div>
-            <div class="data-row"><span class="data-label">Air</span><span class="data-value">${escapeHtml(c.waterType)}</span></div>
-            ${c.fight ? `<div class="data-row"><span class="data-label">Fight Level</span><span class="data-value">${escapeHtml(c.fight)}</span></div>` : ""}
-            <div class="data-row"><span class="data-label">Lokasi</span><span class="data-value">${escapeHtml(c.location)}</span></div>
-            <div class="data-row"><span class="data-label">Cuaca</span><span class="data-value">${escapeHtml(c.weather)}</span></div>
-            ${c.weight ? `<div class="data-row"><span class="data-label">Berat</span><span class="data-value">${escapeHtml(c.weight)} kg</span></div>` : ""}
-            <div class="data-row"><span class="data-label">Umpan</span><span class="data-value">${escapeHtml(c.bait)}</span></div>
-            <div class="data-row"><span class="data-label">Metode</span><span class="data-value">${escapeHtml(c.method)}</span></div>
+          <div class="catch-body ${isOpen ? "open" : ""}">
+            <div class="data-row"><span class="data-label">Time of day</span><span class="data-value">${escapeHtml(c.time)}</span></div>
+            <div class="data-row"><span class="data-label">Water type</span><span class="data-value">${escapeHtml(c.waterType)}</span></div>
+            ${c.fight ? `<div class="data-row"><span class="data-label">Fight level</span><span class="data-value">${escapeHtml(c.fight)}</span></div>` : ""}
+            <div class="data-row"><span class="data-label">Location</span><span class="data-value">${escapeHtml(c.location)}</span></div>
+            <div class="data-row"><span class="data-label">Weather</span><span class="data-value">${escapeHtml(c.weather)}</span></div>
+            ${c.weight ? `<div class="data-row"><span class="data-label">Weight</span><span class="data-value">${escapeHtml(c.weight)} kg</span></div>` : ""}
+            <div class="data-row"><span class="data-label">Bait</span><span class="data-value">${escapeHtml(c.bait)}</span></div>
+            <div class="data-row"><span class="data-label">Method</span><span class="data-value">${escapeHtml(c.method)}</span></div>
             <div class="data-row"><span class="data-label">Gear</span><span class="data-value">${escapeHtml(c.gear)}${state.gear[c.gear]?.rod ? " · " + escapeHtml(state.gear[c.gear].rod) : ""}</span></div>
-            ${c.notes ? `<div class="notes-block"><p class="notes-label">Catatan</p><p class="notes-text">${escapeHtml(c.notes)}</p></div>` : ""}
+            ${c.notes ? `<div class="notes-block"><div class="notes-label">Notes</div><div class="notes-text">${escapeHtml(c.notes)}</div></div>` : ""}
           </div>
         </article>`;
     }).join("");
 
-    list.querySelectorAll(".card-head").forEach(btn => {
+    list.querySelectorAll(".catch-head").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = Number(btn.dataset.id);
         expandedId = expandedId === id ? null : id;
@@ -332,56 +573,54 @@
     const list = document.getElementById("gearList");
     list.innerHTML = ["Set 1", "Set 2", "Set 3"].map(g => `
       <div class="gear-card">
-        <p class="gear-title">${g}</p>
-        <div class="data-row"><span class="data-label">Rod</span><span class="data-value">${escapeHtml(state.gear[g]?.rod || "—")}</span></div>
-        <div class="data-row"><span class="data-label">Reel</span><span class="data-value">${escapeHtml(state.gear[g]?.reel || "—")}</span></div>
+        <div class="gear-title">${g}</div>
+        <div class="data-row" style="border-bottom-color: var(--border);"><span class="data-label" style="color:var(--text-muted);">Rod</span><span class="data-value" style="color:var(--text);">${escapeHtml(state.gear[g]?.rod || "—")}</span></div>
+        <div class="data-row" style="border-bottom-color: var(--border);"><span class="data-label" style="color:var(--text-muted);">Reel</span><span class="data-value" style="color:var(--text);">${escapeHtml(state.gear[g]?.reel || "—")}</span></div>
       </div>`).join("");
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str ?? "";
-    return div.innerHTML;
+  // Navigation (sidebar + bottom nav share data-tab attr)
+  const pageMeta = {
+    dashboard: ["Dashboard", "Karimun & Riau Islands"],
+    log: ["Catch Log", "Every species, in order"],
+    add: ["New Catch", "Log today's catch"],
+    species: ["Species", "Local name to English"],
+    gear: ["Gear", "Rods & reels in rotation"],
+  };
+  function switchTab(tab) {
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
+    document.getElementById("pageTitle").textContent = pageMeta[tab][0];
+    document.getElementById("pageSub").textContent = pageMeta[tab][1];
   }
+  document.querySelectorAll(".nav-item").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
 
   // Edit mode gate
   const EDIT_PASSWORD = "Mancingcangdaging";
   const EDIT_KEY = "catchlog_edit_unlocked";
-
   function unlockEditMode() {
-    document.getElementById("addTabBtn").style.display = "";
-    document.getElementById("editModeLink").textContent = "Mode edit aktif";
-    document.getElementById("editModeLink").style.color = "#B8863B";
+    document.getElementById("addNavBtn").style.display = "";
+    document.getElementById("addNavBtnMobile").style.display = "";
+    document.getElementById("editModeLink").textContent = "Edit mode: on";
+    document.getElementById("editModeLink").style.color = "var(--brass)";
   }
-
-  if (localStorage.getItem(EDIT_KEY) === "true") {
-    unlockEditMode();
-  }
-
+  if (localStorage.getItem(EDIT_KEY) === "true") unlockEditMode();
   document.getElementById("editModeLink").addEventListener("click", (e) => {
     e.preventDefault();
     if (localStorage.getItem(EDIT_KEY) === "true") return;
-    const input = prompt("Masukkan password mode edit:");
+    const input = prompt("Enter edit mode password:");
     if (input === null) return;
     if (input === EDIT_PASSWORD) {
       localStorage.setItem(EDIT_KEY, "true");
       unlockEditMode();
     } else {
-      alert("Password salah.");
+      alert("Incorrect password.");
     }
   });
 
-  // Tabs
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
-    });
-  });
-
-  // Form validation + submit
+  // Form
   const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-gear","f-notes"];
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
@@ -397,8 +636,7 @@
 
     const nextId = state.catches.length ? Math.max(...state.catches.map(c => c.id)) + 1 : 1;
     const entry = {
-      id: nextId,
-      date,
+      id: nextId, date,
       time: document.getElementById("f-time").value,
       species,
       waterType: document.getElementById("f-water").value,
@@ -414,13 +652,13 @@
     if (!state.species[species]) state.species[species] = species;
 
     formIds.forEach(id => document.getElementById(id).value = "");
-    document.getElementById("f-time").value = "Pagi";
+    document.getElementById("f-time").value = "Pagi (Morning)";
     document.getElementById("f-water").value = "Air Laut";
     document.getElementById("f-gear").value = "Set 1";
     checkFormValid();
 
     expandedId = nextId;
-    document.querySelector('[data-tab="log"]').click();
+    switchTab("log");
     render();
     scheduleSave();
   });
