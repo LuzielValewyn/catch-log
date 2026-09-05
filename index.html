@@ -241,7 +241,7 @@
       <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Catch Log</button>
       <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">+</span>New Catch</button>
       <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
-      <button class="nav-item" data-tab="gear"><span class="nav-icon">†</span>Gear</button>
+      <button class="nav-item" data-tab="newgear" id="newGearNavBtn" style="display:none;"><span class="nav-icon">†</span>New Gear</button>
     </nav>
     <div class="sidebar-foot">
       <a href="#" id="editModeLink" class="edit-link">Edit mode</a>
@@ -394,7 +394,7 @@
         <label class="field-wrap"><span class="field-label">Method</span>
           <input class="input" type="text" id="f-method" placeholder="e.g. Bottom fishing"></label>
         <label class="field-wrap"><span class="field-label">Gear set</span>
-          <select class="input" id="f-gear"><option>Set 1</option><option>Set 2</option><option>Set 3</option></select></label>
+          <select class="input" id="f-gear"></select></label>
         <label class="field-wrap"><span class="field-label">Notes</span>
           <textarea class="input" id="f-notes" rows="3"></textarea></label>
         <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
@@ -406,9 +406,17 @@
       <div id="speciesList"></div>
     </section>
 
-    <!-- GEAR -->
-    <section id="panel-gear" class="panel">
-      <div id="gearList"></div>
+    <!-- NEW GEAR (owner only) -->
+    <section id="panel-newgear" class="panel">
+      <div class="form-wrap">
+        <label class="field-wrap"><span class="field-label">Gear set name</span>
+          <input class="input" type="text" id="g-name" placeholder="e.g. Set 4"></label>
+        <label class="field-wrap"><span class="field-label">Rod</span>
+          <input class="input" type="text" id="g-rod" placeholder="e.g. Daiwa Blue Backer LJ 63MHS"></label>
+        <label class="field-wrap"><span class="field-label">Reel</span>
+          <input class="input" type="text" id="g-reel" placeholder="e.g. Shimano Nexave 4000"></label>
+        <button class="submit-btn" id="gearSubmitBtn" disabled>Save gear set</button>
+      </div>
     </section>
   </main>
 </div>
@@ -440,7 +448,7 @@
   <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Log</button>
   <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">+</span>New</button>
   <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
-  <button class="nav-item" data-tab="gear"><span class="nav-icon">†</span>Gear</button>
+  <button class="nav-item" data-tab="newgear" id="newGearNavBtnMobile" style="display:none;"><span class="nav-icon">†</span>Gear+</button>
 </nav>
 
 <script type="module">
@@ -574,10 +582,22 @@
   setInterval(updateClock, 30000);
 
   function render() {
+    populateGearOptions();
     renderDashboard();
     renderLog();
     renderSpecies();
-    renderGear();
+  }
+
+  function populateGearOptions() {
+    const select = document.getElementById("f-gear");
+    const current = select.value;
+    const sets = Object.keys(state.gear).sort((a, b) => {
+      const na = parseInt(a.replace(/\D/g, "")) || 0;
+      const nb = parseInt(b.replace(/\D/g, "")) || 0;
+      return na - nb;
+    });
+    select.innerHTML = sets.map(g => `<option>${g}</option>`).join("");
+    if (sets.includes(current)) select.value = current;
   }
 
   // ---- Drillable "Catches over time" chart (Year > Month > Week > Day) ----
@@ -1083,15 +1103,7 @@
       </div>`).join("");
   }
 
-  function renderGear() {
-    const list = document.getElementById("gearList");
-    list.innerHTML = ["Set 1", "Set 2", "Set 3"].map(g => `
-      <div class="gear-card">
-        <div class="gear-title">${g}</div>
-        <div class="data-row" style="border-bottom-color: var(--border);"><span class="data-label" style="color:var(--text-muted);">Rod</span><span class="data-value" style="color:var(--text);">${escapeHtml(state.gear[g]?.rod || "—")}</span></div>
-        <div class="data-row" style="border-bottom-color: var(--border);"><span class="data-label" style="color:var(--text-muted);">Reel</span><span class="data-value" style="color:var(--text);">${escapeHtml(state.gear[g]?.reel || "—")}</span></div>
-      </div>`).join("");
-  }
+
 
   // Navigation (sidebar + bottom nav share data-tab attr)
   let visitorName = "";
@@ -1100,7 +1112,7 @@
     log: ["Catch Log", "Every species, in order"],
     add: ["New Catch", "Log today's catch"],
     species: ["Species", "Local name to English"],
-    gear: ["Gear", "Rods & reels in rotation"],
+    newgear: ["New Gear", "Add or update a gear set"],
   };
   function switchTab(tab) {
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
@@ -1176,10 +1188,10 @@
   // Accessing New Catch always requires the owner link + password, every time.
   let editUnlocked = false;
   const editLinks = [document.getElementById("editModeLink"), document.getElementById("editModeLinkTop")];
+  const ownerOnlyNavBtns = ["addNavBtn", "addNavBtnMobile", "newGearNavBtn", "newGearNavBtnMobile"];
   function unlockEditMode() {
     editUnlocked = true;
-    document.getElementById("addNavBtn").style.display = "";
-    document.getElementById("addNavBtnMobile").style.display = "";
+    ownerOnlyNavBtns.forEach(id => document.getElementById(id).style.display = "");
     editLinks.forEach(el => {
       el.textContent = "Edit mode: on";
       el.style.color = "var(--brass)";
@@ -1187,14 +1199,14 @@
   }
   function lockEditMode() {
     editUnlocked = false;
-    document.getElementById("addNavBtn").style.display = "none";
-    document.getElementById("addNavBtnMobile").style.display = "none";
+    ownerOnlyNavBtns.forEach(id => document.getElementById(id).style.display = "none");
     editLinks.forEach(el => {
       el.textContent = "Edit mode";
       el.style.color = "";
     });
-    // if currently viewing the New Catch tab, bounce back to the dashboard
-    if (document.getElementById("panel-add").classList.contains("active")) {
+    // if currently viewing an owner-only tab, bounce back to the dashboard
+    if (document.getElementById("panel-add").classList.contains("active") ||
+        document.getElementById("panel-newgear").classList.contains("active")) {
       switchTab("dashboard");
     }
   }
@@ -1254,6 +1266,26 @@
 
     expandedId = nextId;
     switchTab("log");
+    render();
+    scheduleSave();
+  });
+
+  // New Gear form (owner only)
+  const gearFormIds = ["g-name", "g-rod", "g-reel"];
+  function checkGearFormValid() {
+    document.getElementById("gearSubmitBtn").disabled = !document.getElementById("g-name").value.trim();
+  }
+  gearFormIds.forEach(id => document.getElementById(id).addEventListener("input", checkGearFormValid));
+  document.getElementById("gearSubmitBtn").addEventListener("click", () => {
+    const name = document.getElementById("g-name").value.trim();
+    if (!name) return;
+    state.gear[name] = {
+      rod: document.getElementById("g-rod").value.trim(),
+      reel: document.getElementById("g-reel").value.trim(),
+    };
+    gearFormIds.forEach(id => document.getElementById(id).value = "");
+    checkGearFormValid();
+    switchTab("dashboard");
     render();
     scheduleSave();
   });
