@@ -166,6 +166,14 @@
     font-family: 'IBM Plex Sans', sans-serif;
   }
   .edit-catch-btn:hover { background: rgba(201,146,43,0.12); }
+  .owner-action-row { display: flex; gap: 8px; margin-top: 14px; }
+  .owner-action-row .edit-catch-btn { margin-top: 0; flex: 1; width: auto; }
+  .delete-catch-btn {
+    flex: 1; padding: 9px; background: none; border: 1px dashed var(--rust);
+    border-radius: 5px; color: var(--rust); font-size: 11.5px; font-weight: 600; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .delete-catch-btn:hover { background: rgba(193,84,63,0.12); }
   .notes-label { font-size: 10.5px; color: #8A7F63; margin-bottom: 4px; }
   .notes-text { font-size: 13px; color: #16343A; line-height: 1.55; font-style: italic; }
 
@@ -421,6 +429,16 @@
           <input class="input" type="text" id="f-bait"></label>
         <label class="field-wrap"><span class="field-label">Method</span>
           <input class="input" type="text" id="f-method" placeholder="e.g. Bottom fishing"></label>
+        <label class="field-wrap"><span class="field-label">Fight level</span>
+          <select class="input" id="f-fight">
+            <option value="">—</option>
+            <option>Very Easy</option>
+            <option>Easy</option>
+            <option>Medium</option>
+            <option>Hard</option>
+            <option>Very Hard</option>
+            <option>Impossible</option>
+          </select></label>
         <label class="field-wrap"><span class="field-label">Gear set</span>
           <select class="input" id="f-gear"></select></label>
         <label class="field-wrap"><span class="field-label">Notes</span>
@@ -1116,7 +1134,11 @@
             <div class="data-row"><span class="data-label">Method</span><span class="data-value">${escapeHtml(c.method)}</span></div>
             <div class="data-row"><span class="data-label">Gear</span><span class="data-value">${escapeHtml(c.gear)}${state.gear[c.gear]?.rod ? " · " + escapeHtml(state.gear[c.gear].rod) : ""}</span></div>
             ${c.notes ? `<div class="notes-block"><div class="notes-label">Notes</div><div class="notes-text">${escapeHtml(c.notes)}</div></div>` : ""}
-            ${editUnlocked ? `<button class="edit-catch-btn" data-edit-id="${c.id}">✎ Edit this catch</button>` : ""}
+            ${editUnlocked ? `
+              <div class="owner-action-row">
+                <button class="edit-catch-btn" data-edit-id="${c.id}">✎ Edit</button>
+                <button class="delete-catch-btn" data-delete-id="${c.id}">🗑 Delete</button>
+              </div>` : ""}
           </div>
         </article>`;
     }).join("");
@@ -1132,6 +1154,21 @@
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         startEditCatch(Number(btn.dataset.editId));
+      });
+    });
+    list.querySelectorAll(".delete-catch-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = Number(btn.dataset.deleteId);
+        const c = state.catches.find(x => x.id === id);
+        if (!c) return;
+        const ok = confirm(`Delete this catch?\n\n${c.species} — ${c.date}\n\nThis can't be undone.`);
+        if (!ok) return;
+        state.catches = state.catches.filter(x => x.id !== id);
+        if (expandedId === id) expandedId = null;
+        if (editingCatchId === id) resetCatchForm();
+        render();
+        scheduleSave();
       });
     });
   }
@@ -1280,7 +1317,7 @@
   editLinks.forEach(el => el.addEventListener("click", toggleEditMode));
 
   // Form
-  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-gear","f-notes"];
+  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-fight","f-gear","f-notes"];
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
     const species = document.getElementById("f-species").value.trim();
@@ -1330,6 +1367,7 @@
     document.getElementById("f-weight").value = c.weight;
     document.getElementById("f-bait").value = c.bait;
     document.getElementById("f-method").value = c.method;
+    document.getElementById("f-fight").value = c.fight || "";
     populateGearOptions();
     document.getElementById("f-gear").value = c.gear;
     document.getElementById("f-notes").value = c.notes;
@@ -1360,6 +1398,7 @@
       weight: document.getElementById("f-weight").value,
       bait: document.getElementById("f-bait").value,
       method: document.getElementById("f-method").value,
+      fight: document.getElementById("f-fight").value,
       gear: document.getElementById("f-gear").value,
       notes: document.getElementById("f-notes").value,
     };
