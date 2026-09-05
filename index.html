@@ -596,7 +596,14 @@
       const nb = parseInt(b.replace(/\D/g, "")) || 0;
       return na - nb;
     });
-    select.innerHTML = sets.map(g => `<option>${g}</option>`).join("");
+    select.innerHTML = sets.map(g => {
+      const info = state.gear[g] || {};
+      const parts = [g];
+      if (info.rod) parts.push(`Rod: ${info.rod}`);
+      if (info.reel) parts.push(`Reel: ${info.reel}`);
+      const label = parts.join(" - ");
+      return `<option value="${escapeHtml(g)}">${escapeHtml(label)}</option>`;
+    }).join("");
     if (sets.includes(current)) select.value = current;
   }
 
