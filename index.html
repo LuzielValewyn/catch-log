@@ -94,6 +94,11 @@
   .stat-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 14px; }
   .stat-card { background: rgba(22,55,58,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; }
   .stat-card-clickable:hover { border-color: var(--brass); }
+  .slicer-card { padding: 14px 16px; margin-bottom: 14px; }
+  .slicer-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .slicer-field { display: block; }
+  .slicer-select { font-size: 12.5px; padding: 8px 9px; }
+  @media (max-width: 760px) { .slicer-row { grid-template-columns: 1fr 1fr; } }
   .stat-label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px; }
   .stat-number { font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 600; }
   .stat-delta { font-size: 11px; color: var(--fresh); margin-top: 4px; }
@@ -262,6 +267,11 @@
     color: #1B1105; font-weight: 700; font-size: 11px; font-family: 'IBM Plex Mono', monospace;
   }
   .map-count-label::before { display: none !important; }
+  .distance-pill {
+    background: var(--brass); color: #1B1105; font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,0.4); transform: translate(-50%, -50%);
+  }
 </style>
 </head>
 <body>
@@ -301,6 +311,37 @@
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="panel active">
+      <div class="card slicer-card">
+        <div class="slicer-row">
+          <label class="slicer-field">
+            <span class="field-label">Species</span>
+            <select class="input slicer-select" id="slicerSpecies"><option value="">All species</option></select>
+          </label>
+          <label class="slicer-field">
+            <span class="field-label">Sea / spot</span>
+            <select class="input slicer-select" id="slicerLocation"><option value="">All locations</option></select>
+          </label>
+          <label class="slicer-field">
+            <span class="field-label">Water type</span>
+            <select class="input slicer-select" id="slicerWaterType">
+              <option value="">All water types</option>
+              <option value="Air Laut">Saltwater</option>
+              <option value="Air Tawar">Freshwater</option>
+            </select>
+          </label>
+          <label class="slicer-field">
+            <span class="field-label">Time of day</span>
+            <select class="input slicer-select" id="slicerTimeOfDay">
+              <option value="">All times</option>
+              <option value="Subuh">Subuh</option>
+              <option value="Pagi">Pagi</option>
+              <option value="Siang">Siang</option>
+              <option value="Sore">Sore</option>
+              <option value="Malam">Malam</option>
+            </select>
+          </label>
+        </div>
+      </div>
       <div id="dashFilterBanner" style="display:none; align-items:center; justify-content:space-between; gap:10px; background:rgba(201,146,43,0.15); border:1px solid var(--brass); border-radius:6px; padding:9px 14px; margin-bottom:14px; font-size:12.5px;">
         <span id="dashFilterLabel"></span>
         <a href="#" id="clearDashFilterLink" style="color:var(--brass); text-decoration:underline; flex-shrink:0;">✕ Clear filter</a>
@@ -721,12 +762,45 @@
   const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   let chartLevel = "month";
   let chartFilter = {};
-  let dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null };
+  let dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null, species: null };
   // dateRange shape: { start, end, level, key, label }; coord shape: "lat.toFixed(5),lng.toFixed(5)"
 
   function catchCoordKey(c) {
     return (typeof c.lat === "number" && typeof c.lng === "number") ? `${c.lat.toFixed(5)},${c.lng.toFixed(5)}` : null;
   }
+  function syncSlicers(allCatches) {
+    const speciesSel = document.getElementById("slicerSpecies");
+    const locSel = document.getElementById("slicerLocation");
+
+    const speciesNames = [...new Set(allCatches.map(c => c.species))].sort((a, b) => a.localeCompare(b));
+    const currentSpeciesOptions = Array.from(speciesSel.options).slice(1).map(o => o.value).join("|");
+    if (currentSpeciesOptions !== speciesNames.join("|")) {
+      speciesSel.innerHTML = `<option value="">All species</option>` + speciesNames.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    }
+    speciesSel.value = dashboardFilters.species || "";
+
+    const locNames = [...new Set(allCatches.map(c => c.location.split(",")[0].trim()))].filter(Boolean).sort((a, b) => a.localeCompare(b));
+    const currentLocOptions = Array.from(locSel.options).slice(1).map(o => o.value).join("|");
+    if (currentLocOptions !== locNames.join("|")) {
+      locSel.innerHTML = `<option value="">All locations</option>` + locNames.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+    }
+    locSel.value = dashboardFilters.location || "";
+
+    document.getElementById("slicerWaterType").value = dashboardFilters.waterType || "";
+    document.getElementById("slicerTimeOfDay").value = dashboardFilters.timeOfDay || "";
+  }
+  function wireSlicer(elId, dim) {
+    document.getElementById(elId).addEventListener("change", (e) => {
+      dashboardFilters[dim] = e.target.value || null;
+      renderLineChart();
+      renderDashboardStats();
+    });
+  }
+  wireSlicer("slicerSpecies", "species");
+  wireSlicer("slicerLocation", "location");
+  wireSlicer("slicerWaterType", "waterType");
+  wireSlicer("slicerTimeOfDay", "timeOfDay");
+
   function getFilteredCatches() {
     return state.catches.filter(c => {
       const f = dashboardFilters;
@@ -736,6 +810,7 @@
       if (f.gear && c.gear !== f.gear) return false;
       if (f.location && c.location.split(",")[0].trim() !== f.location) return false;
       if (f.coord && catchCoordKey(c) !== f.coord) return false;
+      if (f.species && c.species !== f.species) return false;
       return true;
     });
   }
@@ -750,15 +825,16 @@
       if (excludeDim !== "gear" && f.gear && c.gear !== f.gear) return false;
       if (excludeDim !== "location" && f.location && c.location.split(",")[0].trim() !== f.location) return false;
       if (excludeDim !== "coord" && f.coord && catchCoordKey(c) !== f.coord) return false;
+      if (excludeDim !== "species" && f.species && c.species !== f.species) return false;
       return true;
     });
   }
   function hasAnyDashboardFilter() {
     const f = dashboardFilters;
-    return !!(f.dateRange || f.waterType || f.timeOfDay || f.gear || f.location || f.coord);
+    return !!(f.dateRange || f.waterType || f.timeOfDay || f.gear || f.location || f.coord || f.species);
   }
   function clearAllDashboardFilters() {
-    dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null };
+    dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null, species: null };
     chartFilter = {};
     chartLevel = "month";
     document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b.dataset.level === "month"));
@@ -1057,6 +1133,8 @@
     const allCatches = state.catches;
     const catches = getFilteredCatches();
 
+    syncSlicers(allCatches);
+
     // filter banner — lists every active dimension, with one combined clear
     const banner = document.getElementById("dashFilterBanner");
     if (hasAnyDashboardFilter()) {
@@ -1067,6 +1145,7 @@
       if (dashboardFilters.gear) chips.push(dashboardFilters.gear);
       if (dashboardFilters.location) chips.push(dashboardFilters.location);
       if (dashboardFilters.coord) chips.push("Map spot");
+      if (dashboardFilters.species) chips.push(dashboardFilters.species);
       document.getElementById("dashFilterLabel").textContent = `Filtered: ${chips.join(" · ")} — ${catches.length} of ${allCatches.length} catches`;
       banner.style.display = "flex";
     } else {
@@ -1714,6 +1793,38 @@
         radius: 8, color: "#fff", weight: 2, fillColor: "#3E8FA3", fillOpacity: 1,
       }).bindPopup("📍 You are here").addTo(ms.map);
     }
+    updateDistanceLine(ms);
+  }
+
+  function haversineMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const toRad = (d) => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+  function formatDistance(m) {
+    return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(m < 10000 ? 2 : 1)} km`;
+  }
+  function updateDistanceLine(ms) {
+    if (ms.distanceLine) { ms.map.removeLayer(ms.distanceLine); ms.distanceLine = null; }
+    if (ms.distanceLabel) { ms.map.removeLayer(ms.distanceLabel); ms.distanceLabel = null; }
+    if (!myLocation || !dashboardFilters.coord) return;
+    const [spotLat, spotLng] = dashboardFilters.coord.split(",").map(Number);
+    const from = [myLocation.lat, myLocation.lng], to = [spotLat, spotLng];
+    ms.distanceLine = L.polyline([from, to], {
+      color: "#EFE7D8", weight: 2, dashArray: "6 6", opacity: 0.85,
+    }).addTo(ms.map);
+    const distM = haversineMeters(myLocation.lat, myLocation.lng, spotLat, spotLng);
+    const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+    ms.distanceLabel = L.marker(mid, {
+      icon: L.divIcon({
+        className: "distance-label-icon",
+        html: `<div class="distance-pill">${formatDistance(distM)}</div>`,
+        iconSize: null,
+      }),
+      interactive: false,
+    }).addTo(ms.map);
   }
 
   let locationWatchId = null;
@@ -1738,10 +1849,11 @@
       (pos) => {
         btn.textContent = "🔴 Stop tracking";
         myLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        refreshMyLocationMarker(mapStates.dash);
-        if (firstFix && mapStates.dash.map) {
-          mapStates.dash.map.panTo([myLocation.lat, myLocation.lng]);
+        if (firstFix) {
+          renderDashboardHeatMap(getFilteredCatchesExcluding("coord")); // full re-render: zooms out to fit me + every spot
           firstFix = false;
+        } else {
+          refreshMyLocationMarker(mapStates.dash); // subsequent ticks: just move the dot + distance line, no re-zoom
         }
       },
       () => {
@@ -1775,7 +1887,10 @@
     ms.markers.forEach(m => ms.map.removeLayer(m));
     ms.markers = [];
     refreshMyLocationMarker(ms);
-    if (points.length === 0) return;
+    if (points.length === 0) {
+      if (myLocation) ms.map.setView([myLocation.lat, myLocation.lng], 13);
+      return;
+    }
 
     const heatPoints = points.map(c => [c.lat, c.lng, 0.6]);
     ms.heatLayer = L.heatLayer(heatPoints, { radius: 32, blur: 24, maxZoom: 15, minOpacity: 0.35 }).addTo(ms.map);
@@ -1799,6 +1914,9 @@
         .map(c => `<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
         .join(`<hr style="margin:6px 0; border-color:#DDD3B8;">`);
       const header = count > 1 ? `<div style="font-size:11px; color:#8A7F63; margin-bottom:4px;">${count} catches at this spot</div>` : "";
+      const distFooter = myLocation
+        ? `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed #DDD3B8; font-size:11px; color:#8A7F63;">📍 ${formatDistance(haversineMeters(myLocation.lat, myLocation.lng, group.lat, group.lng))} from you</div>`
+        : "";
 
       // large, mostly-invisible circle first — makes the whole heat blob easy to tap, not just the tiny dot
       const hitArea = L.circleMarker([group.lat, group.lng], {
@@ -1810,7 +1928,7 @@
         fillOpacity: !anyCoordSel || isSel ? 0.9 : 0.35,
         opacity: !anyCoordSel || isSel ? 1 : 0.35,
       })
-        .bindPopup(`${header}${popupHtml}`, { maxHeight: 220 })
+        .bindPopup(`${header}${popupHtml}${distFooter}`, { maxHeight: 240 })
         .addTo(ms.map);
       if (count > 1) {
         marker.bindTooltip(String(count), { permanent: true, direction: "center", className: "map-count-label" });
@@ -1830,11 +1948,13 @@
       markerByCoord[dashboardFilters.coord].openPopup();
     }
 
-    if (points.length > 1) {
-      const bounds = L.latLngBounds(points.map(c => [c.lat, c.lng]));
+    const boundLatLngs = points.map(c => [c.lat, c.lng]);
+    if (myLocation) boundLatLngs.push([myLocation.lat, myLocation.lng]);
+    if (boundLatLngs.length > 1) {
+      const bounds = L.latLngBounds(boundLatLngs);
       ms.map.fitBounds(bounds.pad(0.3));
     } else {
-      ms.map.setView([points[0].lat, points[0].lng], 13);
+      ms.map.setView(boundLatLngs[0], 13);
     }
   }
   function renderDashboardHeatMap(filteredCatches) { renderHeatMapInto(mapStates.dash, filteredCatches); }
