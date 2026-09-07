@@ -1503,7 +1503,7 @@
   });
 
   // ---- Fishing spot heatmap (Map tab) ----
-  let heatMapInstance = null, heatLayer = null;
+  let heatMapInstance = null, heatLayer = null, heatMarkers = [];
   function renderHeatMap() {
     const container = document.getElementById("mapContainer");
     if (!container) return;
@@ -1522,6 +1522,8 @@
     heatMapInstance.invalidateSize();
 
     if (heatLayer) { heatMapInstance.removeLayer(heatLayer); heatLayer = null; }
+    heatMarkers.forEach(m => heatMapInstance.removeLayer(m));
+    heatMarkers = [];
     if (points.length === 0) return;
 
     const heatPoints = points.map(c => [c.lat, c.lng, 0.6]);
@@ -1529,9 +1531,10 @@
 
     // also drop light markers so individual spots are identifiable when zoomed in
     points.forEach(c => {
-      L.circleMarker([c.lat, c.lng], { radius: 4, color: "#C9922B", weight: 1, fillOpacity: 0.9 })
+      const marker = L.circleMarker([c.lat, c.lng], { radius: 4, color: "#C9922B", weight: 1, fillOpacity: 0.9 })
         .bindPopup(`<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
         .addTo(heatMapInstance);
+      heatMarkers.push(marker);
     });
 
     if (points.length > 1) {
