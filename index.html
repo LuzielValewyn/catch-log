@@ -6,6 +6,9 @@
 <title>Del's Catch Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <style>
   :root {
     --ink: #0B1F22;
@@ -266,6 +269,7 @@
     <nav class="nav-group">
       <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dashboard</button>
       <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Catch Log</button>
+      <button class="nav-item" data-tab="map"><span class="nav-icon">⚓</span>Map</button>
       <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
       <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">✎</span>Log Entry</button>
       <button class="nav-item" data-tab="newgear" id="newGearNavBtn" style="display:none;"><span class="nav-icon">†</span>New Gear</button>
@@ -428,6 +432,19 @@
           <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
         <label class="field-wrap"><span class="field-label">Location</span>
           <input class="input" type="text" id="f-location" placeholder="e.g. Laut Karimun, Pulau Assan"></label>
+        <div class="field-wrap">
+          <span class="field-label">Pin on map (optional)</span>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn" id="useGpsBtn">📍 Use my GPS</button>
+            <button type="button" class="toggle-btn" id="pickMapBtn">🗺️ Pick on map</button>
+          </div>
+          <div id="coordReadout" style="display:none; margin-top:8px; font-size:11.5px; color:var(--text-muted);">
+            <span id="coordText"></span> · <a href="#" id="clearCoordLink" style="color:var(--rust); text-decoration:underline;">Clear</a>
+          </div>
+          <div id="pickMapWrap" style="display:none; height:240px; margin-top:10px; border-radius:6px; overflow:hidden;">
+            <div id="pickMapContainer" style="height:100%;"></div>
+          </div>
+        </div>
         <label class="field-wrap"><span class="field-label">Weather</span>
           <input class="input" type="text" id="f-weather"></label>
         <label class="field-wrap"><span class="field-label">Weight (kg)</span>
@@ -459,6 +476,18 @@
           </div>
         </div>
         <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section id="panel-map" class="panel">
+      <div class="card">
+        <div class="card-title-row">
+          <span class="card-title">Fishing spot heatmap</span>
+          <span id="mapPointCount" style="font-size:11px; color:var(--text-muted);"></span>
+        </div>
+        <div id="mapContainer" style="height:min(520px, 60vh); border-radius:6px; overflow:hidden;"></div>
+        <p id="mapEmptyNote" class="empty-state" style="display:none;">No catches have a saved location yet. Locations can be added from "Log Entry" — either auto-detect from GPS, or pick a spot on the map.</p>
       </div>
     </section>
 
@@ -516,6 +545,7 @@
 <nav class="bottom-nav">
   <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dash</button>
   <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Log</button>
+  <button class="nav-item" data-tab="map"><span class="nav-icon">⚓</span>Map</button>
   <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
   <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">✎</span>Entry</button>
   <button class="nav-item" data-tab="newgear" id="newGearNavBtnMobile" style="display:none;"><span class="nav-icon">†</span>Gear+</button>
@@ -526,7 +556,7 @@
   import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   // Owner link detection: visit with ?owner=1 to get the owner view.
-  const EDIT_PASSWORD = "@Neroforte//12";
+  const EDIT_PASSWORD = "Mancingcangdaging";
   const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
   let IS_OWNER = false;
   if (OWNER_REQUESTED) {
@@ -1220,6 +1250,7 @@
   const pageMeta = {
     dashboard: ["Dashboard", "Karimun & Riau Islands"],
     log: ["Catch Log", "Every species, in order"],
+    map: ["Map", "Where every catch happened"],
     add: ["New Catch", "Log today's catch"],
     species: ["Species", "Local name to English"],
     newgear: ["New Gear", "Add or update a gear set"],
@@ -1244,6 +1275,8 @@
     const titleEl = document.getElementById("pageTitle");
     if (titleIsHtml) titleEl.innerHTML = title; else titleEl.textContent = title;
     document.getElementById("pageSub").textContent = sub;
+    if (tab === "map") setTimeout(renderHeatMap, 0);
+    if (tab === "add" && pickMapInstance) setTimeout(() => pickMapInstance.invalidateSize(), 0);
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1403,6 +1436,112 @@
     showPhotoPreview("");
   });
 
+  // ---- Location capture (GPS or manual map pick) for the catch form ----
+  const KARIMUN_CENTER = [1.0500, 103.4300]; // default map center: Karimun, Riau Islands
+  let pendingLat = null, pendingLng = null;
+  let pickMapInstance = null, pickMapMarker = null;
+
+  function setCoord(lat, lng) {
+    pendingLat = lat; pendingLng = lng;
+    document.getElementById("coordText").textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById("coordReadout").style.display = "block";
+    if (pickMapInstance) {
+      if (pickMapMarker) pickMapMarker.setLatLng([lat, lng]);
+      else pickMapMarker = L.marker([lat, lng]).addTo(pickMapInstance);
+      pickMapInstance.setView([lat, lng], pickMapInstance.getZoom() < 10 ? 13 : pickMapInstance.getZoom());
+    }
+  }
+  function clearCoord() {
+    pendingLat = null; pendingLng = null;
+    document.getElementById("coordReadout").style.display = "none";
+    if (pickMapMarker) { pickMapInstance.removeLayer(pickMapMarker); pickMapMarker = null; }
+  }
+  document.getElementById("clearCoordLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    clearCoord();
+  });
+
+  document.getElementById("useGpsBtn").addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("GPS isn't available on this device/browser.");
+      return;
+    }
+    const btn = document.getElementById("useGpsBtn");
+    const original = btn.textContent;
+    btn.textContent = "Locating...";
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        btn.textContent = original;
+        setCoord(pos.coords.latitude, pos.coords.longitude);
+      },
+      (err) => {
+        btn.textContent = original;
+        alert("Couldn't get your location. Make sure location access is allowed for this site, or use 'Pick on map' instead.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  });
+
+  document.getElementById("pickMapBtn").addEventListener("click", () => {
+    const wrap = document.getElementById("pickMapWrap");
+    const showing = wrap.style.display === "block";
+    wrap.style.display = showing ? "none" : "block";
+    if (!showing) {
+      setTimeout(() => {
+        if (!pickMapInstance) {
+          const startCenter = (pendingLat !== null) ? [pendingLat, pendingLng] : KARIMUN_CENTER;
+          pickMapInstance = L.map("pickMapContainer").setView(startCenter, pendingLat !== null ? 13 : 10);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors", maxZoom: 18,
+          }).addTo(pickMapInstance);
+          pickMapInstance.on("click", (e) => setCoord(e.latlng.lat, e.latlng.lng));
+          if (pendingLat !== null) pickMapMarker = L.marker([pendingLat, pendingLng]).addTo(pickMapInstance);
+        }
+        pickMapInstance.invalidateSize();
+      }, 50);
+    }
+  });
+
+  // ---- Fishing spot heatmap (Map tab) ----
+  let heatMapInstance = null, heatLayer = null;
+  function renderHeatMap() {
+    const container = document.getElementById("mapContainer");
+    if (!container) return;
+    const points = state.catches.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
+    document.getElementById("mapPointCount").textContent = points.length
+      ? `${points.length} of ${state.catches.length} catches pinned`
+      : "";
+    document.getElementById("mapEmptyNote").style.display = points.length ? "none" : "block";
+
+    if (!heatMapInstance) {
+      heatMapInstance = L.map("mapContainer").setView(KARIMUN_CENTER, 10);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors", maxZoom: 18,
+      }).addTo(heatMapInstance);
+    }
+    heatMapInstance.invalidateSize();
+
+    if (heatLayer) { heatMapInstance.removeLayer(heatLayer); heatLayer = null; }
+    if (points.length === 0) return;
+
+    const heatPoints = points.map(c => [c.lat, c.lng, 0.6]);
+    heatLayer = L.heatLayer(heatPoints, { radius: 32, blur: 24, maxZoom: 15, minOpacity: 0.35 }).addTo(heatMapInstance);
+
+    // also drop light markers so individual spots are identifiable when zoomed in
+    points.forEach(c => {
+      L.circleMarker([c.lat, c.lng], { radius: 4, color: "#C9922B", weight: 1, fillOpacity: 0.9 })
+        .bindPopup(`<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
+        .addTo(heatMapInstance);
+    });
+
+    if (points.length > 1) {
+      const bounds = L.latLngBounds(points.map(c => [c.lat, c.lng]));
+      heatMapInstance.fitBounds(bounds.pad(0.3));
+    } else {
+      heatMapInstance.setView([points[0].lat, points[0].lng], 13);
+    }
+  }
+
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
     const species = document.getElementById("f-species").value.trim();
@@ -1435,6 +1574,8 @@
     document.getElementById("f-gear").value = "Set 1";
     document.getElementById("f-photo").value = "";
     showPhotoPreview("");
+    clearCoord();
+    document.getElementById("pickMapWrap").style.display = "none";
     document.getElementById("nameModeAuto").click();
     document.getElementById("editBanner").style.display = "none";
     document.getElementById("submitBtn").textContent = "Log this catch";
@@ -1459,6 +1600,8 @@
     document.getElementById("f-gear").value = c.gear;
     document.getElementById("f-notes").value = c.notes;
     showPhotoPreview(c.photo || "");
+    if (typeof c.lat === "number" && typeof c.lng === "number") setCoord(c.lat, c.lng);
+    else clearCoord();
     document.getElementById("nameModeAuto").click(); // editing catch details only; species mapping untouched by default
     document.getElementById("editBanner").style.display = "block";
     document.getElementById("submitBtn").textContent = "Update catch";
@@ -1490,6 +1633,8 @@
       gear: document.getElementById("f-gear").value,
       notes: document.getElementById("f-notes").value,
       photo: pendingPhotoData,
+      lat: pendingLat,
+      lng: pendingLng,
     };
 
     let targetId;
