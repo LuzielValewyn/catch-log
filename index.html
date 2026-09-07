@@ -581,6 +581,19 @@
   </main>
 </div>
 
+<div id="ownerGate" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" style="margin-bottom:8px;">Owner access</div>
+    <p class="modal-text" style="margin-bottom:16px;">Enter your password to manage the catch log. Or just browse it like anyone else.</p>
+    <input type="password" id="ownerGateInput" class="input" placeholder="Password" autocomplete="off" style="text-align:center; margin-bottom:8px;" />
+    <p id="ownerGateError" style="display:none; color:var(--rust); font-size:12px; margin-bottom:8px;">Wrong password — try again.</p>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button id="ownerGateGuestBtn" class="toggle-btn" style="flex:1;">Enter as guest</button>
+      <button id="ownerGateOkBtn" class="submit-btn" style="flex:1; margin-top:0;">OK</button>
+    </div>
+  </div>
+</div>
+
 <div id="nameGate" class="modal-overlay open">
   <div class="modal-box">
     <div class="modal-title" style="margin-bottom:8px;">Welcome</div>
@@ -619,14 +632,47 @@
   const EDIT_PASSWORD = "Mancingcangdaging";
   const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
   let IS_OWNER = false;
+
+  function askOwnerPassword() {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById("ownerGate");
+      const input = document.getElementById("ownerGateInput");
+      const errorMsg = document.getElementById("ownerGateError");
+      overlay.classList.add("open");
+      setTimeout(() => input.focus(), 50);
+
+      function finish(result) {
+        overlay.classList.remove("open");
+        okBtn.removeEventListener("click", onOk);
+        guestBtn.removeEventListener("click", onGuest);
+        input.removeEventListener("keydown", onKeydown);
+        resolve(result);
+      }
+      function onOk() {
+        if (input.value === EDIT_PASSWORD) {
+          finish(true);
+        } else {
+          errorMsg.style.display = "block";
+          input.value = "";
+          input.focus();
+        }
+      }
+      function onGuest() { finish(false); }
+      function onKeydown(e) { if (e.key === "Enter") onOk(); }
+
+      const okBtn = document.getElementById("ownerGateOkBtn");
+      const guestBtn = document.getElementById("ownerGateGuestBtn");
+      okBtn.addEventListener("click", onOk);
+      guestBtn.addEventListener("click", onGuest);
+      input.addEventListener("keydown", onKeydown);
+    });
+  }
+
   if (OWNER_REQUESTED) {
-    const pw = prompt("Owner access — enter password:");
-    if (pw === EDIT_PASSWORD) {
-      IS_OWNER = true;
+    IS_OWNER = await askOwnerPassword();
+    if (IS_OWNER) {
       document.body.classList.add("is-owner");
       document.getElementById("nameGate").classList.remove("open");
-    } else {
-      alert("Incorrect password. Continuing as a regular visitor.");
     }
   }
 
