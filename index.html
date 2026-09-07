@@ -256,6 +256,11 @@
     body.is-owner #editModeLinkTop { display: block; }
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  .map-count-label {
+    background: transparent !important; border: none !important; box-shadow: none !important;
+    color: #1B1105; font-weight: 700; font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+  }
+  .map-count-label::before { display: none !important; }
 </style>
 </head>
 <body>
@@ -394,6 +399,15 @@
           <div id="gearSetList" class="scroll-list"></div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-title-row">
+          <span class="card-title">Fishing spot heatmap</span>
+          <span id="dashMapPointCount" style="font-size:11px; color:var(--text-muted);"></span>
+        </div>
+        <div id="dashboardMapContainer" style="height:min(400px, 50vh); border-radius:6px; overflow:hidden;"></div>
+        <p id="dashMapEmptyNote" class="empty-state" style="display:none;">No catches have a saved location yet. Add one from "Log Entry" — auto-detect via GPS, pick on the map, or paste coordinates.</p>
+      </div>
     </section>
 
     <!-- CATCH LOG -->
@@ -438,8 +452,9 @@
             <button type="button" class="toggle-btn" id="useGpsBtn">📍 Use my GPS</button>
             <button type="button" class="toggle-btn" id="pickMapBtn">🗺️ Pick on map</button>
           </div>
-          <div id="coordReadout" style="display:none; margin-top:8px; font-size:11.5px; color:var(--text-muted);">
-            <span id="coordText"></span> · <a href="#" id="clearCoordLink" style="color:var(--rust); text-decoration:underline;">Clear</a>
+          <input class="input mono" type="text" id="coordInput" placeholder="Or type/paste: lat, lng — e.g. 1.0500, 103.4300" style="margin-top:8px; font-size:12px;">
+          <div id="coordReadout" style="display:none; margin-top:6px; font-size:11px; color:var(--text-muted);">
+            <span id="coordText"></span> · <a href="#" id="clearCoordLink" style="color:var(--rust); text-decoration:underline;">Clear location</a>
           </div>
           <div id="pickMapWrap" style="display:none; height:240px; margin-top:10px; border-radius:6px; overflow:hidden;">
             <div id="pickMapContainer" style="height:100%;"></div>
@@ -1044,6 +1059,8 @@
         </div>
       `;
     }).join("") || `<p class="empty-state">No gear sets yet.</p>`;
+
+    renderDashboardHeatMap();
   }
 
   const TOD_CATEGORIES = [
@@ -1445,6 +1462,7 @@
     pendingLat = lat; pendingLng = lng;
     document.getElementById("coordText").textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     document.getElementById("coordReadout").style.display = "block";
+    document.getElementById("coordInput").value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
     if (pickMapInstance) {
       if (pickMapMarker) pickMapMarker.setLatLng([lat, lng]);
       else pickMapMarker = L.marker([lat, lng]).addTo(pickMapInstance);
@@ -1454,12 +1472,30 @@
   function clearCoord() {
     pendingLat = null; pendingLng = null;
     document.getElementById("coordReadout").style.display = "none";
+    document.getElementById("coordInput").value = "";
     if (pickMapMarker) { pickMapInstance.removeLayer(pickMapMarker); pickMapMarker = null; }
   }
   document.getElementById("clearCoordLink").addEventListener("click", (e) => {
     e.preventDefault();
     clearCoord();
   });
+
+  function tryApplyCoordInput() {
+    const raw = document.getElementById("coordInput").value.trim();
+    if (!raw) return;
+    const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
+    if (parts.length !== 2) { alert("Paste coordinates as: lat, lng — e.g. 1.0500, 103.4300"); return; }
+    const lat = parseFloat(parts[0]), lng = parseFloat(parts[1]);
+    if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      alert("That doesn't look like a valid lat, lng pair.");
+      return;
+    }
+    setCoord(lat, lng);
+  }
+  document.getElementById("coordInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); tryApplyCoordInput(); }
+  });
+  document.getElementById("coordInput").addEventListener("blur", tryApplyCoordInput);
 
   document.getElementById("useGpsBtn").addEventListener("click", () => {
     if (!navigator.geolocation) {
@@ -1503,47 +1539,72 @@
   });
 
   // ---- Fishing spot heatmap (Map tab) ----
-  let heatMapInstance = null, heatLayer = null, heatMarkers = [];
-  function renderHeatMap() {
-    const container = document.getElementById("mapContainer");
+  const mapStates = {
+    full: { containerId: "mapContainer", countId: "mapPointCount", emptyId: "mapEmptyNote", map: null, heatLayer: null, markers: [] },
+    dash: { containerId: "dashboardMapContainer", countId: "dashMapPointCount", emptyId: "dashMapEmptyNote", map: null, heatLayer: null, markers: [] },
+  };
+
+  function renderHeatMapInto(ms) {
+    const container = document.getElementById(ms.containerId);
     if (!container) return;
     const points = state.catches.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
-    document.getElementById("mapPointCount").textContent = points.length
+    document.getElementById(ms.countId).textContent = points.length
       ? `${points.length} of ${state.catches.length} catches pinned`
       : "";
-    document.getElementById("mapEmptyNote").style.display = points.length ? "none" : "block";
+    document.getElementById(ms.emptyId).style.display = points.length ? "none" : "block";
 
-    if (!heatMapInstance) {
-      heatMapInstance = L.map("mapContainer").setView(KARIMUN_CENTER, 10);
+    if (!ms.map) {
+      ms.map = L.map(ms.containerId).setView(KARIMUN_CENTER, 10);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors", maxZoom: 18,
-      }).addTo(heatMapInstance);
+      }).addTo(ms.map);
     }
-    heatMapInstance.invalidateSize();
+    ms.map.invalidateSize();
 
-    if (heatLayer) { heatMapInstance.removeLayer(heatLayer); heatLayer = null; }
-    heatMarkers.forEach(m => heatMapInstance.removeLayer(m));
-    heatMarkers = [];
+    if (ms.heatLayer) { ms.map.removeLayer(ms.heatLayer); ms.heatLayer = null; }
+    ms.markers.forEach(m => ms.map.removeLayer(m));
+    ms.markers = [];
     if (points.length === 0) return;
 
     const heatPoints = points.map(c => [c.lat, c.lng, 0.6]);
-    heatLayer = L.heatLayer(heatPoints, { radius: 32, blur: 24, maxZoom: 15, minOpacity: 0.35 }).addTo(heatMapInstance);
+    ms.heatLayer = L.heatLayer(heatPoints, { radius: 32, blur: 24, maxZoom: 15, minOpacity: 0.35 }).addTo(ms.map);
 
-    // also drop light markers so individual spots are identifiable when zoomed in
+    // group catches at the same (or near-identical) spot so they don't overlap invisibly
+    const groups = {};
     points.forEach(c => {
-      const marker = L.circleMarker([c.lat, c.lng], { radius: 4, color: "#C9922B", weight: 1, fillOpacity: 0.9 })
-        .bindPopup(`<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
-        .addTo(heatMapInstance);
-      heatMarkers.push(marker);
+      const key = `${c.lat.toFixed(5)},${c.lng.toFixed(5)}`;
+      if (!groups[key]) groups[key] = { lat: c.lat, lng: c.lng, catches: [] };
+      groups[key].catches.push(c);
+    });
+
+    Object.values(groups).forEach(group => {
+      const count = group.catches.length;
+      const radius = count > 1 ? Math.min(6 + count, 14) : 4;
+      const popupHtml = group.catches
+        .sort((a, b) => a.date < b.date ? 1 : -1)
+        .map(c => `<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
+        .join(`<hr style="margin:6px 0; border-color:#DDD3B8;">`);
+      const header = count > 1 ? `<div style="font-size:11px; color:#8A7F63; margin-bottom:4px;">${count} catches at this spot</div>` : "";
+      const marker = L.circleMarker([group.lat, group.lng], {
+        radius, color: "#C9922B", weight: count > 1 ? 2 : 1, fillOpacity: 0.9,
+      })
+        .bindPopup(`${header}${popupHtml}`, { maxHeight: 220 })
+        .addTo(ms.map);
+      if (count > 1) {
+        marker.bindTooltip(String(count), { permanent: true, direction: "center", className: "map-count-label" });
+      }
+      ms.markers.push(marker);
     });
 
     if (points.length > 1) {
       const bounds = L.latLngBounds(points.map(c => [c.lat, c.lng]));
-      heatMapInstance.fitBounds(bounds.pad(0.3));
+      ms.map.fitBounds(bounds.pad(0.3));
     } else {
-      heatMapInstance.setView([points[0].lat, points[0].lng], 13);
+      ms.map.setView([points[0].lat, points[0].lng], 13);
     }
   }
+  function renderHeatMap() { renderHeatMapInto(mapStates.full); }
+  function renderDashboardHeatMap() { renderHeatMapInto(mapStates.dash); }
 
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
