@@ -214,10 +214,11 @@
   .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
   /* Species / Gear */
+  .species-scroll { overflow-x: auto; }
   .species-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: auto; }
   .species-table td { padding: 12px 14px 12px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .species-id { font-family: 'Fraunces', Georgia, serif; font-style: italic; white-space: nowrap; }
-  .species-en { color: var(--text-muted); width: 100%; overflow-wrap: break-word; }
+  .species-en { color: var(--text-muted); width: 100%; min-width: 180px; overflow-wrap: break-word; }
   .gear-card { background: rgba(22,55,58,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 10px; }
   .gear-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; margin-bottom: 8px; }
 
@@ -257,8 +258,7 @@
     .main { padding: 20px 16px 90px; }
     .stat-row { grid-template-columns: repeat(3, 1fr); }
     .mid-row, .bottom-row { grid-template-columns: 1fr; }
-    .species-table { table-layout: fixed; }
-    .species-id { white-space: normal; overflow-wrap: break-word; width: 38%; }
+
     .bottom-nav {
       display: flex; position: fixed; bottom: 0; left: 0; right: 0;
       background: rgba(22,55,58,0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--border);
@@ -555,7 +555,7 @@
     <!-- SPECIES -->
     <section id="panel-species" class="panel">
       <input class="input" type="text" id="speciesSearch" placeholder="Search species..." style="margin-bottom:14px;">
-      <div id="speciesList"></div>
+      <div id="speciesList" class="species-scroll"></div>
     </section>
 
     <!-- NEW GEAR (owner only) -->
