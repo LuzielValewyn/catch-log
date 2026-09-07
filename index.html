@@ -926,7 +926,8 @@
   function renderLineChart() {
     renderBreadcrumb();
     try {
-    const filtered = state.catches.filter(c => VALID_DATE_RE.test(c.date) && passesChartFilter(c));
+    const crossFiltered = getFilteredCatchesExcluding("dateRange");
+    const filtered = crossFiltered.filter(c => VALID_DATE_RE.test(c.date) && passesChartFilter(c));
     const rawCounts = {};
     filtered.forEach(c => {
       const key = getGroupKey(c.date, chartLevel);
@@ -934,7 +935,7 @@
     });
 
     // fill in every period in range, even ones with zero catches, so gaps are visible
-    const keys = generateKeyRange(chartLevel, chartFilter, state.catches);
+    const keys = generateKeyRange(chartLevel, chartFilter, crossFiltered);
     const counts = {};
     keys.forEach(k => { counts[k] = rawCounts[k] || 0; });
     const maxCount = Math.max(...Object.values(counts), 1);
