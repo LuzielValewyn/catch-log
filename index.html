@@ -1736,6 +1736,7 @@
     });
 
     const anyCoordSel = !!dashboardFilters.coord;
+    const markerByCoord = {};
     Object.values(groups).forEach(group => {
       const count = group.catches.length;
       const visibleRadius = count > 1 ? Math.min(6 + count, 14) : 4;
@@ -1761,6 +1762,7 @@
       if (count > 1) {
         marker.bindTooltip(String(count), { permanent: true, direction: "center", className: "map-count-label" });
       }
+      markerByCoord[group.key] = marker;
 
       const selectSpot = () => toggleFilter("coord", group.key);
       hitArea.on("click", selectSpot);
@@ -1768,6 +1770,12 @@
 
       ms.markers.push(hitArea, marker);
     });
+
+    // re-render tears down and rebuilds every marker, which would otherwise close
+    // the popup the instant it's opened — so reopen it for the currently selected spot
+    if (dashboardFilters.coord && markerByCoord[dashboardFilters.coord]) {
+      markerByCoord[dashboardFilters.coord].openPopup();
+    }
 
     if (points.length > 1) {
       const bounds = L.latLngBounds(points.map(c => [c.lat, c.lng]));
