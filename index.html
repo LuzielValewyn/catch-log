@@ -775,26 +775,43 @@
   function catchCoordKey(c) {
     return (typeof c.lat === "number" && typeof c.lng === "number") ? `${c.lat.toFixed(5)},${c.lng.toFixed(5)}` : null;
   }
-  function syncSlicers(allCatches) {
+  const WATER_TYPE_LABELS = { "Air Laut": "Saltwater", "Air Tawar": "Freshwater" };
+  function syncSlicers() {
     const speciesSel = document.getElementById("slicerSpecies");
     const locSel = document.getElementById("slicerLocation");
+    const waterSel = document.getElementById("slicerWaterType");
+    const todSel = document.getElementById("slicerTimeOfDay");
 
-    const speciesNames = [...new Set(allCatches.map(c => c.species))].sort((a, b) => a.localeCompare(b));
-    const currentSpeciesOptions = Array.from(speciesSel.options).slice(1).map(o => o.value).join("|");
-    if (currentSpeciesOptions !== speciesNames.join("|")) {
-      speciesSel.innerHTML = `<option value="">All species</option>` + speciesNames.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
-    }
+    // each dropdown's OWN option list is built from data filtered by every OTHER
+    // active slicer/visual (but not itself) — so picking one narrows the rest.
+    const forSpecies = getFilteredCatchesExcluding("species");
+    const forLocation = getFilteredCatchesExcluding("location");
+    const forWaterType = getFilteredCatchesExcluding("waterType");
+    const forTimeOfDay = getFilteredCatchesExcluding("timeOfDay");
+
+    const speciesNames = [...new Set(forSpecies.map(c => c.species))].sort((a, b) => a.localeCompare(b));
+    speciesSel.innerHTML = `<option value="">All species</option>` + speciesNames.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    if (dashboardFilters.species && !speciesNames.includes(dashboardFilters.species)) dashboardFilters.species = null;
     speciesSel.value = dashboardFilters.species || "";
 
-    const locNames = [...new Set(allCatches.map(c => c.location.split(",")[0].trim()))].filter(Boolean).sort((a, b) => a.localeCompare(b));
-    const currentLocOptions = Array.from(locSel.options).slice(1).map(o => o.value).join("|");
-    if (currentLocOptions !== locNames.join("|")) {
-      locSel.innerHTML = `<option value="">All locations</option>` + locNames.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
-    }
+    const locNames = [...new Set(forLocation.map(c => c.location.split(",")[0].trim()))].filter(Boolean).sort((a, b) => a.localeCompare(b));
+    locSel.innerHTML = `<option value="">All locations</option>` + locNames.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join("");
+    if (dashboardFilters.location && !locNames.includes(dashboardFilters.location)) dashboardFilters.location = null;
     locSel.value = dashboardFilters.location || "";
 
-    document.getElementById("slicerWaterType").value = dashboardFilters.waterType || "";
-    document.getElementById("slicerTimeOfDay").value = dashboardFilters.timeOfDay || "";
+    const waterTypesPresent = new Set(forWaterType.map(c => c.waterType));
+    waterSel.innerHTML = `<option value="">All water types</option>` +
+      ["Air Laut", "Air Tawar"].filter(wt => waterTypesPresent.has(wt))
+        .map(wt => `<option value="${wt}">${WATER_TYPE_LABELS[wt]}</option>`).join("");
+    if (dashboardFilters.waterType && !waterTypesPresent.has(dashboardFilters.waterType)) dashboardFilters.waterType = null;
+    waterSel.value = dashboardFilters.waterType || "";
+
+    const todPresent = new Set(forTimeOfDay.map(c => classifyTimeOfDay(c.time)).filter(Boolean));
+    todSel.innerHTML = `<option value="">All times</option>` +
+      TOD_CATEGORIES.filter(c => todPresent.has(c.key))
+        .map(c => `<option value="${c.key}">${c.label}</option>`).join("");
+    if (dashboardFilters.timeOfDay && !todPresent.has(dashboardFilters.timeOfDay)) dashboardFilters.timeOfDay = null;
+    todSel.value = dashboardFilters.timeOfDay || "";
   }
   function wireSlicer(elId, dim) {
     document.getElementById(elId).addEventListener("change", (e) => {
@@ -1138,9 +1155,8 @@
 
   function renderDashboardStats() {
     const allCatches = state.catches;
+    syncSlicers();
     const catches = getFilteredCatches();
-
-    syncSlicers(allCatches);
 
     // filter banner — lists every active dimension, with one combined clear
     const banner = document.getElementById("dashFilterBanner");
