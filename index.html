@@ -93,6 +93,7 @@
   /* Dashboard grid */
   .stat-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 14px; }
   .stat-card { background: rgba(22,55,58,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; }
+  .stat-card-clickable:hover { border-color: var(--brass); }
   .stat-label { font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px; }
   .stat-number { font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 600; }
   .stat-delta { font-size: 11px; color: var(--fresh); margin-top: 4px; }
@@ -274,7 +275,6 @@
     <nav class="nav-group">
       <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dashboard</button>
       <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Catch Log</button>
-      <button class="nav-item" data-tab="map"><span class="nav-icon">⚓</span>Map</button>
       <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
       <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><span class="nav-icon">✎</span>Log Entry</button>
       <button class="nav-item" data-tab="newgear" id="newGearNavBtn" style="display:none;"><span class="nav-icon">†</span>New Gear</button>
@@ -318,12 +318,12 @@
           <div class="stat-label">Total catches</div>
           <div class="stat-number mono" id="statCatches">0</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-clickable" id="statCardSalt" data-filter-dim="waterType" data-filter-val="Air Laut">
           <div class="stat-label">Saltwater</div>
           <div class="stat-number mono" id="statSalt">0</div>
           <div class="stat-delta" id="statSaltPct" style="color: var(--salt);"></div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card stat-card-clickable" id="statCardFresh" data-filter-dim="waterType" data-filter-val="Air Tawar">
           <div class="stat-label">Freshwater</div>
           <div class="stat-number mono" id="statFresh">0</div>
           <div class="stat-delta" id="statFreshPct" style="color: var(--fresh);"></div>
@@ -498,18 +498,6 @@
       </div>
     </section>
 
-    <!-- MAP -->
-    <section id="panel-map" class="panel">
-      <div class="card">
-        <div class="card-title-row">
-          <span class="card-title">Fishing spot heatmap</span>
-          <span id="mapPointCount" style="font-size:11px; color:var(--text-muted);"></span>
-        </div>
-        <div id="mapContainer" style="height:min(520px, 60vh); border-radius:6px; overflow:hidden;"></div>
-        <p id="mapEmptyNote" class="empty-state" style="display:none;">No catches have a saved location yet. Locations can be added from "Log Entry" — either auto-detect from GPS, or pick a spot on the map.</p>
-      </div>
-    </section>
-
     <!-- SPECIES -->
     <section id="panel-species" class="panel">
       <input class="input" type="text" id="speciesSearch" placeholder="Search species..." style="margin-bottom:14px;">
@@ -564,7 +552,6 @@
 <nav class="bottom-nav">
   <button class="nav-item active" data-tab="dashboard"><span class="nav-icon">◈</span>Dash</button>
   <button class="nav-item" data-tab="log"><span class="nav-icon">▤</span>Log</button>
-  <button class="nav-item" data-tab="map"><span class="nav-icon">⚓</span>Map</button>
   <button class="nav-item" data-tab="species"><span class="nav-icon">≈</span>Species</button>
   <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><span class="nav-icon">✎</span>Entry</button>
   <button class="nav-item" data-tab="newgear" id="newGearNavBtnMobile" style="display:none;"><span class="nav-icon">†</span>Gear+</button>
@@ -731,9 +718,12 @@
   const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   let chartLevel = "month";
   let chartFilter = {};
-  let dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null };
-  // dateRange shape: { start, end, level, key, label }
+  let dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null };
+  // dateRange shape: { start, end, level, key, label }; coord shape: "lat.toFixed(5),lng.toFixed(5)"
 
+  function catchCoordKey(c) {
+    return (typeof c.lat === "number" && typeof c.lng === "number") ? `${c.lat.toFixed(5)},${c.lng.toFixed(5)}` : null;
+  }
   function getFilteredCatches() {
     return state.catches.filter(c => {
       const f = dashboardFilters;
@@ -742,6 +732,7 @@
       if (f.timeOfDay && classifyTimeOfDay(c.time) !== f.timeOfDay) return false;
       if (f.gear && c.gear !== f.gear) return false;
       if (f.location && c.location.split(",")[0].trim() !== f.location) return false;
+      if (f.coord && catchCoordKey(c) !== f.coord) return false;
       return true;
     });
   }
@@ -755,15 +746,16 @@
       if (excludeDim !== "timeOfDay" && f.timeOfDay && classifyTimeOfDay(c.time) !== f.timeOfDay) return false;
       if (excludeDim !== "gear" && f.gear && c.gear !== f.gear) return false;
       if (excludeDim !== "location" && f.location && c.location.split(",")[0].trim() !== f.location) return false;
+      if (excludeDim !== "coord" && f.coord && catchCoordKey(c) !== f.coord) return false;
       return true;
     });
   }
   function hasAnyDashboardFilter() {
     const f = dashboardFilters;
-    return !!(f.dateRange || f.waterType || f.timeOfDay || f.gear || f.location);
+    return !!(f.dateRange || f.waterType || f.timeOfDay || f.gear || f.location || f.coord);
   }
   function clearAllDashboardFilters() {
-    dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null };
+    dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null, coord: null };
     chartFilter = {};
     chartLevel = "month";
     document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b.dataset.level === "month"));
@@ -1070,6 +1062,7 @@
       if (dashboardFilters.timeOfDay) chips.push(dashboardFilters.timeOfDay);
       if (dashboardFilters.gear) chips.push(dashboardFilters.gear);
       if (dashboardFilters.location) chips.push(dashboardFilters.location);
+      if (dashboardFilters.coord) chips.push("Map spot");
       document.getElementById("dashFilterLabel").textContent = `Filtered: ${chips.join(" · ")} — ${catches.length} of ${allCatches.length} catches`;
       banner.style.display = "flex";
     } else {
@@ -1077,16 +1070,24 @@
     }
 
     const speciesCount = new Set(catches.map(c => c.species)).size;
-    const salt = catches.filter(c => c.waterType === "Air Laut").length;
-    const fresh = catches.filter(c => c.waterType === "Air Tawar").length;
+    const wtCardCatches = getFilteredCatchesExcluding("waterType");
+    const salt = wtCardCatches.filter(c => c.waterType === "Air Laut").length;
+    const fresh = wtCardCatches.filter(c => c.waterType === "Air Tawar").length;
+    const wtCardTotal = wtCardCatches.length || 1;
     const total = catches.length || 1;
 
     document.getElementById("statSpecies").textContent = speciesCount;
     document.getElementById("statCatches").textContent = catches.length;
     document.getElementById("statSalt").textContent = salt;
     document.getElementById("statFresh").textContent = fresh;
-    document.getElementById("statSaltPct").textContent = Math.round(salt / total * 100) + "% of total";
-    document.getElementById("statFreshPct").textContent = Math.round(fresh / total * 100) + "% of total";
+    document.getElementById("statSaltPct").textContent = Math.round(salt / wtCardTotal * 100) + "% of total";
+    document.getElementById("statFreshPct").textContent = Math.round(fresh / wtCardTotal * 100) + "% of total";
+    document.querySelectorAll(".stat-card-clickable").forEach(el => {
+      const isSel = dashboardFilters.waterType === el.dataset.filterVal;
+      el.style.cursor = "pointer";
+      el.style.opacity = !dashboardFilters.waterType || isSel ? 1 : 0.45;
+      el.style.outline = isSel ? "2px solid var(--brass)" : "none";
+    });
 
     const uniqueTrips = new Set(catches.map(c => c.date)).size;
     const uniqueLocations = new Set(catches.map(c => c.location.trim().toLowerCase())).size;
@@ -1167,24 +1168,29 @@
       });
     });
 
-    // Gear set list (up to 7, scrollable)
+    // Gear set list (up to 7, scrollable) — clickable, same "gear" filter as the bar chart
     const gearSets = Object.keys(state.gear).sort((a, b) => {
       const na = parseInt(a.replace(/\D/g, "")) || 0;
       const nb = parseInt(b.replace(/\D/g, "")) || 0;
       return na - nb;
     }).slice(0, 7);
+    const anyGearListSel = !!dashboardFilters.gear;
     document.getElementById("gearSetList").innerHTML = gearSets.map(g => {
       const info = state.gear[g] || {};
+      const isSel = dashboardFilters.gear === g;
       return `
-        <div class="gear-list-row">
-          <div class="gear-list-name">${escapeHtml(g)}</div>
+        <div class="gear-list-row gear-list-clickable" data-gear="${escapeHtml(g)}" style="cursor:pointer; opacity:${!anyGearListSel || isSel ? 1 : 0.4};">
+          <div class="gear-list-name">${escapeHtml(g)}${isSel ? " ✓" : ""}</div>
           <div class="gear-list-detail"><span>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
           <div class="gear-list-detail"><span>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
         </div>
       `;
     }).join("") || `<p class="empty-state">No gear sets yet.</p>`;
+    document.querySelectorAll(".gear-list-clickable").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("gear", el.dataset.gear));
+    });
 
-    renderDashboardHeatMap(catches);
+    renderDashboardHeatMap(getFilteredCatchesExcluding("coord"));
   }
 
   const TOD_CATEGORIES = [
@@ -1410,7 +1416,6 @@
   const pageMeta = {
     dashboard: ["Dashboard", "Karimun & Riau Islands"],
     log: ["Catch Log", "Every species, in order"],
-    map: ["Map", "Where every catch happened"],
     add: ["New Catch", "Log today's catch"],
     species: ["Species", "Local name to English"],
     newgear: ["New Gear", "Add or update a gear set"],
@@ -1435,7 +1440,6 @@
     const titleEl = document.getElementById("pageTitle");
     if (titleIsHtml) titleEl.innerHTML = title; else titleEl.textContent = title;
     document.getElementById("pageSub").textContent = sub;
-    if (tab === "map") setTimeout(renderHeatMap, 0);
     if (tab === "add" && pickMapInstance) setTimeout(() => pickMapInstance.invalidateSize(), 0);
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
@@ -1497,6 +1501,9 @@
     renderLineChart();
     renderDashboardStats();
   });
+
+  document.getElementById("statCardSalt").addEventListener("click", () => toggleFilter("waterType", "Air Laut"));
+  document.getElementById("statCardFresh").addEventListener("click", () => toggleFilter("waterType", "Air Tawar"));
 
   document.getElementById("aboutCard").addEventListener("click", () => {
     document.getElementById("aboutModal").classList.add("open");
@@ -1688,9 +1695,8 @@
     }
   });
 
-  // ---- Fishing spot heatmap (Map tab) ----
+  // ---- Fishing spot heatmap (embedded in Dashboard) ----
   const mapStates = {
-    full: { containerId: "mapContainer", countId: "mapPointCount", emptyId: "mapEmptyNote", map: null, heatLayer: null, markers: [] },
     dash: { containerId: "dashboardMapContainer", countId: "dashMapPointCount", emptyId: "dashMapEmptyNote", map: null, heatLayer: null, markers: [] },
   };
 
@@ -1724,27 +1730,42 @@
     const groups = {};
     points.forEach(c => {
       const key = `${c.lat.toFixed(5)},${c.lng.toFixed(5)}`;
-      if (!groups[key]) groups[key] = { lat: c.lat, lng: c.lng, catches: [] };
+      if (!groups[key]) groups[key] = { lat: c.lat, lng: c.lng, key, catches: [] };
       groups[key].catches.push(c);
     });
 
+    const anyCoordSel = !!dashboardFilters.coord;
     Object.values(groups).forEach(group => {
       const count = group.catches.length;
-      const radius = count > 1 ? Math.min(6 + count, 14) : 4;
+      const visibleRadius = count > 1 ? Math.min(6 + count, 14) : 4;
+      const isSel = dashboardFilters.coord === group.key;
       const popupHtml = group.catches
         .sort((a, b) => a.date < b.date ? 1 : -1)
         .map(c => `<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
         .join(`<hr style="margin:6px 0; border-color:#DDD3B8;">`);
       const header = count > 1 ? `<div style="font-size:11px; color:#8A7F63; margin-bottom:4px;">${count} catches at this spot</div>` : "";
+
+      // large, mostly-invisible circle first — makes the whole heat blob easy to tap, not just the tiny dot
+      const hitArea = L.circleMarker([group.lat, group.lng], {
+        radius: 26, stroke: false, fillOpacity: 0.01, fillColor: "#000",
+      }).addTo(ms.map);
+
       const marker = L.circleMarker([group.lat, group.lng], {
-        radius, color: "#C9922B", weight: count > 1 ? 2 : 1, fillOpacity: 0.9,
+        radius: visibleRadius, color: "#C9922B", weight: count > 1 ? 2 : 1,
+        fillOpacity: !anyCoordSel || isSel ? 0.9 : 0.35,
+        opacity: !anyCoordSel || isSel ? 1 : 0.35,
       })
         .bindPopup(`${header}${popupHtml}`, { maxHeight: 220 })
         .addTo(ms.map);
       if (count > 1) {
         marker.bindTooltip(String(count), { permanent: true, direction: "center", className: "map-count-label" });
       }
-      ms.markers.push(marker);
+
+      const selectSpot = () => toggleFilter("coord", group.key);
+      hitArea.on("click", selectSpot);
+      marker.on("click", selectSpot);
+
+      ms.markers.push(hitArea, marker);
     });
 
     if (points.length > 1) {
@@ -1754,7 +1775,6 @@
       ms.map.setView([points[0].lat, points[0].lng], 13);
     }
   }
-  function renderHeatMap() { renderHeatMapInto(mapStates.full); }
   function renderDashboardHeatMap(filteredCatches) { renderHeatMapInto(mapStates.dash, filteredCatches); }
 
   function checkFormValid() {
