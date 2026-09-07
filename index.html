@@ -98,6 +98,10 @@
   .slicer-sidebar { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
   .map-main { flex: 1; min-width: 0; }
   .slicer-field { display: block; }
+  .slicer-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .slicer-clear { color: var(--text-dim); font-size: 11px; text-decoration: none; cursor: pointer; visibility: hidden; }
+  .slicer-clear.active { visibility: visible; color: var(--rust); }
+  .slicer-clear:hover { color: var(--rust); }
   .slicer-select { font-size: 12.5px; padding: 8px 9px; width: 100%; }
   @media (max-width: 760px) {
     .map-with-slicers { flex-direction: column; }
@@ -434,15 +438,24 @@
         <div class="map-with-slicers">
           <div class="slicer-sidebar">
             <label class="slicer-field">
-              <span class="field-label">Species</span>
+              <span class="slicer-label-row">
+                <span class="field-label">Species</span>
+                <a href="#" class="slicer-clear" data-clear-dim="species" title="Clear this filter">✕</a>
+              </span>
               <select class="input slicer-select" id="slicerSpecies"><option value="">All species</option></select>
             </label>
             <label class="slicer-field">
-              <span class="field-label">Sea / spot</span>
+              <span class="slicer-label-row">
+                <span class="field-label">Sea / spot</span>
+                <a href="#" class="slicer-clear" data-clear-dim="location" title="Clear this filter">✕</a>
+              </span>
               <select class="input slicer-select" id="slicerLocation"><option value="">All locations</option></select>
             </label>
             <label class="slicer-field">
-              <span class="field-label">Water type</span>
+              <span class="slicer-label-row">
+                <span class="field-label">Water type</span>
+                <a href="#" class="slicer-clear" data-clear-dim="waterType" title="Clear this filter">✕</a>
+              </span>
               <select class="input slicer-select" id="slicerWaterType">
                 <option value="">All water types</option>
                 <option value="Air Laut">Saltwater</option>
@@ -450,7 +463,10 @@
               </select>
             </label>
             <label class="slicer-field">
-              <span class="field-label">Time of day</span>
+              <span class="slicer-label-row">
+                <span class="field-label">Time of day</span>
+                <a href="#" class="slicer-clear" data-clear-dim="timeOfDay" title="Clear this filter">✕</a>
+              </span>
               <select class="input slicer-select" id="slicerTimeOfDay">
                 <option value="">All times</option>
                 <option value="Subuh">Subuh</option>
@@ -460,6 +476,7 @@
                 <option value="Malam">Malam</option>
               </select>
             </label>
+            <button type="button" id="slicerClearAllBtn" class="toggle-btn" style="margin-top:4px;">✕ Clear all filters</button>
           </div>
           <div class="map-main">
             <div id="dashboardMapContainer" style="height:min(400px, 50vh); border-radius:6px; overflow:hidden;"></div>
@@ -862,6 +879,10 @@
         .map(c => `<option value="${c.key}">${c.label}</option>`).join("");
     if (dashboardFilters.timeOfDay && !todPresent.has(dashboardFilters.timeOfDay)) dashboardFilters.timeOfDay = null;
     todSel.value = dashboardFilters.timeOfDay || "";
+
+    document.querySelectorAll(".slicer-clear").forEach(el => {
+      el.classList.toggle("active", !!dashboardFilters[el.dataset.clearDim]);
+    });
   }
   function wireSlicer(elId, dim) {
     document.getElementById(elId).addEventListener("change", (e) => {
@@ -874,6 +895,20 @@
   wireSlicer("slicerLocation", "location");
   wireSlicer("slicerWaterType", "waterType");
   wireSlicer("slicerTimeOfDay", "timeOfDay");
+
+  document.querySelectorAll(".slicer-clear").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      dashboardFilters[el.dataset.clearDim] = null;
+      renderLineChart();
+      renderDashboardStats();
+    });
+  });
+  document.getElementById("slicerClearAllBtn").addEventListener("click", () => {
+    clearAllDashboardFilters();
+    renderLineChart();
+    renderDashboardStats();
+  });
 
   function getFilteredCatches() {
     return state.catches.filter(c => {
