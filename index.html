@@ -99,9 +99,9 @@
   .map-main { flex: 1; min-width: 0; }
   .slicer-field { display: block; }
   .slicer-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-  .slicer-clear { color: var(--text-dim); font-size: 11px; text-decoration: none; cursor: pointer; visibility: hidden; }
-  .slicer-clear.active { visibility: visible; color: var(--rust); }
-  .slicer-clear:hover { color: var(--rust); }
+  .slicer-clear { color: var(--rust); font-size: 11px; font-weight: 600; text-decoration: underline; cursor: pointer; visibility: hidden; white-space: nowrap; }
+  .slicer-clear.active { visibility: visible; }
+  .slicer-clear:hover { color: var(--brass); }
   .slicer-select { font-size: 12.5px; padding: 8px 9px; width: 100%; }
   @media (max-width: 760px) {
     .map-with-slicers { flex-direction: column; }
@@ -440,21 +440,21 @@
             <label class="slicer-field">
               <span class="slicer-label-row">
                 <span class="field-label">Species</span>
-                <a href="#" class="slicer-clear" data-clear-dim="species" title="Clear this filter">✕</a>
+                <a href="#" class="slicer-clear" data-clear-dim="species" title="Clear this filter">Clear ✕</a>
               </span>
               <select class="input slicer-select" id="slicerSpecies"><option value="">All species</option></select>
             </label>
             <label class="slicer-field">
               <span class="slicer-label-row">
                 <span class="field-label">Sea / spot</span>
-                <a href="#" class="slicer-clear" data-clear-dim="location" title="Clear this filter">✕</a>
+                <a href="#" class="slicer-clear" data-clear-dim="location" title="Clear this filter">Clear ✕</a>
               </span>
               <select class="input slicer-select" id="slicerLocation"><option value="">All locations</option></select>
             </label>
             <label class="slicer-field">
               <span class="slicer-label-row">
                 <span class="field-label">Water type</span>
-                <a href="#" class="slicer-clear" data-clear-dim="waterType" title="Clear this filter">✕</a>
+                <a href="#" class="slicer-clear" data-clear-dim="waterType" title="Clear this filter">Clear ✕</a>
               </span>
               <select class="input slicer-select" id="slicerWaterType">
                 <option value="">All water types</option>
@@ -465,7 +465,7 @@
             <label class="slicer-field">
               <span class="slicer-label-row">
                 <span class="field-label">Time of day</span>
-                <a href="#" class="slicer-clear" data-clear-dim="timeOfDay" title="Clear this filter">✕</a>
+                <a href="#" class="slicer-clear" data-clear-dim="timeOfDay" title="Clear this filter">Clear ✕</a>
               </span>
               <select class="input slicer-select" id="slicerTimeOfDay">
                 <option value="">All times</option>
