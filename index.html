@@ -407,7 +407,10 @@
       <div class="card" style="margin-top:14px;">
         <div class="card-title-row">
           <span class="card-title">Fishing spot heatmap</span>
-          <span id="dashMapPointCount" style="font-size:11px; color:var(--text-muted);"></span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span id="dashMapPointCount" style="font-size:11px; color:var(--text-muted);"></span>
+            <button type="button" id="showMyLocationBtn" class="toggle-btn" style="white-space:nowrap;">📍 Track my location</button>
+          </div>
         </div>
         <div id="dashboardMapContainer" style="height:min(400px, 50vh); border-radius:6px; overflow:hidden;"></div>
         <p id="dashMapEmptyNote" class="empty-state" style="display:none;">No catches have a saved location yet. Add one from "Log Entry" — auto-detect via GPS, pick on the map, or paste coordinates.</p>
@@ -1698,8 +1701,57 @@
 
   // ---- Fishing spot heatmap (embedded in Dashboard) ----
   const mapStates = {
-    dash: { containerId: "dashboardMapContainer", countId: "dashMapPointCount", emptyId: "dashMapEmptyNote", map: null, heatLayer: null, markers: [] },
+    dash: { containerId: "dashboardMapContainer", countId: "dashMapPointCount", emptyId: "dashMapEmptyNote", map: null, heatLayer: null, markers: [], myLocationMarker: null },
   };
+  let myLocation = null; // { lat, lng } once the user taps "Show my location"
+
+  function refreshMyLocationMarker(ms) {
+    if (!myLocation) return;
+    if (ms.myLocationMarker) {
+      ms.myLocationMarker.setLatLng([myLocation.lat, myLocation.lng]);
+    } else {
+      ms.myLocationMarker = L.circleMarker([myLocation.lat, myLocation.lng], {
+        radius: 8, color: "#fff", weight: 2, fillColor: "#3E8FA3", fillOpacity: 1,
+      }).bindPopup("📍 You are here").addTo(ms.map);
+    }
+  }
+
+  let locationWatchId = null;
+  document.getElementById("showMyLocationBtn").addEventListener("click", () => {
+    const btn = document.getElementById("showMyLocationBtn");
+
+    if (locationWatchId !== null) {
+      // already tracking — tap again to stop
+      navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+      btn.textContent = "📍 Track my location";
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("GPS isn't available on this device/browser.");
+      return;
+    }
+    btn.textContent = "Locating...";
+    let firstFix = true;
+    locationWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        btn.textContent = "🔴 Stop tracking";
+        myLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        refreshMyLocationMarker(mapStates.dash);
+        if (firstFix && mapStates.dash.map) {
+          mapStates.dash.map.panTo([myLocation.lat, myLocation.lng]);
+          firstFix = false;
+        }
+      },
+      () => {
+        btn.textContent = "📍 Track my location";
+        locationWatchId = null;
+        alert("Couldn't get your location. Make sure location access is allowed for this site.");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+    );
+  });
 
   function renderHeatMapInto(ms, sourceCatches) {
     const container = document.getElementById(ms.containerId);
@@ -1722,6 +1774,7 @@
     if (ms.heatLayer) { ms.map.removeLayer(ms.heatLayer); ms.heatLayer = null; }
     ms.markers.forEach(m => ms.map.removeLayer(m));
     ms.markers = [];
+    refreshMyLocationMarker(ms);
     if (points.length === 0) return;
 
     const heatPoints = points.map(c => [c.lat, c.lng, 0.6]);
