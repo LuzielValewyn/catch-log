@@ -301,6 +301,10 @@
 
     <!-- DASHBOARD -->
     <section id="panel-dashboard" class="panel active">
+      <div id="dashFilterBanner" style="display:none; align-items:center; justify-content:space-between; gap:10px; background:rgba(201,146,43,0.15); border:1px solid var(--brass); border-radius:6px; padding:9px 14px; margin-bottom:14px; font-size:12.5px;">
+        <span id="dashFilterLabel"></span>
+        <a href="#" id="clearDashFilterLink" style="color:var(--brass); text-decoration:underline; flex-shrink:0;">✕ Clear filter</a>
+      </div>
       <div class="stat-row">
         <button id="aboutCard" class="about-card">
           <span class="about-prompt">Click to<br>learn about me</span>
@@ -727,6 +731,59 @@
   const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   let chartLevel = "month";
   let chartFilter = {};
+  let dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null };
+  // dateRange shape: { start, end, level, key, label }
+
+  function getFilteredCatches() {
+    return state.catches.filter(c => {
+      const f = dashboardFilters;
+      if (f.dateRange && (c.date < f.dateRange.start || c.date > f.dateRange.end)) return false;
+      if (f.waterType && c.waterType !== f.waterType) return false;
+      if (f.timeOfDay && classifyTimeOfDay(c.time) !== f.timeOfDay) return false;
+      if (f.gear && c.gear !== f.gear) return false;
+      if (f.location && c.location.split(",")[0].trim() !== f.location) return false;
+      return true;
+    });
+  }
+  // Same as above but skips one dimension's own filter — so a visual can still show
+  // all of its own categories (with the active one highlighted) instead of hiding itself.
+  function getFilteredCatchesExcluding(excludeDim) {
+    return state.catches.filter(c => {
+      const f = dashboardFilters;
+      if (excludeDim !== "dateRange" && f.dateRange && (c.date < f.dateRange.start || c.date > f.dateRange.end)) return false;
+      if (excludeDim !== "waterType" && f.waterType && c.waterType !== f.waterType) return false;
+      if (excludeDim !== "timeOfDay" && f.timeOfDay && classifyTimeOfDay(c.time) !== f.timeOfDay) return false;
+      if (excludeDim !== "gear" && f.gear && c.gear !== f.gear) return false;
+      if (excludeDim !== "location" && f.location && c.location.split(",")[0].trim() !== f.location) return false;
+      return true;
+    });
+  }
+  function hasAnyDashboardFilter() {
+    const f = dashboardFilters;
+    return !!(f.dateRange || f.waterType || f.timeOfDay || f.gear || f.location);
+  }
+  function clearAllDashboardFilters() {
+    dashboardFilters = { dateRange: null, waterType: null, timeOfDay: null, gear: null, location: null };
+    chartFilter = {};
+    chartLevel = "month";
+    document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b.dataset.level === "month"));
+  }
+  function toggleFilter(dimension, value) {
+    dashboardFilters[dimension] = (dashboardFilters[dimension] === value) ? null : value;
+    renderLineChart();
+    renderDashboardStats();
+  }
+
+  function getPeriodRange(level, key) {
+    if (level === "year") return [`${key}-01-01`, `${key}-12-31`];
+    if (level === "month") {
+      const [y, m] = key.split("-").map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      return [`${key}-01`, `${key}-${String(lastDay).padStart(2, "0")}`];
+    }
+    if (level === "week") return [key, addDays(key, 6)];
+    return [key, key]; // day
+  }
 
   function getWeekStart(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
@@ -749,7 +806,8 @@
       return `${MONTH_NAMES[+m - 1]} '${y.slice(2)}`;
     }
     if (level === "week") {
-      const [y, m, d] = key.split("-");
+      const sunday = addDays(key, 6); // key is always the Monday; show the Sunday it ends on
+      const [y, m, d] = sunday.split("-");
       return `${MONTH_NAMES[+m - 1]} ${+d}`;
     }
     const [y, m, d] = key.split("-");
@@ -839,7 +897,7 @@
     const parts = [];
     if (chartFilter.year) parts.push(chartFilter.year);
     if (chartFilter.month) parts.push(MONTH_NAMES[+chartFilter.month.split("-")[1] - 1]);
-    if (chartFilter.week) parts.push("Week of " + formatLabel(chartFilter.week, "week"));
+    if (chartFilter.week) parts.push("Week ending " + formatLabel(chartFilter.week, "week"));
     const el = document.getElementById("chartBreadcrumb");
     if (parts.length === 0) {
       el.innerHTML = "All time";
@@ -847,7 +905,9 @@
       el.innerHTML = `Viewing: ${parts.join(" › ")} <span class="clear-link" id="chartClear">✕ Clear</span>`;
       document.getElementById("chartClear").addEventListener("click", () => {
         chartFilter = {};
+        dashboardFilters.dateRange = null;
         renderLineChart();
+        renderDashboardStats();
       });
     }
   }
@@ -858,13 +918,16 @@
     else return;
     document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b.dataset.level === chartLevel));
     renderLineChart();
+    renderDashboardStats();
   }
   document.querySelectorAll("#levelTabs button").forEach(btn => {
     btn.addEventListener("click", () => {
       chartLevel = btn.dataset.level;
       chartFilter = {};
+      dashboardFilters.dateRange = null;
       document.querySelectorAll("#levelTabs button").forEach(b => b.classList.toggle("active", b === btn));
       renderLineChart();
+      renderDashboardStats();
     });
   });
 
@@ -943,7 +1006,7 @@
         const bh = (counts[k] / maxCount) * plotH;
         const y = padT + plotH - bh;
         return `
-          <g class="chart-point" data-key="${k}" style="cursor:${canDrill ? 'pointer' : 'default'};">
+          <g class="chart-point" data-key="${k}" style="cursor:${counts[k] > 0 ? 'pointer' : 'default'};">
             <rect x="${x - barW/2}" y="${padT}" width="${barW}" height="${plotH}" fill="transparent" />
             ${counts[k] > 0 ? `<rect x="${x - barW/2}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="#C9922B" />` : ""}
             ${counts[k] > 0 ? `<text x="${x}" y="${y - 6}" font-size="9" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${counts[k]}</text>` : ""}
@@ -961,14 +1024,26 @@
     const scrollEl = document.querySelector(".chart-scroll");
     if (scrollEl) scrollEl.scrollLeft = scrollEl.scrollWidth;
 
-    if (canDrill) {
-      document.querySelectorAll("#lineChart .chart-point").forEach(el => {
-        el.addEventListener("click", () => {
-          if (counts[el.dataset.key] === 0) return;
-          drillDown(el.dataset.key);
-        });
+    document.querySelectorAll("#lineChart .chart-point").forEach(el => {
+      el.addEventListener("click", () => {
+        const key = el.dataset.key;
+        if (counts[key] === 0) return;
+        const dr = dashboardFilters.dateRange;
+        const isReclick = dr && dr.level === chartLevel && dr.key === key;
+        if (isReclick) {
+          // clicking the same already-selected bar again clears the date filter
+          dashboardFilters.dateRange = null;
+        } else {
+          const [start, end] = getPeriodRange(chartLevel, key);
+          dashboardFilters.dateRange = { start, end, level: chartLevel, key, label: `${formatLabel(key, chartLevel)} (${chartLevel})` };
+        }
+        if (canDrill && !isReclick) {
+          drillDown(key); // also zooms the chart itself into that period; it re-renders internally
+        } else {
+          renderDashboardStats(); // day-level (or re-click): just refresh the rest of the dashboard
+        }
       });
-    }
+    });
     } catch (err) {
       console.error("Chart render failed:", err);
       document.getElementById("lineChart").innerHTML = "";
@@ -978,8 +1053,30 @@
 
 
   function renderDashboard() {
-    const catches = state.catches;
-    const speciesCount = Object.keys(state.species).length;
+    renderLineChart();
+    renderDashboardStats();
+  }
+
+  function renderDashboardStats() {
+    const allCatches = state.catches;
+    const catches = getFilteredCatches();
+
+    // filter banner — lists every active dimension, with one combined clear
+    const banner = document.getElementById("dashFilterBanner");
+    if (hasAnyDashboardFilter()) {
+      const chips = [];
+      if (dashboardFilters.dateRange) chips.push(dashboardFilters.dateRange.label);
+      if (dashboardFilters.waterType) chips.push(dashboardFilters.waterType === "Air Laut" ? "Saltwater" : "Freshwater");
+      if (dashboardFilters.timeOfDay) chips.push(dashboardFilters.timeOfDay);
+      if (dashboardFilters.gear) chips.push(dashboardFilters.gear);
+      if (dashboardFilters.location) chips.push(dashboardFilters.location);
+      document.getElementById("dashFilterLabel").textContent = `Filtered: ${chips.join(" · ")} — ${catches.length} of ${allCatches.length} catches`;
+      banner.style.display = "flex";
+    } else {
+      banner.style.display = "none";
+    }
+
+    const speciesCount = new Set(catches.map(c => c.species)).size;
     const salt = catches.filter(c => c.waterType === "Air Laut").length;
     const fresh = catches.filter(c => c.waterType === "Air Tawar").length;
     const total = catches.length || 1;
@@ -996,44 +1093,58 @@
     document.getElementById("statTrips").textContent = uniqueTrips;
     document.getElementById("statLocations").textContent = uniqueLocations;
 
-    renderLineChart();
-
-    // Donut
-    const saltPct = salt / total;
-    const r = 55, cx = 70, cy = 70, circ = 2 * Math.PI * r;
-    const saltLen = circ * saltPct;
+    // Water type donut — uses data filtered by every OTHER active filter, so both
+    // segments stay visible/clickable even when one of them is currently selected.
+    const rWT = 55, cxWT = 70, cyWT = 70, circWT = 2 * Math.PI * rWT;
+    const wtCatches = getFilteredCatchesExcluding("waterType");
+    const wtSalt = wtCatches.filter(c => c.waterType === "Air Laut").length;
+    const wtFresh = wtCatches.filter(c => c.waterType === "Air Tawar").length;
+    const wtTotal = wtCatches.length || 1;
+    const wtSaltLen = (wtSalt / wtTotal) * circWT;
+    const saltSel = dashboardFilters.waterType === "Air Laut";
+    const freshSel = dashboardFilters.waterType === "Air Tawar";
+    const anyWtSel = !!dashboardFilters.waterType;
     let svgDonut = `
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#2A5055" stroke-width="16" />
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#3E8FA3" stroke-width="16"
-        stroke-dasharray="${saltLen} ${circ - saltLen}" stroke-dashoffset="${circ/4}" transform="rotate(0 ${cx} ${cy})" />
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#6B9E5E" stroke-width="16"
-        stroke-dasharray="${circ - saltLen} ${saltLen}" stroke-dashoffset="${circ/4 - saltLen}" transform="rotate(0 ${cx} ${cy})" />
-      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="24" font-weight="600" fill="#EFE7D8" font-family="Fraunces, serif">${catches.length}</text>
-      <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="9" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
+      <circle cx="${cxWT}" cy="${cyWT}" r="${rWT}" fill="none" stroke="#2A5055" stroke-width="16" />
+      <circle class="donut-seg" data-dim="waterType" data-val="Air Laut" cx="${cxWT}" cy="${cyWT}" r="${rWT}" fill="none" stroke="#3E8FA3" stroke-width="16" style="cursor:pointer; opacity:${!anyWtSel || saltSel ? 1 : 0.3};"
+        stroke-dasharray="${wtSaltLen} ${circWT - wtSaltLen}" stroke-dashoffset="${circWT/4}" transform="rotate(0 ${cxWT} ${cyWT})" />
+      <circle class="donut-seg" data-dim="waterType" data-val="Air Tawar" cx="${cxWT}" cy="${cyWT}" r="${rWT}" fill="none" stroke="#6B9E5E" stroke-width="16" style="cursor:pointer; opacity:${!anyWtSel || freshSel ? 1 : 0.3};"
+        stroke-dasharray="${circWT - wtSaltLen} ${wtSaltLen}" stroke-dashoffset="${circWT/4 - wtSaltLen}" transform="rotate(0 ${cxWT} ${cyWT})" />
+      <text x="${cxWT}" y="${cyWT-2}" text-anchor="middle" font-size="24" font-weight="600" fill="#EFE7D8" font-family="Fraunces, serif">${wtCatches.length}</text>
+      <text x="${cxWT}" y="${cyWT+16}" text-anchor="middle" font-size="9" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
     `;
     document.getElementById("donutChart").innerHTML = svgDonut;
+    document.querySelectorAll("#donutChart .donut-seg").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("waterType", el.dataset.val));
+    });
 
-    renderTimeOfDayDonut(catches);
-    renderGearChart(catches);
+    renderTimeOfDayDonut(getFilteredCatchesExcluding("timeOfDay"));
+    renderGearChart(getFilteredCatchesExcluding("gear"));
 
-    // Top locations (all of them, scrollable)
+    // Top locations (all of them, scrollable) — uses self-excluded data too
+    const locCatches = getFilteredCatchesExcluding("location");
     const locCounts = {};
-    catches.forEach(c => {
+    locCatches.forEach(c => {
       const loc = c.location.split(",")[0].trim();
       locCounts[loc] = (locCounts[loc] || 0) + 1;
     });
     const allLocs = Object.entries(locCounts).sort((a,b) => b[1]-a[1]);
+    const anyLocSel = !!dashboardFilters.location;
     document.getElementById("topLocations").innerHTML = allLocs.map(([loc, count]) => `
-      <div class="top-loc-row">
-        <span class="top-loc-name">${escapeHtml(loc)}</span>
+      <div class="top-loc-row loc-clickable" data-loc="${escapeHtml(loc)}" style="cursor:pointer; opacity:${!anyLocSel || dashboardFilters.location === loc ? 1 : 0.4};">
+        <span class="top-loc-name">${escapeHtml(loc)}${dashboardFilters.location === loc ? " ✓" : ""}</span>
         <span class="top-loc-count">${count}</span>
       </div>`).join("") || `<p class="empty-state">No data yet.</p>`;
+    document.querySelectorAll(".loc-clickable").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("location", el.dataset.loc));
+    });
 
-    // Recent catches (up to 7 most recent, scrollable)
+    // Recent catches (up to 7 most recent, scrollable) — reflects the fully filtered set,
+    // clicking a row jumps the date filter to that exact day
     const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : -1);
     const recent = sorted.slice(0, 7);
     document.getElementById("recentCatches").innerHTML = recent.map(c => `
-      <div class="recent-row">
+      <div class="recent-row recent-clickable" data-date="${c.date}" style="cursor:pointer;">
         <div class="recent-row-top">
           <span class="recent-species">${escapeHtml(c.species)}</span>
           <span class="recent-date">${c.date}</span>
@@ -1042,6 +1153,19 @@
         <div class="recent-loc">${escapeHtml(c.location)}</div>
       </div>
     `).join("") || `<p class="empty-state" style="color:#1B1105;">No catches yet.</p>`;
+    document.querySelectorAll(".recent-clickable").forEach(el => {
+      el.addEventListener("click", () => {
+        const d = el.dataset.date;
+        const dr = dashboardFilters.dateRange;
+        if (dr && dr.level === "day" && dr.key === d) {
+          dashboardFilters.dateRange = null;
+        } else {
+          dashboardFilters.dateRange = { start: d, end: d, level: "day", key: d, label: `${formatLabel(d, "day")} (day)` };
+        }
+        renderLineChart();
+        renderDashboardStats();
+      });
+    });
 
     // Gear set list (up to 7, scrollable)
     const gearSets = Object.keys(state.gear).sort((a, b) => {
@@ -1060,7 +1184,7 @@
       `;
     }).join("") || `<p class="empty-state">No gear sets yet.</p>`;
 
-    renderDashboardHeatMap();
+    renderDashboardHeatMap(catches);
   }
 
   const TOD_CATEGORIES = [
@@ -1084,12 +1208,15 @@
     });
     const total = catches.length || 1;
     const r = 55, cx = 70, cy = 70, circ = 2 * Math.PI * r, strokeW = 16;
+    const anySel = !!dashboardFilters.timeOfDay;
     let offset = 0;
     let segments = "";
     TOD_CATEGORIES.forEach(c => {
       const len = (counts[c.key] / total) * circ;
       if (len > 0) {
-        segments += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${c.hex}" stroke-width="${strokeW}"
+        const isSel = dashboardFilters.timeOfDay === c.key;
+        segments += `<circle class="tod-seg" data-val="${c.key}" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${c.hex}" stroke-width="${strokeW}"
+          style="cursor:pointer; opacity:${!anySel || isSel ? 1 : 0.3};"
           stroke-dasharray="${len} ${circ - len}" stroke-dashoffset="${circ/4 - offset}" />`;
         offset += len;
       }
@@ -1101,9 +1228,16 @@
       <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="9" fill="#7FA0A3" font-family="IBM Plex Mono, monospace">TOTAL</text>
     `;
     document.getElementById("todDonutChart").innerHTML = svg;
-    document.getElementById("todLegend").innerHTML = TOD_CATEGORIES.map(c => `
-      <span><span class="legend-dot" style="background:${c.hex};"></span>${c.label}</span>
-    `).join("");
+    document.querySelectorAll("#todDonutChart .tod-seg").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("timeOfDay", el.dataset.val));
+    });
+    document.getElementById("todLegend").innerHTML = TOD_CATEGORIES.map(c => {
+      const isSel = dashboardFilters.timeOfDay === c.key;
+      return `<span class="tod-legend-item" data-val="${c.key}" style="cursor:pointer; opacity:${!anySel || isSel ? 1 : 0.4};"><span class="legend-dot" style="background:${c.hex};"></span>${c.label}</span>`;
+    }).join("");
+    document.querySelectorAll(".tod-legend-item").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("timeOfDay", el.dataset.val));
+    });
   }
 
   function renderGearChart(catches) {
@@ -1143,6 +1277,7 @@
     if (ticks[ticks.length - 1] !== maxVal) ticks.push(maxVal);
     const yFor = (v) => padT + plotH - (v / maxVal) * plotH;
 
+    const anyGearSel = !!dashboardFilters.gear;
     let svg = `
       ${ticks.map(v => `
         <line x1="${padL}" y1="${yFor(v)}" x2="${padL + plotW}" y2="${yFor(v)}" stroke="var(--border)" stroke-width="1" />
@@ -1154,16 +1289,24 @@
         const freshX = groupCx + 2;
         const saltH = (gearCounts[s].salt / maxVal) * plotH;
         const freshH = (gearCounts[s].fresh / maxVal) * plotH;
+        const isSel = dashboardFilters.gear === s;
+        const op = !anyGearSel || isSel ? 1 : 0.3;
         return `
-          <rect x="${saltX}" y="${padT + plotH - saltH}" width="${barW}" height="${saltH}" rx="2" fill="var(--salt)" />
-          <rect x="${freshX}" y="${padT + plotH - freshH}" width="${barW}" height="${freshH}" rx="2" fill="var(--fresh)" />
-          ${gearCounts[s].salt > 0 ? `<text x="${saltX + barW/2}" y="${padT + plotH - saltH - 5}" font-size="8.5" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gearCounts[s].salt}</text>` : ""}
-          ${gearCounts[s].fresh > 0 ? `<text x="${freshX + barW/2}" y="${padT + plotH - freshH - 5}" font-size="8.5" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gearCounts[s].fresh}</text>` : ""}
-          <text x="${groupCx}" y="${h-8}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${s}</text>
+          <g class="gear-bar-group" data-gear="${escapeHtml(s)}" style="cursor:pointer; opacity:${op};">
+            <rect x="${saltX - 4}" y="${padT}" width="${barW*2+10}" height="${plotH}" fill="transparent" />
+            <rect x="${saltX}" y="${padT + plotH - saltH}" width="${barW}" height="${saltH}" rx="2" fill="var(--salt)" />
+            <rect x="${freshX}" y="${padT + plotH - freshH}" width="${barW}" height="${freshH}" rx="2" fill="var(--fresh)" />
+            ${gearCounts[s].salt > 0 ? `<text x="${saltX + barW/2}" y="${padT + plotH - saltH - 5}" font-size="8.5" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gearCounts[s].salt}</text>` : ""}
+            ${gearCounts[s].fresh > 0 ? `<text x="${freshX + barW/2}" y="${padT + plotH - freshH - 5}" font-size="8.5" fill="#EFE7D8" text-anchor="middle" font-family="IBM Plex Mono, monospace">${gearCounts[s].fresh}</text>` : ""}
+            <text x="${groupCx}" y="${h-8}" font-size="9.5" fill="#7FA0A3" text-anchor="middle" font-family="IBM Plex Mono, monospace">${s}${isSel ? " ✓" : ""}</text>
+          </g>
         `;
       }).join("")}
     `;
     svgEl.innerHTML = svg;
+    document.querySelectorAll("#gearChart .gear-bar-group").forEach(el => {
+      el.addEventListener("click", () => toggleFilter("gear", el.dataset.gear));
+    });
     if (sets.length === 0) {
       svgEl.innerHTML = `<text x="${w/2}" y="${h/2}" font-size="11" fill="#7FA0A3" text-anchor="middle">No gear data yet</text>`;
     }
@@ -1348,6 +1491,13 @@
   });
 
   // About modal
+  document.getElementById("clearDashFilterLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    clearAllDashboardFilters();
+    renderLineChart();
+    renderDashboardStats();
+  });
+
   document.getElementById("aboutCard").addEventListener("click", () => {
     document.getElementById("aboutModal").classList.add("open");
   });
@@ -1544,12 +1694,13 @@
     dash: { containerId: "dashboardMapContainer", countId: "dashMapPointCount", emptyId: "dashMapEmptyNote", map: null, heatLayer: null, markers: [] },
   };
 
-  function renderHeatMapInto(ms) {
+  function renderHeatMapInto(ms, sourceCatches) {
     const container = document.getElementById(ms.containerId);
     if (!container) return;
-    const points = state.catches.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
+    const source = sourceCatches || state.catches;
+    const points = source.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
     document.getElementById(ms.countId).textContent = points.length
-      ? `${points.length} of ${state.catches.length} catches pinned`
+      ? `${points.length} of ${source.length} catches pinned`
       : "";
     document.getElementById(ms.emptyId).style.display = points.length ? "none" : "block";
 
@@ -1604,7 +1755,7 @@
     }
   }
   function renderHeatMap() { renderHeatMapInto(mapStates.full); }
-  function renderDashboardHeatMap() { renderHeatMapInto(mapStates.dash); }
+  function renderDashboardHeatMap(filteredCatches) { renderHeatMapInto(mapStates.dash, filteredCatches); }
 
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
