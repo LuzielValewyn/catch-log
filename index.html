@@ -223,6 +223,8 @@
   .species-table td { padding: 12px 14px 12px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
   .species-id { font-family: 'Fraunces', Georgia, serif; font-style: italic; white-space: nowrap; }
   .species-en { color: var(--text-muted); width: 100%; min-width: 180px; overflow-wrap: break-word; }
+  .species-delete-link { color: var(--rust); font-size: 11px; font-weight: 600; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+  .species-delete-link:hover { color: var(--brass); }
   .gear-card { background: rgba(22,55,58,0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 10px; }
   .gear-title { font-family: 'Fraunces', Georgia, serif; font-size: 16px; margin-bottom: 8px; }
 
@@ -781,6 +783,7 @@
   let saveTimer = null;
   const deletedCatchIds = new Set();
   const deletedGearNames = new Set();
+  const deletedSpeciesNames = new Set();
   function mergeById(localArr, remoteArr) {
     // union by id — an id present in both keeps the LOCAL version (this tab's intent),
     // but an id only present remotely (added by another tab/device) is kept, not dropped.
@@ -810,7 +813,9 @@
         if (freshSnap.exists()) {
           const remote = freshSnap.data();
           state.catches = mergeById(state.catches, remote.catches);
-          state.species = { ...(remote.species || {}), ...(state.species || {}) };
+          const mergedSpecies = { ...(remote.species || {}) };
+          deletedSpeciesNames.forEach(name => delete mergedSpecies[name]);
+          state.species = { ...mergedSpecies, ...(state.species || {}) };
           const mergedGear = { ...(remote.gear || {}) };
           deletedGearNames.forEach(name => delete mergedGear[name]);
           state.gear = { ...mergedGear, ...(state.gear || {}) };
@@ -1610,6 +1615,15 @@
         if (!ok) return;
         state.catches = state.catches.filter(x => x.id !== id);
         deletedCatchIds.add(id);
+        // if no other catch still uses this species, offer to clean up its dictionary entry too
+        const stillUsed = state.catches.some(x => x.species === c.species);
+        if (!stillUsed && state.species[c.species]) {
+          const cleanup = confirm(`No other catches use "${c.species}" anymore. Also remove it from the Species list?`);
+          if (cleanup) {
+            delete state.species[c.species];
+            deletedSpeciesNames.add(c.species);
+          }
+        }
         if (expandedId === id) expandedId = null;
         if (editingCatchId === id) resetCatchForm();
         render();
@@ -1633,8 +1647,25 @@
         <tr>
           <td class="species-id">${escapeHtml(id)}</td>
           <td class="species-en">${escapeHtml(en)}</td>
+          ${editUnlocked ? `<td><a href="#" class="species-delete-link" data-species="${escapeHtml(id)}" title="Delete this species">Delete ✕</a></td>` : ""}
         </tr>`).join("") +
       `</tbody></table>`;
+    list.querySelectorAll(".species-delete-link").forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        const name = el.dataset.species;
+        const usedCount = state.catches.filter(c => c.species === name).length;
+        const warn = usedCount > 0
+          ? `\n\n⚠️ ${usedCount} logged catch(es) still use this species name — they'll keep "${name}" as plain text, just without an English/Latin translation.`
+          : "";
+        const ok = confirm(`Delete "${name}" from the Species list?${warn}`);
+        if (!ok) return;
+        delete state.species[name];
+        deletedSpeciesNames.add(name);
+        renderSpecies();
+        scheduleSave();
+      });
+    });
   }
   document.getElementById("speciesSearch").addEventListener("input", renderSpecies);
 
