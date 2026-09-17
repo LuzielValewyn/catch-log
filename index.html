@@ -1866,13 +1866,31 @@
     clearCoord();
   });
 
+  function parseCoordString(raw) {
+    // handles plain "lat, lng", degree symbols, N/S/E/W suffixes, and comma-as-decimal
+    // (e.g. phones set to Indonesian locale often copy "0,65453° N, 104,18555° E")
+    const re = /(-?\d+(?:[.,]\d+)?)\s*°?\s*([NSEWnsew]?)/g;
+    const matches = [...raw.matchAll(re)];
+    if (matches.length < 2) return null;
+    function toNum(m) {
+      const val = parseFloat(m[1].replace(",", "."));
+      const dir = m[2].toUpperCase();
+      if (dir === "S" || dir === "W") return -Math.abs(val);
+      if (dir === "N" || dir === "E") return Math.abs(val);
+      return val;
+    }
+    const lat = toNum(matches[0]);
+    const lng = toNum(matches[1]);
+    if (isNaN(lat) || isNaN(lng)) return null;
+    return [lat, lng];
+  }
   function tryApplyCoordInput() {
     const raw = document.getElementById("coordInput").value.trim();
     if (!raw) return;
-    const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
-    if (parts.length !== 2) { alert("Paste coordinates as: lat, lng — e.g. 1.0500, 103.4300"); return; }
-    const lat = parseFloat(parts[0]), lng = parseFloat(parts[1]);
-    if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    const parsed = parseCoordString(raw);
+    if (!parsed) { alert("Paste coordinates as: lat, lng — e.g. 1.0500, 103.4300"); return; }
+    const [lat, lng] = parsed;
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
       alert("That doesn't look like a valid lat, lng pair.");
       return;
     }
