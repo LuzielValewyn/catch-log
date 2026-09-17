@@ -1670,6 +1670,7 @@
     if (titleIsHtml) titleEl.innerHTML = title; else titleEl.textContent = title;
     document.getElementById("pageSub").textContent = sub;
     if (tab === "add" && pickMapInstance) setTimeout(() => pickMapInstance.invalidateSize(), 0);
+    if (tab === "dashboard") setTimeout(() => renderDashboardHeatMap(getFilteredCatchesExcluding("coord")), 0);
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -2032,6 +2033,7 @@
   function renderHeatMapInto(ms, sourceCatches) {
     const container = document.getElementById(ms.containerId);
     if (!container) return;
+    if (container.offsetParent === null) return; // hidden (different tab active) — skip, refreshed next time it's shown
     const source = sourceCatches || state.catches;
     const points = source.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
     document.getElementById(ms.countId).textContent = points.length
