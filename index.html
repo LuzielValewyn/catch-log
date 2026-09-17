@@ -605,7 +605,10 @@
   <div class="modal-box">
     <div class="modal-title" style="margin-bottom:8px;">Owner access</div>
     <p class="modal-text" style="margin-bottom:16px;">Enter your password to manage the catch log. Or just browse it like anyone else.</p>
-    <input type="password" id="ownerGateInput" class="input" placeholder="Password" autocomplete="off" style="text-align:center; margin-bottom:8px;" />
+    <form autocomplete="off" onsubmit="return false;">
+      <input type="text" name="fake-username" autocomplete="off" style="position:absolute; opacity:0; height:0; width:0; pointer-events:none;" tabindex="-1" aria-hidden="true" />
+      <input type="password" id="ownerGateInput" name="del-catch-log-owner-pw" class="input" placeholder="Password" autocomplete="new-password" style="text-align:center; margin-bottom:8px;" />
+    </form>
     <p id="ownerGateError" style="display:none; color:var(--rust); font-size:12px; margin-bottom:8px;">Wrong password — try again.</p>
     <div style="display:flex; gap:8px; margin-top:8px;">
       <button id="ownerGateGuestBtn" class="toggle-btn" style="flex:1;">Enter as guest</button>
