@@ -779,6 +779,24 @@
   }
 
   let saveTimer = null;
+  const deletedCatchIds = new Set();
+  const deletedGearNames = new Set();
+  function mergeById(localArr, remoteArr) {
+    // union by id — an id present in both keeps the LOCAL version (this tab's intent),
+    // but an id only present remotely (added by another tab/device) is kept, not dropped.
+    // ids this session explicitly deleted are excluded even if remote still has them.
+    const byId = new Map();
+    (remoteArr || []).forEach(item => { if (!deletedCatchIds.has(item.id)) byId.set(item.id, item); });
+    (localArr || []).forEach(item => byId.set(item.id, item));
+    return Array.from(byId.values());
+  }
+  function mergeVisitors(localArr, remoteArr) {
+    const key = (v) => `${v.name}|${v.date}|${v.time}`;
+    const seen = new Map();
+    (remoteArr || []).forEach(v => seen.set(key(v), v));
+    (localArr || []).forEach(v => seen.set(key(v), v));
+    return Array.from(seen.values());
+  }
   function scheduleSave() {
     if (!db) return;
     clearTimeout(saveTimer);
@@ -786,8 +804,21 @@
     saveTimer = setTimeout(async () => {
       try {
         const ref = doc(db, DOC_PATH[0], DOC_PATH[1]);
+        // re-fetch the current remote doc first and merge additively, so this tab
+        // can never silently wipe out something added elsewhere in the meantime.
+        const freshSnap = await getDoc(ref);
+        if (freshSnap.exists()) {
+          const remote = freshSnap.data();
+          state.catches = mergeById(state.catches, remote.catches);
+          state.species = { ...(remote.species || {}), ...(state.species || {}) };
+          const mergedGear = { ...(remote.gear || {}) };
+          deletedGearNames.forEach(name => delete mergedGear[name]);
+          state.gear = { ...mergedGear, ...(state.gear || {}) };
+          state.visitors = mergeVisitors(state.visitors, remote.visitors);
+        }
         await setDoc(ref, state);
         setStatus("Saved to cloud");
+        render(); // reflect any merged-in items (from other tabs) in this tab's own view too
       } catch (e) {
         console.error(e);
         setStatus("Save failed");
@@ -1578,6 +1609,7 @@
         const ok = confirm(`Delete this catch?\n\n${c.species} — ${c.date}\n\nThis can't be undone.`);
         if (!ok) return;
         state.catches = state.catches.filter(x => x.id !== id);
+        deletedCatchIds.add(id);
         if (expandedId === id) expandedId = null;
         if (editingCatchId === id) resetCatchForm();
         render();
@@ -2240,6 +2272,7 @@
     // if renaming an existing set, drop the old key
     if (editingGearName !== null && editingGearName !== name) {
       delete state.gear[editingGearName];
+      deletedGearNames.add(editingGearName);
     }
     state.gear[name] = info;
     resetGearForm();
@@ -2278,6 +2311,7 @@
         const ok = confirm(`Delete gear set "${name}"?\n\nThis can't be undone. Catches already logged with this gear will keep the name as text, but it won't appear as a selectable option anymore.`);
         if (!ok) return;
         delete state.gear[name];
+        deletedGearNames.add(name);
         if (editingGearName === name) resetGearForm();
         render();
         scheduleSave();
