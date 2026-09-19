@@ -491,9 +491,9 @@
   .dp-dim { font-size: 13.5px; color: var(--ink-2); }
   .dp-sub { font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-2); margin: 14px 0 8px; }
   .dp-tag { display: inline-block; margin-top: 6px; font-size: 12.5px; font-weight: 700; color: var(--amber); }
-  .dp-tide-svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .dp-tide-svg { display: block; }
   .dp-tidelist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin-top: 8px; }
-  .dp-tl { display: grid; grid-template-columns: 22px 44px 54px 62px 1fr; align-items: center; gap: 6px; padding: 9px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+  .dp-tl { display: grid; grid-template-columns: 22px 44px 86px 62px 1fr; align-items: center; gap: 6px; padding: 9px 0; border-top: 1px solid var(--rule); font-size: 14px; }
   .dp-tl .wmark { color: var(--salt); }
   .dp-daybar { position: relative; height: 12px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-top: 4px; }
   .dp-seg { position: absolute; top: 0; bottom: 0; }
@@ -571,6 +571,80 @@
   .dp-extlink { display: inline-block; margin-top: 12px; font-weight: 700; color: var(--amber); }
   .dp-credit { font-size: 12.5px; color: var(--ink-3); margin-top: 20px; max-width: 90ch; line-height: 1.55; }
   .dp-credit a { color: var(--ink-2); }
+  .dp-mydays { margin-bottom: 16px; }
+  .dp-md-list { list-style: none; }
+  .dp-md-item { display: grid; grid-template-columns: minmax(150px, 1.1fr) 150px 150px minmax(0, 2fr) 150px; gap: 6px 20px; align-items: center; padding: 14px 0; border-top: 1px solid var(--rule); }
+  .dp-md-item:first-child { border-top: none; padding-top: 2px; }
+  .dp-md-when b { display: block; font-size: 17px; font-weight: 800; font-stretch: 90%; }
+  .dp-md-when span, .dp-md-best span { font-size: 13px; color: var(--ink-2); }
+  .dp-md-verdict { display: flex; align-items: center; gap: 10px; font-family: var(--led); font-weight: 800; font-size: 20px; letter-spacing: 0.05em; color: var(--amber); white-space: nowrap; }
+  .dp-md-verdict svg { width: 26px; height: 26px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .dp-md-l1 .dp-md-verdict { text-decoration: underline; text-decoration-style: dashed; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .dp-md-l2 .dp-md-verdict { color: var(--coral); }
+  .dp-md-best b { display: block; font-size: 16px; font-weight: 800; }
+  .dp-md-facts { font-size: 14px; color: var(--ink-2); text-wrap: pretty; }
+  .dp-md-facts em { display: block; font-style: normal; font-weight: 700; color: var(--ink); margin-top: 3px; }
+  .dp-md-conf { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+  .dp-conf { display: inline-flex; gap: 3px; align-items: flex-end; }
+  .dp-conf i { width: 5px; background: var(--rule-strong); border-radius: 1px; display: block; }
+  .dp-conf i:nth-child(1) { height: 7px; } .dp-conf i:nth-child(2) { height: 11px; } .dp-conf i:nth-child(3) { height: 15px; }
+  .dp-conf-high i, .dp-conf-medium i:nth-child(-n+2), .dp-conf-low i:nth-child(1) { background: var(--amber); }
+  .dp-md-more { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: 13px; color: var(--ink-3); padding-top: 2px; }
+  .dp-editdays { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 12px; }
+  .dp-editdays summary { cursor: pointer; font-size: 14px; font-weight: 700; color: var(--amber); }
+  .dp-daylist { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 32px; }
+  .dp-dayedit { display: grid; grid-template-columns: 140px minmax(0, 1fr); align-items: center; gap: 10px; }
+  .dp-dayedit label { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; cursor: pointer; }
+  .dp-dayedit input[type="checkbox"] { appearance: none; width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--rule-strong); border-radius: 3px; background: var(--ground); cursor: pointer; display: grid; place-items: center; }
+  .dp-dayedit input[type="checkbox"]:checked { background: var(--amber); border-color: var(--amber); }
+  .dp-dayedit input[type="checkbox"]:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-amber); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  .dp-dayedit select.input { padding: 7px 30px 7px 10px; font-size: 13.5px; }
+  .dp-mydot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); margin-left: 6px; vertical-align: 2px; }
+  #dpDayTabs { max-width: 100%; overflow-x: auto; }
+  #dpDayTabs button { white-space: nowrap; }
+  .dp-brow.is-mine .dp-bt::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); margin-right: 6px; vertical-align: 2px; }
+  /* scrollable tide chart, date report, day-by-day board */
+  .dp-tide-wrap { display: flex; align-items: flex-start; }
+  .dp-tide-axis { flex-shrink: 0; display: block; }
+  .dp-tide-scroll { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+  .dp-tide-scroll svg, .dp-dr-chart svg { display: block; max-width: none; }
+  .dp-tide-scroll:focus-visible { outline-offset: -2px; }
+  .dp-tide-nav { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .dp-tide-nav .toggle-btn { flex: none; padding: 6px 14px; }
+  .dp-dr-chart { overflow-x: auto; }
+  .dp-datectl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .dp-datectl .input { width: auto; padding: 8px 10px; min-height: 38px; }
+  .dp-datectl .toggle-btn { height: 38px; padding: 0 14px; }
+  .dp-dr-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 2px 0 12px; }
+  .dp-dr-when b { display: block; font-size: 26px; font-weight: 800; font-stretch: 86%; line-height: 1.15; }
+  .dp-dr-when > span { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 13.5px; color: var(--ink-2); margin-top: 4px; }
+  .dp-dr-verdict { display: flex; align-items: center; gap: 12px; font-family: var(--led); font-weight: 800; font-size: clamp(30px, 4.4vw, 52px); letter-spacing: 0.05em; color: var(--amber); line-height: 1; }
+  .dp-dr-verdict svg { width: clamp(28px, 3.6vw, 42px); height: clamp(28px, 3.6vw, 42px); flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .dp-v-1 .dp-dr-verdict span { text-decoration: underline; text-decoration-style: dashed; text-decoration-thickness: 3px; text-underline-offset: 8px; }
+  .dp-v-2 .dp-dr-verdict { color: var(--coral); }
+  .dp-dr-sentence { font-size: 16px; line-height: 1.55; max-width: 74ch; text-wrap: pretty; margin-bottom: 16px; }
+  .dp-dr-sentence b { font-weight: 800; }
+  .dp-dcells { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); }
+  .dp-dcell { padding: 14px 18px 16px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); min-width: 0; }
+  .dp-dval { font-size: 24px; font-weight: 800; font-stretch: 88%; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
+  .dp-dval small { font-size: 13px; font-weight: 600; color: var(--ink-2); margin-left: 4px; }
+  .dp-dsub { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+  .dp-boardctl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; max-width: 100%; }
+  .dp-dayboard { min-width: 1010px; }
+  .dp-dhead, .dp-drow { display: grid; grid-template-columns: 130px 170px 160px 110px 130px 70px 60px 80px 70px; gap: 0 14px; align-items: center; }
+  .dp-dhead { position: sticky; top: 0; z-index: 2; background: var(--panel-strong); padding: 10px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule-strong); }
+  .dp-drow { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--rule); padding: 12px 10px; cursor: pointer; color: inherit; font-size: 14px; transition: background 140ms var(--ease-out); }
+  .dp-drow:hover { background: var(--hover); }
+  .dp-drow.is-sel { background: rgba(255, 178, 62, 0.09); }
+  .dp-dd b { display: block; font-size: 15px; font-weight: 800; }
+  .dp-dd em, .dp-dbw em { font-style: normal; font-size: 12.5px; color: var(--ink-2); }
+  .dp-dv { display: flex; align-items: center; gap: 8px; font-family: var(--led); font-weight: 800; font-size: 16px; letter-spacing: 0.05em; color: var(--amber); white-space: nowrap; }
+  .dp-dv svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .dp-drow-l1 .dp-dv { text-decoration: underline; text-decoration-style: dashed; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .dp-drow-l2 .dp-dv { color: var(--coral); }
+  .dp-dbw b { display: block; font-weight: 800; }
+  .dp-dw small { color: var(--ink-3); font-size: 12.5px; }
+  .dp-swipe { display: none; }
   .bottom-nav { display: none; }
 
   @media (max-width: 1100px) {
@@ -580,6 +654,15 @@
     .span-8, .span-7, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
     .dp-verdict { grid-template-columns: 1fr; }
     .dp-v-cells { border-left: none; border-top: 1px solid var(--rule); }
+    .dp-swipe { display: block; }
+    .dp-dcells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dp-dcell { padding: 12px 14px 14px; }
+    .dp-dr-head { align-items: flex-start; }
+    .dp-md-item { grid-template-columns: minmax(0, 1fr) auto; }
+    .dp-md-verdict { justify-self: end; }
+    .dp-md-best, .dp-md-facts, .dp-md-conf { grid-column: 1 / -1; }
+    .dp-md-best b { display: inline; margin-right: 10px; }
+    .dp-md-best span { display: inline; }
     .deck-right .deck-clock { display: none; }
   }
   @media (max-width: 760px) {
@@ -995,6 +1078,7 @@
       </div>
 
       <div class="dp-verdict dp-v-wait" id="dpVerdict"></div>
+      <div id="dpMyDays"></div>
 
       <div class="level-tabs dp-tabs" id="dpTabs" role="tablist" aria-label="Sea and Sky views">
         <button type="button" data-view="now" class="active">Now</button>
@@ -2377,8 +2461,8 @@
   // Everything here is guidance for choosing when to fish, not for navigation.
   // ==========================================================================
   const DP_HOME = { id: "home", name: "Karimun waters", lat: 1.05, lng: 103.43, water: "salt" };
-  const DP_KEYS = { spot: "dp_spot", unit: "dp_unit", limits: "dp_limits", cache: "dp_cache", list: "dp_checklist", gps: "dp_gps" };
-  const dp = { inited: false, spot: DP_HOME, gps: null, model: null, view: "now", day: 0, unit: "kmh", limits: { gust: 30, wave: 1.0 }, loading: false, error: "", offline: false, timer: null };
+  const DP_KEYS = { spot: "dp_spot", unit: "dp_unit", limits: "dp_limits", cache: "dp_cache", list: "dp_checklist", gps: "dp_gps", days: "dp_mydays" };
+  const dp = { inited: false, spot: DP_HOME, gps: null, model: null, view: "now", day: 0, boardMode: "hour", unit: "kmh", limits: { gust: 30, wave: 1.0 }, myDays: null, loading: false, error: "", offline: false, timer: null };
   const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage may be unavailable */ } };
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -2497,8 +2581,8 @@
   }
   async function dpFetch(spot) {
     const q = `latitude=${spot.lat.toFixed(4)}&longitude=${spot.lng.toFixed(4)}&timezone=auto`;
-    const wReq = fetchJSON(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,cloud_cover&hourly=${DP_W_HOURLY}&daily=uv_index_max,temperature_2m_max,temperature_2m_min&past_days=1&forecast_days=4`);
-    const mReq = spot.water === "fresh" ? Promise.resolve(null) : fetchJSON(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${DP_M_HOURLY}&past_days=1&forecast_days=4`).catch(() => null);
+    const wReq = fetchJSON(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,cloud_cover&hourly=${DP_W_HOURLY}&daily=uv_index_max,temperature_2m_max,temperature_2m_min&past_days=1&forecast_days=9`);
+    const mReq = spot.water === "fresh" ? Promise.resolve(null) : fetchJSON(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${DP_M_HOURLY}&past_days=1&forecast_days=9`).catch(() => null);
     const [w, m] = await Promise.all([wReq, mReq]);
     return { w, m, fetchedAt: Date.now() };
   }
@@ -2554,7 +2638,7 @@
     // sun + moon for yesterday..+3 days (local days)
     const todayWall = Math.floor(rows[now].ms / 86400000) * 86400000;
     const days = [];
-    for (let d = -1; d <= 3; d++) {
+    for (let d = -1; d <= 8; d++) {
       const start = todayWall + d * 86400000, startUtc = start - offset;
       days.push({ idx: d, wall: start, utc: startUtc, sun: dpSun(startUtc, spot.lat, spot.lng), moon: dpMoon(startUtc, spot.lat, spot.lng) });
     }
@@ -2595,8 +2679,9 @@
       if (run.length) { const mean = run.reduce((a, r) => a + r.score, 0) / run.length; windows.push({ rows: run, mean, len: run.length, rank: mean * (1 + 0.12 * Math.min(run.length, 4)) }); }
       run = [];
     };
-    rows.forEach((r, i) => { if (i >= now && i < now + 72 && r.risk < 2 && r.score >= 58) { if (run.length && rows.indexOf(run[run.length - 1]) !== i - 1) flush(); run.push(r); } else flush(); });
+    rows.forEach((r, i) => { if (i >= now && i < now + 168 && r.risk < 2 && r.score >= 58) { if (run.length && rows.indexOf(run[run.length - 1]) !== i - 1) flush(); run.push(r); } else flush(); });
     flush();
+    windows.forEach(w => { const di = Math.floor((w.rows[0].ms - todayWall) / 86400000); w.rank *= di <= 2 ? 1 : di <= 4 ? 0.94 : 0.88; });
     windows.sort((a, b) => b.rank - a.rank);
     return { spot, raw, rows, now, offset, cur, daily: w.daily, extremes, hasTide, days, todayWall, windows, maxRate, fetchedAt: raw.fetchedAt, hasMarine: !!m && hasTide, tz: w.timezone_abbreviation };
   }
@@ -2638,6 +2723,126 @@
   }
 
   // ---- rendering: location bar + verdict ----
+  function dpBestStretch(pool) {
+    const L = Math.min(4, pool.length);
+    let bestSafe = null, bestAny = null;
+    for (let i = 0; i + L <= pool.length; i++) {
+      const seg = pool.slice(i, i + L), mean = seg.reduce((a, r) => a + r.score, 0) / L;
+      if (!bestAny || mean > bestAny.mean) bestAny = { best: seg, mean };
+      if (!seg.some(r => r.risk === 2) && (!bestSafe || mean > bestSafe.mean)) bestSafe = { best: seg, mean };
+    }
+    return bestSafe || bestAny;
+  }
+  // ---- my fishing days: the days (and hours) Del actually goes out, judged on their own ----
+  const DP_PRESETS = {
+    all: { label: "All day", from: 0, to: 24 },
+    subuh: { label: "Subuh, 03:00–08:00", from: 3, to: 8 },
+    morning: { label: "Morning, 06:00–12:00", from: 6, to: 12 },
+    afternoon: { label: "Afternoon, 12:00–18:00", from: 12, to: 18 },
+    evening: { label: "Evening, 17:00–24:00", from: 17, to: 24 },
+  };
+  const DP_DEFAULT_DAYS = [{ dow: 6, p: "all" }, { dow: 0, p: "all" }, { dow: 1, p: "subuh" }];
+  const DOW_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  function dpLoadDays() {
+    const saved = lsGet(DP_KEYS.days, null);
+    const ok = Array.isArray(saved) && saved.every(r => r && Number.isInteger(r.dow) && r.dow >= 0 && r.dow <= 6 && DP_PRESETS[r.p]);
+    dp.myDays = ok ? saved : DP_DEFAULT_DAYS.map(r => ({ ...r }));
+  }
+  function dpSaveDays() { lsSet(DP_KEYS.days, dp.myDays); }
+  const fullDate = (wall) => { const d = new Date(wall); return `${DAY_NAMES[d.getUTCDay()]} ${pad2(d.getUTCDate())} ${MONTH_NAMES[d.getUTCMonth()]}`; };
+  const whenText = (di) => (di === 0 ? "today" : di === 1 ? "tomorrow" : `in ${di} days`);
+  function dpMine(m) {
+    const out = [], nowRow = m.rows[m.now];
+    for (let di = 0; di <= 8; di++) {
+      const wall = m.todayWall + di * 86400000, dow = new Date(wall).getUTCDay();
+      dp.myDays.filter(r => r.dow === dow).forEach(rule => {
+        const pre = DP_PRESETS[rule.p];
+        let rows = m.rows.filter(r => r.ms >= wall + pre.from * 3600000 && r.ms < wall + pre.to * 3600000);
+        if (di === 0) rows = rows.filter(r => r.ms >= nowRow.ms);
+        if (!rows.length) return;
+        const pick = dpBestStretch(rows), best = pick.best;
+        out.push({
+          di, wall, dow, rule, pre, rows, best, mean: pick.mean,
+          level: Math.max(...best.map(r => r.risk)),
+          flagged: rows.find(r => r.risk > 0 && !best.includes(r)) || null,
+          confidence: di <= 2 ? "High" : di <= 4 ? "Medium" : "Low",
+          sun: (m.days.find(d => d.idx === di) || m.days[1]).sun,
+        });
+      });
+    }
+    return out.sort((a, b) => a.wall + a.pre.from * 3600000 - (b.wall + b.pre.from * 3600000));
+  }
+  function mineFacts(x) {
+    const uniq = (a) => [...new Set(a)], b = x.best;
+    const tide = uniq(b.map(r => r.tidePhase).filter(Boolean)).join(" then ");
+    const ws = b.map(r => num(r.ws)), pops = b.map(r => num(r.pop)), waves = b.map(r => r.wave).filter(has);
+    const bits = [];
+    if (tide) bits.push(`${tide} tide`);
+    bits.push(`wind ${fmtUnit(Math.min(...ws))}–${fmtUnit(Math.max(...ws))} ${unitLabel()}`);
+    bits.push(Math.max(...pops) >= 30 ? `rain chance up to ${Math.max(...pops)}%` : "dry");
+    if (waves.length) bits.push(`waves ${Math.max(...waves).toFixed(1)} m`);
+    return bits.join(" · ");
+  }
+  const FLAG_WORDS = { gust: "strong gusts", wave: "rough water", storm: "storm risk" };
+  function mineHtml(x, m, detailed) {
+    const word = ["GO", "CAUTION", "STAY ASHORE"][x.level], s = x.best[0], e = x.best[x.best.length - 1], mid = x.best[Math.floor(x.best.length / 2)];
+    const off = m.offset, tw = (t) => (t == null ? "—" : fmtWall(t + off));
+    const note = x.flagged ? `Watch ${fmtWall(x.flagged.ms)}: ${x.flagged.riskTags.map(t => FLAG_WORDS[t] || t).join(", ")}` : "";
+    const extra = detailed ? `
+        <div class="dp-md-more">
+          <span>First light ${tw(x.sun.dawn)} · sunrise ${tw(x.sun.sunrise)} · sunset ${tw(x.sun.sunset)}</span>
+          ${m.hasMarine ? `<span>${m.extremes.filter(t => t.utc >= x.rows[0].utc && t.utc <= x.rows[x.rows.length - 1].utc + 3600000).map(t => `${t.high ? "High" : "Low"} ${fmtWall(t.ms)} (${t.h.toFixed(1)} m)`).join(" · ") || "no tide turn in this window"}</span>` : ""}
+          <span>${escapeHtml(windowReason({ rows: x.best }))}</span>
+        </div>` : "";
+    return `<li class="dp-md-item dp-md-l${x.level}">
+      <div class="dp-md-when"><b>${fullDate(x.wall)}</b><span>${whenText(x.di)} · ${escapeHtml(x.pre.label)}</span></div>
+      <div class="dp-md-verdict"><svg viewBox="0 0 24 24" aria-hidden="true">${VERDICT_ICON[x.level]}</svg><span>${word}</span></div>
+      <div class="dp-md-best"><b>${fmtWall(s.ms)}–${fmtWall(e.ms + 3600000)}</b><span>${tierOf(mid)} · ${Math.round(x.mean)}</span></div>
+      <div class="dp-md-facts">${escapeHtml(mineFacts(x))}${note ? `<em>${escapeHtml(note)}</em>` : ""}</div>
+      <div class="dp-md-conf" title="Forecasts get less certain the further ahead they look"><span class="dp-conf dp-conf-${x.confidence.toLowerCase()}"><i></i><i></i><i></i></span>${x.confidence} confidence</div>
+      ${extra}</li>`;
+  }
+  function dpRenderMyDays() {
+    const box = document.getElementById("dpMyDays");
+    if (!box) return;
+    if (!dp.model || dp.view === "plan") { box.innerHTML = ""; return; }
+    const m = dp.model, mine = dpMine(m).slice(0, 3);
+    if (!mine.length) { box.innerHTML = ""; return; }
+    box.innerHTML = `<section class="box dp-mydays"><div class="box-title-row"><span class="card-title">My fishing days</span><button type="button" class="card-link dp-linkbtn" id="dpMdPlan">Plan them</button></div><ul class="dp-md-list">${mine.map(x => mineHtml(x, m, false)).join("")}</ul></section>`;
+    document.getElementById("dpMdPlan").addEventListener("click", () => { dpShowView("plan"); const t = document.getElementById("dpMineBox"); if (t) t.scrollIntoView({ block: "start" }); });
+  }
+  function dpMineBox(m, mine) {
+    const dows = [1, 2, 3, 4, 5, 6, 0];
+    const rows = dows.map(d => {
+      const rule = dp.myDays.find(r => r.dow === d);
+      return `<div class="dp-dayedit"><label><input type="checkbox" data-mydow="${d}" ${rule ? "checked" : ""}><span>${DOW_NAMES[d]}</span></label>
+        <select class="input" data-mydowp="${d}" ${rule ? "" : "disabled"} aria-label="Hours on ${DOW_NAMES[d]}">${Object.entries(DP_PRESETS).map(([k, p]) => `<option value="${k}" ${rule && rule.p === k ? "selected" : ""}>${p.label}</option>`).join("")}</select></div>`;
+    }).join("");
+    return `<section class="box dp-mydays" id="dpMineBox" style="margin-bottom:16px;">
+      <div class="box-title-row"><span class="card-title">My fishing days</span><span class="gallery-count">next 8 days, each judged on its own hours</span></div>
+      ${mine.length ? `<ul class="dp-md-list">${mine.map(x => mineHtml(x, m, true)).join("")}</ul>` : `<p class="empty-state">No fishing days set for the next 8 days. Pick some below.</p>`}
+      <details class="dp-editdays"><summary>Edit my fishing days</summary>
+        <div class="dp-daylist">${rows}</div>
+        <button type="button" class="toggle-btn" id="dpDaysReset" style="flex:none; margin-top:12px;">Back to Saturday, Sunday and Monday subuh</button>
+      </details>
+    </section>`;
+  }
+  function dpWireDayEditor() {
+    const apply = () => { dpSaveDays(); dpRenderPlan(); const d = document.querySelector("#dpMineBox details"); if (d) d.open = true; };
+    document.querySelectorAll("[data-mydow]").forEach(c => c.addEventListener("change", () => {
+      const dow = Number(c.dataset.mydow), sel = document.querySelector(`[data-mydowp="${dow}"]`);
+      dp.myDays = dp.myDays.filter(r => r.dow !== dow);
+      if (c.checked) dp.myDays.push({ dow, p: sel ? sel.value : "all" });
+      apply();
+    }));
+    document.querySelectorAll("[data-mydowp]").forEach(sel => sel.addEventListener("change", () => {
+      const dow = Number(sel.dataset.mydowp), r = dp.myDays.find(x => x.dow === dow);
+      if (r) { r.p = sel.value; apply(); }
+    }));
+    const reset = document.getElementById("dpDaysReset");
+    if (reset) reset.addEventListener("click", () => { dp.myDays = DP_DEFAULT_DAYS.map(r => ({ ...r })); apply(); });
+  }
+
   function dpSpots() {
     const groups = new Map();
     state.catches.forEach(c => {
@@ -2722,32 +2927,6 @@
     }
     return d;
   }
-  function tideChart(m) {
-    const i0 = Math.max(0, m.now - 6), i1 = Math.min(m.rows.length - 1, m.now + 18), pts = m.rows.slice(i0, i1 + 1).filter(r => has(r.tide));
-    if (pts.length < 6) return "";
-    const host = document.getElementById("dpNow"), W = clamp(Math.round((host ? host.clientWidth : 720) * (window.innerWidth > 1100 ? 0.64 : 0.94)) - 40, 300, 720), H = 262, pl = 40, pr = 14, pt = 52, pb = 46;
-    const lo = Math.min(...pts.map(r => r.tide)) - 0.15, hi = Math.max(...pts.map(r => r.tide)) + 0.15;
-    const t0 = pts[0].ms, t1 = pts[pts.length - 1].ms;
-    const x = (ms) => pl + ((ms - t0) / (t1 - t0)) * (W - pl - pr), y = (v) => pt + (1 - (v - lo) / (hi - lo)) * (H - pt - pb);
-    const P = pts.map(r => [x(r.ms), y(r.tide)]);
-    const line = smoothPath(P), area = `${line} L${P[P.length - 1][0].toFixed(1)},${H - pb} L${P[0][0].toFixed(1)},${H - pb} Z`;
-    const ticksY = [lo + 0.15, (lo + hi) / 2, hi - 0.15].map(v => Math.round(v * 10) / 10);
-    const grid = ticksY.map(v => `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#243040"/><text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#A3B4C4">${v.toFixed(1)}</text>`).join("");
-    const xt = pts.filter(r => new Date(r.ms).getUTCHours() % (W < 520 ? 6 : 3) === 0).map(r => `<text x="${x(r.ms)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#A3B4C4">${fmtWall(r.ms)}</text>`).join("");
-    const band = pts.map((r, i) => { const nx = pts[i + 1]; if (!nx) return ""; const c = r.lightTag === "night" ? "#243040" : r.lightTag === "daylight" ? "#FFB23E" : "#B7842D"; const op = r.lightTag === "night" ? 0.9 : r.lightTag === "daylight" ? 0.55 : 0.4; return `<rect x="${x(r.ms)}" y="${H - pb + 8}" width="${x(nx.ms) - x(r.ms) + 0.5}" height="6" fill="${c}" opacity="${op}"/>`; }).join("");
-    const ex = m.extremes.filter(e => e.ms >= t0 && e.ms <= t1).map(e => {
-      const ex_ = x(e.ms), ey = y(e.h), above = e.high;
-      return `<rect x="${x(e.ms - 2400000)}" y="${pt}" width="${x(e.ms + 2400000) - x(e.ms - 2400000)}" height="${H - pt - pb}" fill="#E9EEF3" opacity="0.045"/>
-        <circle cx="${ex_}" cy="${ey}" r="4.5" fill="#0F151C" stroke="#4FC3D9" stroke-width="2"/>
-        <text x="${ex_}" y="${above ? ey - 25 : ey + 19}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#E9EEF3">${fmtWall(e.ms)}</text><text x="${ex_}" y="${above ? ey - 12 : ey + 32}" text-anchor="middle" font-size="11.5" fill="#A3B4C4">${e.h.toFixed(2)} m</text>`;
-    }).join("");
-    const nowR = m.rows[m.now], nx = x(nowR.ms), ny = y(nowR.tide);
-    const cap = m.extremes.find(e => e.utc > nowR.utc);
-    return `<svg class="dp-tide-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tide height for the next 18 hours. Now ${num(nowR.tide).toFixed(2)} metres, ${nowR.tidePhase || "steady"}${cap ? ", next " + (cap.high ? "high" : "low") + " at " + fmtWall(cap.ms) : ""}.">
-      ${grid}${band}<path d="${area}" fill="#4FC3D9" opacity="0.14"/><path d="${line}" fill="none" stroke="#4FC3D9" stroke-width="2.5" stroke-linecap="round"/>
-      ${ex}<line x1="${nx}" x2="${nx}" y1="20" y2="${H - pb}" stroke="#FFB23E" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${nx}" cy="${ny}" r="6" fill="#FFB23E"/>
-      <text x="${nx}" y="14" text-anchor="middle" font-size="12" font-weight="800" fill="#FFB23E">NOW ${num(nowR.tide).toFixed(2)} m</text>${xt}</svg>`;
-  }
   function moonGlyph(phase, size = 60) {
     const r = 22, k = Math.cos(phase * 2 * Math.PI), rx = Math.abs(k) * r, right = phase < 0.5;
     const outer = right ? `M0 ${-r} A${r} ${r} 0 0 1 0 ${r}` : `M0 ${-r} A${r} ${r} 0 0 0 0 ${r}`;
@@ -2795,15 +2974,15 @@
     const nextRain = next12.find(x => num(x.pop) >= 50 || num(x.rain) >= 0.3);
     const stormR = next12.reduce((a, x) => (num(x.cape) > num(a.cape) ? x : a), next12[0]);
     const stormLevel = next12.some(x => x.riskTags.includes("storm") && x.risk === 2) ? "High" : next12.some(x => x.riskTags.includes("storm")) ? "Watch" : "Low";
-    const nx = m.extremes.filter(e => e.utc > r.utc).slice(0, 4);
+    const nx = m.extremes.filter(e => e.utc > r.utc && e.utc <= r.utc + 48 * 3600000).slice(0, 8);
     const uv = m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1] : null;
     const sun = day.sun, moon = day.moon;
     const mt = (t) => (t ? fmtWall(t + off) + (t - day.utc >= 86400000 ? " (+1)" : "") : "—");
     const tideBox = m.hasMarine ? `
       <section class="box span-8"><div class="box-title-row"><span class="card-title">Tide</span><span class="dp-chip">${r.tidePhase ? (r.tidePhase === "rising" ? "Rising" : r.tidePhase === "falling" ? "Falling" : "Slack") : ""}${has(r.tide) ? ` · ${r.tide.toFixed(2)} m` : ""}</span></div>
-        ${tideChart(m)}
-        <div class="dp-tidelist">${nx.map(e => `<div class="dp-tl"><span class="wmark">${arrowSvg(e.high ? 0 : 180, 16)}</span><b>${e.high ? "High" : "Low"}</b><span class="mono">${fmtWall(e.ms)}</span><span class="mono">${e.h.toFixed(2)} m</span><span class="dp-dim">in ${Math.floor((e.utc - r.utc) / 3600000)} h ${pad2(Math.round(((e.utc - r.utc) % 3600000) / 60000))} m</span></div>`).join("")}</div>
-        <p class="dp-note">The strip under the curve is daylight (bright) and night (dark). Height comes from a global ocean model, so times can be off by tens of minutes near narrow straits: a guide, not a tide table.</p>
+        ${tideBlock(m)}
+        <div class="dp-tidelist">${nx.map(e => `<div class="dp-tl"><span class="wmark">${arrowSvg(e.high ? 0 : 180, 16)}</span><b>${e.high ? "High" : "Low"}</b><span class="mono">${fmtWall(e.ms)}${e.ms >= m.todayWall + 86400000 ? ` <small>${DAY_NAMES[new Date(e.ms).getUTCDay()]}</small>` : ""}</span><span class="mono">${e.h.toFixed(2)} m</span><span class="dp-dim">in ${Math.floor((e.utc - r.utc) / 3600000)} h ${pad2(Math.round(((e.utc - r.utc) % 3600000) / 60000))} m</span></div>`).join("")}</div>
+        <p class="dp-note">Shaded bands are night and the strip under the curve is daylight. Scroll sideways for the next two days. Height comes from a global ocean model, so times can be off by tens of minutes near narrow straits: a guide, not a tide table.</p>
       </section>` : `
       <section class="box span-8"><div class="box-title-row"><span class="card-title">${fresh ? "Freshwater spot: next 12 hours" : "Sea data unavailable here"}</span></div>
         ${fresh ? `<p class="dp-note" style="margin:0 0 12px;">Tide, waves and current don't apply on still water. Wind, rain and light decide the day.</p>` : `<p class="dp-note">The marine model has no data for this position. Weather still works.</p>`}
@@ -2852,43 +3031,207 @@
       </section>`;
     const two = (h) => h.replace('class="box span-4"', 'class="box span-6"');
     document.getElementById("dpNow").innerHTML = `<div class="grid dp-grid">${tideBox}${sunBox}${fresh ? two(windBox) + two(skyBox) : windBox + seaBox + skyBox}</div>`;
+    dpWireTide();
   }
 
   // ---- rendering: PLAN ----
-  function dpChecklist(m) {
-    const next = m.rows.slice(m.now, m.now + 14), r = m.rows[m.now];
+  function dpChecklist(m, tripRows, di = 0) {
+    const r = m.rows[m.now], next = tripRows && tripRows.length ? tripRows : m.rows.slice(m.now, m.now + 14);
     const items = [
       { id: "lj", t: "Life jackets on board and worn on the water" },
       { id: "tell", t: "Tell someone your spot and when you'll be back" },
       { id: "ph", t: "Phone charged, power bank packed, dry bag for both" },
       { id: "wf", t: "Drinking water and food for the whole trip" },
     ];
-    const uv = m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1] : null;
+    const uv = m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1 + di] : null;
     if (uv != null && uv >= 6) items.push({ id: "uv", t: `Sunscreen, hat and long sleeves (UV index up to ${Math.round(uv)})` });
     if (next.some(x => num(x.pop) >= 50 || num(x.rain) >= 0.5)) items.push({ id: "rain", t: "Rain jacket and a dry place for the gear" });
     if (next.some(x => num(x.ws) >= 20)) items.push({ id: "wind", t: "Windbreaker and a secure hat, it will be breezy" });
     if (m.hasMarine) {
-      const low = m.extremes.find(e => !e.high && e.utc > r.utc && e.utc < r.utc + 14 * 3600000);
+      const t0 = next[0].utc, t1 = next[next.length - 1].utc + 3600000, low = m.extremes.find(e => !e.high && e.utc > t0 && e.utc < t1);
       if (low) items.push({ id: "low", t: `Low water at ${fmtWall(low.ms)} (${low.h.toFixed(2)} m): check depth at the jetty and around the spot` });
     }
     if (next.some(x => x.riskTags.includes("storm"))) items.push({ id: "storm", t: "Storm cells possible: agree a turn-back time and watch the sky to the west" });
     return items;
   }
+  // ---- tide chart: scrollable (Now tab, 12 h back to 48 h ahead) or fixed (one chosen date) ----
+  function tideChartSvg(m, o) {
+    const pts = m.rows.filter(r => r.ms >= o.from && r.ms <= o.to && has(r.tide));
+    if (pts.length < 6) return null;
+    const scroll = !!o.pph, H = 262, pt = 52, pb = 46, pr = 14, pl = scroll ? 8 : 44;
+    const hours = (pts[pts.length - 1].ms - pts[0].ms) / 3600000;
+    const W = scroll ? Math.round(hours * o.pph) + pl + pr : o.W;
+    const tmin = Math.min(...pts.map(r => r.tide)), tmax = Math.max(...pts.map(r => r.tide));
+    const lo = Math.floor((tmin - 0.1) * 2) / 2, hi = Math.ceil((tmax + 0.1) * 2) / 2;
+    const t0 = pts[0].ms, t1 = pts[pts.length - 1].ms;
+    const x = (ms) => pl + ((ms - t0) / (t1 - t0)) * (W - pl - pr), y = (v) => pt + (1 - (v - lo) / (hi - lo)) * (H - pt - pb);
+    const ticks = []; for (let v = lo; v <= hi + 0.001; v += 0.5) ticks.push(v);
+    const grid = ticks.map(v => `<line x1="${scroll ? 0 : pl}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#243040"/>${scroll ? "" : `<text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#A3B4C4">${v.toFixed(1)}</text>`}`).join("");
+    const axis = scroll ? `<svg class="dp-tide-axis" width="44" height="${H}" viewBox="0 0 44 ${H}" aria-hidden="true">${ticks.map(v => `<text x="38" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#A3B4C4">${v.toFixed(1)}</text>`).join("")}<text x="38" y="${pt - 14}" text-anchor="end" font-size="11" fill="#8093A6">m</text></svg>` : "";
+    const P = pts.map(r => [x(r.ms), y(r.tide)]);
+    const line = smoothPath(P), area = `${line} L${P[P.length - 1][0].toFixed(1)},${H - pb} L${P[0][0].toFixed(1)},${H - pb} Z`;
+    const night = pts.map((r, i) => { const nx = pts[i + 1]; return nx && r.lightTag === "night" ? `<rect x="${x(r.ms)}" y="${pt}" width="${x(nx.ms) - x(r.ms) + 0.5}" height="${H - pt - pb}" fill="#000" opacity="0.28"/>` : ""; }).join("");
+    const band = pts.map((r, i) => { const nx = pts[i + 1]; if (!nx) return ""; const c = r.lightTag === "night" ? "#243040" : r.lightTag === "daylight" ? "#FFB23E" : "#B7842D"; const op = r.lightTag === "night" ? 0.9 : r.lightTag === "daylight" ? 0.55 : 0.4; return `<rect x="${x(r.ms)}" y="${H - pb + 8}" width="${x(nx.ms) - x(r.ms) + 0.5}" height="6" fill="${c}" opacity="${op}"/>`; }).join("");
+    const step = scroll ? 3 : (W < 520 ? 6 : 3);
+    const xt = pts.filter(r => new Date(r.ms).getUTCHours() % step === 0).map(r => {
+      const d = new Date(r.ms), mid = d.getUTCHours() === 0;
+      return `${mid ? `<line x1="${x(r.ms)}" x2="${x(r.ms)}" y1="${pt}" y2="${H - pb + 14}" stroke="#354456" stroke-dasharray="2 4"/>` : ""}<text x="${x(r.ms)}" y="${H - 8}" text-anchor="middle" font-size="${mid ? 12 : 11}" font-weight="${mid ? 800 : 400}" fill="${mid ? "#E9EEF3" : "#A3B4C4"}">${mid ? `${DAY_NAMES[d.getUTCDay()]} ${pad2(d.getUTCDate())}` : fmtWall(r.ms)}</text>`;
+    }).join("");
+    const ex = m.extremes.filter(e => e.ms >= t0 && e.ms <= t1).map(e => {
+      const cx = x(e.ms), cy = y(e.h), above = e.high;
+      return `<rect x="${x(e.ms - 2400000)}" y="${pt}" width="${x(e.ms + 2400000) - x(e.ms - 2400000)}" height="${H - pt - pb}" fill="#E9EEF3" opacity="0.045"/>
+        <circle cx="${cx}" cy="${cy}" r="4.5" fill="#0F151C" stroke="#4FC3D9" stroke-width="2"/>
+        <text x="${cx}" y="${above ? cy - 25 : cy + 19}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#E9EEF3">${fmtWall(e.ms)}</text><text x="${cx}" y="${above ? cy - 12 : cy + 32}" text-anchor="middle" font-size="11.5" fill="#A3B4C4">${e.h.toFixed(2)} m</text>`;
+    }).join("");
+    const nowR = m.rows[m.now], inRange = nowR.ms >= t0 && nowR.ms <= t1;
+    const nowX = x(nowR.ms), nowY = has(nowR.tide) ? y(nowR.tide) : 0;
+    const nowMark = inRange ? `<line x1="${nowX}" x2="${nowX}" y1="20" y2="${H - pb}" stroke="#FFB23E" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${nowX}" cy="${nowY}" r="6" fill="#FFB23E"/><text x="${nowX}" y="14" text-anchor="middle" font-size="12" font-weight="800" fill="#FFB23E">NOW ${num(nowR.tide).toFixed(2)} m</text>` : "";
+    const label = o.label || "Tide height";
+    const plot = `<svg class="dp-tide-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label}. Lowest ${tmin.toFixed(2)} metres, highest ${tmax.toFixed(2)} metres.">
+      ${night}${grid}${band}<path d="${area}" fill="#4FC3D9" opacity="0.14"/><path d="${line}" fill="none" stroke="#4FC3D9" stroke-width="2.5" stroke-linecap="round"/>${ex}${nowMark}${xt}</svg>`;
+    return { plot, axis, W, H, nowX: inRange ? nowX : 0 };
+  }
+  function tideBlock(m) {
+    const nowMs = m.rows[m.now].ms, first = m.rows[0].ms, last = m.rows[m.rows.length - 1].ms;
+    const c = tideChartSvg(m, { from: Math.max(first, nowMs - 12 * 3600000), to: Math.min(last, nowMs + 48 * 3600000), pph: window.innerWidth <= 760 ? 30 : 36, label: "Tide height from 12 hours ago to 48 hours ahead" });
+    if (!c) return "";
+    return `<div class="dp-tide-wrap">${c.axis}<div class="dp-tide-scroll" id="dpTideScroll" data-nowx="${Math.round(c.nowX)}" tabindex="0" role="region" aria-label="Tide chart, scroll sideways for the next two days">${c.plot}</div></div>
+      <div class="dp-tide-nav"><button type="button" class="toggle-btn" data-tide="-1">‹ 12 h</button><button type="button" class="toggle-btn" data-tide="now">Now</button><button type="button" class="toggle-btn" data-tide="1">12 h ›</button><span class="dp-dim">Scroll sideways: 12 hours back, 2 days ahead</span></div>`;
+  }
+  function dpWireTide() {
+    const sc = document.getElementById("dpTideScroll");
+    if (!sc) return;
+    const home = () => { sc.scrollLeft = Math.max(0, Number(sc.dataset.nowx) - sc.clientWidth * 0.22); };
+    home();
+    document.querySelectorAll("[data-tide]").forEach(b => b.addEventListener("click", () => {
+      if (b.dataset.tide === "now") { sc.scrollTo({ left: Math.max(0, Number(sc.dataset.nowx) - sc.clientWidth * 0.22), behavior: reduceMotion() ? "auto" : "smooth" }); return; }
+      sc.scrollBy({ left: Number(b.dataset.tide) * (window.innerWidth <= 760 ? 30 : 36) * 12, behavior: reduceMotion() ? "auto" : "smooth" });
+    }));
+  }
+
+  // ---- one date, judged as a whole ----
+  function daySummary(m, di) {
+    const day = m.days.find(d => d.idx === di);
+    if (!day) return null;
+    const all = m.rows.filter(r => r.ms >= day.wall && r.ms < day.wall + 86400000);
+    if (!all.length) return null;
+    const nowRow = m.rows[m.now];
+    const cand = di === 0 ? all.filter(r => r.ms >= nowRow.ms) : all;
+    const pool = cand.length ? cand : all;
+    const pick = dpBestStretch(pool), best = pick.best, bm = pick.mean, mid = best[Math.floor(best.length / 2)];
+    const stat = di === 0 && cand.length ? cand : all;   // today: only the hours still to come
+    const nums = (k) => stat.map(r => r[k]).filter(has);
+    const rng = (a) => (a.length ? [Math.min(...a), Math.max(...a)] : null);
+    const tides = nums("tide"), press = nums("press"), ext = m.extremes.filter(e => e.ms >= day.wall && e.ms < day.wall + 86400000);
+    return {
+      di, day, all, pool, best, mid, mean: bm, level: Math.max(...best.map(r => r.risk)),
+      flagged: pool.find(r => r.risk > 0 && !best.includes(r)) || null,
+      ws: rng(nums("ws")), wg: Math.max(...nums("wg"), 0), wave: rng(nums("wave")), wper: rng(nums("wper")),
+      pop: Math.max(...nums("pop"), 0), rain: nums("rain").reduce((a, v) => a + v, 0), temp: rng(nums("temp")),
+      tide: tides.length ? [Math.min(...tides), Math.max(...tides)] : null, ext,
+      storm: pool.some(r => r.riskTags.includes("storm")), stormHigh: pool.some(r => r.riskTags.includes("storm") && r.risk === 2), cape: Math.max(...nums("cape"), 0),
+      p0: press[0], p1: press[press.length - 1], partial: di === 0 && cand.length > 0,
+      uv: m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1 + di] : null,
+      sun: day.sun, moon: day.moon, confidence: di <= 2 ? "High" : di <= 4 ? "Medium" : "Low",
+    };
+  }
+  function daySentence(s) {
+    const tier = tierOf(s.mid), win = `${fmtWall(s.best[0].ms)}–${fmtWall(s.best[s.best.length - 1].ms + 3600000)}`;
+    let head;
+    if (s.level === 2) head = "Not a fishing day: conditions look unsafe for a small boat.";
+    else if (s.level === 1) head = tier === "Prime" || tier === "Good" ? "Possible with care: good fishing, but keep an eye on the weather." : "Possible with care, though not a great day.";
+    else head = tier === "Prime" ? "Excellent day to fish." : tier === "Good" ? "Good day to fish." : tier === "Fair" ? "A fair day: doable, but not the best." : "A poor day for fishing.";
+    const bits = [];
+    if (s.level < 2) bits.push(`Best time is ${win}.`);
+    bits.push(s.ws ? `Wind ${fmtUnit(s.ws[0])} to ${fmtUnit(s.ws[1])} ${unitLabel()}${s.wg >= dp.limits.gust ? `, gusts up to ${fmtUnit(s.wg)}` : ""}.` : "");
+    bits.push(s.pop >= 60 ? `Rain is likely (${s.pop}% at worst).` : s.pop >= 30 ? `Some chance of showers (up to ${s.pop}%).` : "Mostly dry.");
+    if (s.flagged) bits.push(`Watch ${fmtWall(s.flagged.ms)}: ${s.flagged.riskTags.map(t => FLAG_WORDS[t] || t).join(", ")}.`);
+    return { head, body: bits.filter(Boolean).join(" ") };
+  }
+  function dayCells(m, s) {
+    const off = m.offset, tw = (t) => (t == null ? "—" : fmtWall(t + off)), fresh = m.spot.water === "fresh";
+    const cell = (label, val, sub) => `<div class="dp-dcell"><div class="cell-label">${label}</div><div class="dp-dval">${val}</div><div class="dp-dsub">${sub || ""}</div></div>`;
+    const win = `${fmtWall(s.best[0].ms)}–${fmtWall(s.best[s.best.length - 1].ms + 3600000)}`;
+    const bf = s.ws ? beaufort(s.ws[1]) : null;
+    const trend = has(s.p0) && has(s.p1) ? (s.p1 - s.p0 <= -3 ? "falling" : s.p1 - s.p0 >= 3 ? "rising" : "steady") : "";
+    const cells = [
+      cell("Best window", win, `${tierOf(s.mid)} · index ${Math.round(s.mean)}`),
+      cell("Wind", s.ws ? `${fmtUnit(s.ws[0])}–${fmtUnit(s.ws[1])} <small>${unitLabel()}</small>` : "—", `gusts up to ${fmtUnit(s.wg)}${bf ? " · force " + bf.n : ""}`),
+      !fresh && s.wave ? cell("Waves", `${s.wave[0].toFixed(1)}–${s.wave[1].toFixed(1)} <small>m</small>`, s.wper ? `period ${Math.round(s.wper[0])}–${Math.round(s.wper[1])} s` : "") : "",
+      cell("Rain", `${Math.round(s.pop)}<small>%</small>`, s.rain >= 0.5 ? `${s.rain.toFixed(1)} mm expected` : "dry"),
+      s.temp ? cell("Air", `${Math.round(s.temp[0])}–${Math.round(s.temp[1])}<small>°C</small>`, s.uv != null ? `UV up to ${Math.round(s.uv)}` : "") : "",
+      !fresh && s.tide ? cell("Tide", `${s.tide[0].toFixed(1)}–${s.tide[1].toFixed(1)} <small>m</small>`, `swing ${(s.tide[1] - s.tide[0]).toFixed(1)} m${s.moon.spring ? " · spring tides" : s.moon.neap ? " · neap tides" : ""}`) : "",
+      cell("Storms", s.stormHigh ? "High" : s.storm ? "Watch" : "Low", s.cape >= 1500 && !s.storm ? "energy high, no rain forecast" : `peak energy ${Math.round(s.cape)} J/kg`),
+      has(s.p0) ? cell("Pressure", `${Math.round(s.p1)}<small>hPa</small>`, `${trend}${trend ? " through the day" : ""}`) : "",
+      cell("Daylight", `${tw(s.sun.sunrise)}–${tw(s.sun.sunset)}`, `first light ${tw(s.sun.dawn)} · last ${tw(s.sun.dusk)}`),
+      cell("Moon", s.moon.name, `${Math.round(s.moon.fraction * 100)}% lit`),
+    ];
+    return cells.join("");
+  }
+  function dayReportHtml(m, s, days) {
+    const off = m.offset, word = ["GO", "CAUTION", "STAY ASHORE"][s.level], sent = daySentence(s);
+    const iso = (wall) => new Date(wall).toISOString().slice(0, 10);
+    const W = clamp(Math.round(((document.getElementById("dpPlan") || {}).clientWidth || 900) - 44), 300, 1100);
+    const chart = m.hasMarine ? tideChartSvg(m, { from: s.day.wall, to: s.day.wall + 24 * 3600000, W, label: `Tide height on ${fullDate(s.day.wall)}` }) : null;
+    return `<section class="box dp-dayrep" id="dpDayReport" style="margin-bottom:16px;">
+      <div class="box-title-row"><span class="card-title">Pick a date</span>
+        <div class="dp-datectl">
+          <button type="button" class="icon-btn" id="dpDatePrev" aria-label="Previous day" ${dp.day === 0 ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <input type="date" class="input" id="dpDate" min="${iso(days[0].wall)}" max="${iso(days[days.length - 1].wall)}" value="${iso(s.day.wall)}" aria-label="Choose a date">
+          <button type="button" class="icon-btn" id="dpDateNext" aria-label="Next day" ${dp.day === days.length - 1 ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+          <button type="button" class="toggle-btn" id="dpDateToday" style="flex:none;" ${dp.day === 0 ? "disabled" : ""}>Today</button>
+        </div></div>
+      <div class="dp-dr-head dp-v-${s.level}">
+        <div class="dp-dr-when"><b>${DOW_NAMES[new Date(s.day.wall).getUTCDay()]} ${pad2(new Date(s.day.wall).getUTCDate())} ${MONTH_NAMES[new Date(s.day.wall).getUTCMonth()]}</b><span>${whenText(s.di)} · <span class="dp-conf dp-conf-${s.confidence.toLowerCase()}"><i></i><i></i><i></i></span> ${s.confidence} confidence${dp.myDays.some(r => r.dow === new Date(s.day.wall).getUTCDay()) ? " · one of your fishing days" : ""}</span></div>
+        <div class="dp-dr-verdict"><svg viewBox="0 0 24 24" aria-hidden="true">${VERDICT_ICON[s.level]}</svg><span>${word}</span></div>
+      </div>
+      <p class="dp-dr-sentence"><b>${escapeHtml(sent.head)}</b> ${escapeHtml(sent.body)}</p>
+      <div class="dp-dcells">${dayCells(m, s)}</div>
+      ${chart ? `<div class="dp-sub" style="margin-top:18px;">Tide that day (shaded bands are night)</div><div class="dp-dr-chart">${chart.plot}</div>` : ""}
+      <p class="dp-note">${s.partial ? "Today's numbers cover the hours still to come." : "Every number here covers the whole date, from midnight to midnight."} The hour-by-hour board below shows the same day in detail.</p>
+    </section>`;
+  }
+  function dayBoardHtml(m, days) {
+    const rows = days.map((d, i) => {
+      const s = daySummary(m, d.idx);
+      if (!s) return "";
+      const word = ["GO", "CAUTION", "STAY ASHORE"][s.level], dow = new Date(d.wall).getUTCDay(), mineDay = dp.myDays.some(r => r.dow === dow);
+      return `<button type="button" class="dp-drow dp-drow-l${s.level}${i === dp.day ? " is-sel" : ""}" data-pick="${i}">
+        <span class="dp-dd"><b>${dayLabel(d.wall, d.idx)}</b><em>${fullDate(d.wall)}${mineDay ? '<i class="dp-mydot" title="fishing day"></i>' : ""}</em></span>
+        <span class="dp-dv"><svg viewBox="0 0 24 24" aria-hidden="true">${VERDICT_ICON[s.level]}</svg>${word}</span>
+        <span class="dp-dbw"><b>${fmtWall(s.best[0].ms)}–${fmtWall(s.best[s.best.length - 1].ms + 3600000)}</b><em>${tierOf(s.mid)} · ${Math.round(s.mean)}</em></span>
+        <span class="dp-dt">${s.tide ? `${s.tide[0].toFixed(1)}–${s.tide[1].toFixed(1)} m` : "—"}</span>
+        <span class="dp-dw">${s.ws ? `${fmtUnit(s.ws[0])}–${fmtUnit(s.ws[1])}` : "—"}<small>/${fmtUnit(s.wg)}</small></span>
+        <span class="dp-dwv">${s.wave ? s.wave[1].toFixed(1) + " m" : "—"}</span>
+        <span class="dp-dr">${Math.round(s.pop)}%</span>
+        <span class="dp-dtemp">${s.temp ? Math.round(s.temp[0]) + "–" + Math.round(s.temp[1]) + "°" : "—"}</span>
+        <span class="dp-dc"><span class="dp-conf dp-conf-${s.confidence.toLowerCase()}"><i></i><i></i><i></i></span></span></button>`;
+    }).join("");
+    return `<div class="dp-boardwrap"><div class="dp-dayboard">
+      <div class="dp-dhead"><span>Day</span><span>Verdict</span><span>Best window</span><span>Tide</span><span>Wind ${unitLabel()} (gust)</span><span>Waves</span><span>Rain</span><span>Air</span><span>Sure?</span></div>${rows}</div></div>
+      <p class="dp-note dp-swipe">Swipe sideways to see every column.</p><p class="dp-note">Each row judges the whole day. Tap a row to open that date above. "Sure?" shows how far ahead the forecast looks: three bars is reliable, one bar is a rough guide.</p>`;
+  }
+
   function dpRenderPlan() {
-    const m = dp.model, day = m.days.filter(d => d.idx >= 0 && d.idx <= 2)[dp.day] || m.days[1], idx = day.idx;
+    const m = dp.model, days = m.days.filter(d => d.idx >= 0 && d.idx <= 8);
+    dp.day = clamp(dp.day, 0, days.length - 1);
+    const day = days[dp.day], idx = day.idx;
     const dayRows = m.rows.filter(r => r.ms >= day.wall && r.ms < day.wall + 86400000);
-    const off = m.offset, wins = m.windows.slice(0, 3);
+    const wins = m.windows.slice(0, 5);
+    const mine = dpMine(m), mineDay = mine.filter(x => x.di === idx), mineSet = new Set(mineDay.flatMap(x => x.rows));
+    const tripRows = mineDay.length ? mineDay.flatMap(x => x.rows) : (idx === 0 ? m.rows.slice(m.now, m.now + 14) : dayRows.filter(r => { const h = new Date(r.ms).getUTCHours(); return h >= 5 && h < 19; }));
+    const sum = daySummary(m, idx);
     const winHtml = wins.length ? wins.map((w, i) => {
       const di = Math.floor((w.rows[0].ms - m.todayWall) / 86400000), last = w.rows[w.rows.length - 1];
-      const r0 = w.rows[Math.floor(w.rows.length / 2)];
-      return `<li class="dp-win"><span class="dp-win-no">${i + 1}</span><div><b>${dayLabel(m.todayWall + di * 86400000, di)} · ${fmtWall(w.rows[0].ms)}–${fmtWall(last.ms + 3600000)}</b><div class="dp-dim">${escapeHtml(windowReason(w))}</div></div><span class="dp-win-tier">${tierOf(r0)}<i>${Math.round(w.mean)}</i></span></li>`;
-    }).join("") : `<li class="dp-dim" style="padding:12px 0;">No good, safe window in the next three days. Try another spot, or check back later.</li>`;
+      const r0 = w.rows[Math.floor(w.rows.length / 2)], conf = di <= 2 ? "High" : di <= 4 ? "Medium" : "Low";
+      return `<li class="dp-win"><span class="dp-win-no">${i + 1}</span><div><b>${dayLabel(m.todayWall + di * 86400000, di)} · ${fmtWall(w.rows[0].ms)}–${fmtWall(last.ms + 3600000)}</b><div class="dp-dim">${escapeHtml(windowReason(w))} · ${conf} confidence</div></div><span class="dp-win-tier">${tierOf(r0)}<i>${Math.round(w.mean)}</i></span></li>`;
+    }).join("") : `<li class="dp-dim" style="padding:12px 0;">No good, safe window in the next week. Try another spot, or check back later.</li>`;
     const list = lsGet(DP_KEYS.list, {});
-    const items = dpChecklist(m);
-    const board = dayRows.map(r => {
+    const items = dpChecklist(m, tripRows, idx);
+    const hourBoard = dayRows.map(r => {
       const hr = new Date(r.ms).getUTCHours(), isNow = idx === 0 && r === m.rows[m.now], past = idx === 0 && r.ms < m.rows[m.now].ms;
-      const inWin = wins.some(w => w.rows.includes(r));
-      return `<div class="dp-brow${isNow ? " is-now" : ""}${past ? " is-past" : ""}${inWin ? " is-win" : ""}${r.risk === 2 ? " is-nogo" : ""}">
+      const inWin = wins.some(w => w.rows.includes(r)), inMine = mineSet.has(r);
+      return `<div class="dp-brow${isNow ? " is-now" : ""}${past ? " is-past" : ""}${inWin ? " is-win" : ""}${inMine ? " is-mine" : ""}${r.risk === 2 ? " is-nogo" : ""}">
         <span class="dp-bt">${pad2(hr)}:00${isNow ? '<i>now</i>' : ""}</span>
         <span class="dp-bi"><span class="dp-meter"><span style="width:${r.score}%"></span></span><b>${r.risk === 2 ? "No-go" : r.score}</b><em>${r.risk === 2 ? "" : tierOf(r)}</em></span>
         <span class="dp-bx">${wxIcon(num(r.code), r.lightTag === "night")}</span>
@@ -2897,26 +3240,47 @@
         <span class="dp-bv">${has(r.wave) ? r.wave.toFixed(1) + " m" : "—"}</span>
         <span class="dp-br">${num(r.pop)}%</span></div>`;
     }).join("");
+    const byDay = dp.boardMode === "day";
     document.getElementById("dpPlan").innerHTML = `
+      ${dpMineBox(m, mine)}
+      ${sum ? dayReportHtml(m, sum, days) : ""}
       <div class="grid dp-grid">
-        <section class="box span-7"><div class="box-title-row"><span class="card-title">Best windows, next 3 days</span></div>
+        <section class="box span-7"><div class="box-title-row"><span class="card-title">Best windows, next 7 days</span></div>
           <ol class="dp-wins">${winHtml}</ol>
           <p class="dp-note">Index 0 to 100 from tide movement (moving water fishes better), light (first and last light), wind and rain. It is a rule of thumb, not a bite prediction, and any unsafe hour scores zero.</p>
         </section>
-        <section class="box span-5"><div class="box-title-row"><span class="card-title">Before you go</span><button type="button" class="card-link dp-linkbtn" id="dpChkReset">Reset</button></div>
+        <section class="box span-5"><div class="box-title-row"><span class="card-title">Before you go · ${dayLabel(day.wall, idx)}</span><button type="button" class="card-link dp-linkbtn" id="dpChkReset">Reset</button></div>
           <ul class="dp-check">${items.map(it => `<li><label><input type="checkbox" data-chk="${it.id}" ${list[it.id] ? "checked" : ""}><span>${escapeHtml(it.t)}</span></label></li>`).join("")}</ul>
         </section>
       </div>
-      <div class="box">
-        <div class="box-title-row"><span class="card-title">Hour by hour</span>
-          <div class="level-tabs" id="dpDayTabs">${m.days.filter(d => d.idx >= 0 && d.idx <= 2).map((d, i) => `<button data-day="${i}" class="${i === dp.day ? "active" : ""}">${dayLabel(d.wall, d.idx)}</button>`).join("")}</div></div>
-        <div class="dp-boardwrap"><div class="dp-board">
+      <div class="box" id="dpBoardBox">
+        <div class="box-title-row"><span class="card-title">${byDay ? "Day by day" : "Hour by hour"}</span>
+          <div class="dp-boardctl">
+            <div class="level-tabs" id="dpBoardMode"><button type="button" data-mode="hour" class="${byDay ? "" : "active"}">By hour</button><button type="button" data-mode="day" class="${byDay ? "active" : ""}">By day</button></div>
+            ${byDay ? "" : `<div class="level-tabs" id="dpDayTabs">${days.map((d, i) => `<button data-day="${i}" class="${i === dp.day ? "active" : ""}">${dayLabel(d.wall, d.idx)}${dp.myDays.some(r => r.dow === new Date(d.wall).getUTCDay()) ? '<i class="dp-mydot" title="fishing day"></i>' : ""}</button>`).join("")}</div>`}
+          </div></div>
+        ${byDay ? dayBoardHtml(m, days) : `<div class="dp-boardwrap"><div class="dp-board">
           <div class="dp-bhead"><span>Time</span><span>Fishing index</span><span></span><span>Tide</span><span>Wind ${unitLabel()} (gust)</span><span>Waves</span><span>Rain</span></div>
-          ${board}
-        </div></div>
+          ${hourBoard}
+        </div></div><p class="dp-note dp-swipe">Swipe sideways to see every column.</p>`}
       </div>`;
-    document.querySelectorAll("#dpDayTabs button").forEach(b => b.addEventListener("click", () => { dp.day = Number(b.dataset.day); dpRenderPlan(); }));
+    // wiring
+    const pick = (i) => { dp.day = clamp(i, 0, days.length - 1); dpRenderPlan(); };
+    document.querySelectorAll("#dpDayTabs button").forEach(b => b.addEventListener("click", () => pick(Number(b.dataset.day))));
+    document.querySelectorAll("#dpBoardMode button").forEach(b => b.addEventListener("click", () => { dp.boardMode = b.dataset.mode; dpRenderPlan(); }));
+    document.querySelectorAll("[data-pick]").forEach(b => b.addEventListener("click", () => { dp.boardMode = "hour"; dp.day = Number(b.dataset.pick); dpRenderPlan(); const t = document.getElementById("dpDayReport"); if (t) t.scrollIntoView({ block: "start" }); }));
+    const dateEl = document.getElementById("dpDate");
+    if (dateEl) dateEl.addEventListener("change", () => {
+      if (!dateEl.value) return;
+      const i = Math.round((Date.parse(dateEl.value + "T00:00:00Z") - m.todayWall) / 86400000);
+      pick(i);
+    });
+    const prev = document.getElementById("dpDatePrev"), next = document.getElementById("dpDateNext"), today = document.getElementById("dpDateToday");
+    if (prev) prev.addEventListener("click", () => pick(dp.day - 1));
+    if (next) next.addEventListener("click", () => pick(dp.day + 1));
+    if (today) today.addEventListener("click", () => pick(0));
     document.querySelectorAll("[data-chk]").forEach(c => c.addEventListener("change", () => { const l = lsGet(DP_KEYS.list, {}); l[c.dataset.chk] = c.checked; lsSet(DP_KEYS.list, l); }));
+    dpWireDayEditor();
     document.getElementById("dpChkReset").addEventListener("click", () => { lsSet(DP_KEYS.list, {}); dpRenderPlan(); });
     const nowRow = document.querySelector(".dp-brow.is-now");
     if (nowRow) { const wrap = nowRow.closest(".dp-boardwrap"); wrap.scrollTop = Math.max(0, nowRow.offsetTop - 64); }
@@ -3150,6 +3514,7 @@
   }
   function dpRenderAll() {
     dpRenderStatus();
+    dpRenderMyDays();
     const errBox = (id) => { document.getElementById(id).innerHTML = `<div class="box"><p class="empty-state">${escapeHtml(dp.loading ? "Reading the sea and sky…" : dp.error || "No data yet.")}</p>${dp.loading ? "" : `<button type="button" class="toggle-btn" data-retry style="flex:none;">Try again</button>`}</div>`; const b = document.querySelector(`#${id} [data-retry]`); if (b) b.addEventListener("click", () => dpLoad(true)); };
     if (dp.view === "now") { if (dp.model) dpRenderNow(); else errBox("dpNow"); }
     if (dp.view === "plan") { if (dp.model) dpRenderPlan(); else errBox("dpPlan"); }
@@ -3186,6 +3551,7 @@
     dp.unit = lsGet(DP_KEYS.unit, "kmh") === "kn" ? "kn" : "kmh";
     const lim = lsGet(DP_KEYS.limits, null); if (lim && has(lim.gust) && has(lim.wave)) dp.limits = lim;
     dp.gps = lsGet(DP_KEYS.gps, null);
+    dpLoadDays();
     const saved = lsGet(DP_KEYS.spot, "home");
     dp.spot = dpAllSpots().find(x => x.id === saved) || DP_HOME;
     document.getElementById("dpUnit").textContent = dp.unit === "kn" ? "knots" : "km/h";
