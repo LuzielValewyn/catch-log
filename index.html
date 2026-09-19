@@ -127,32 +127,27 @@
   .panel.active { display: block; }
   .error-note { font-size: 13px; color: var(--coral); background: rgba(255,107,87,0.1); border: 1px solid rgba(255,107,87,0.4); padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; }
 
-  /* Hero: portrait plate + LED total + board header cells */
+  /* Hero: LED total + board header cells; About Del is a small button, no photo */
   .hero {
-    display: grid; grid-template-columns: 248px minmax(0, 1fr);
     background: var(--panel); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border: 1px solid var(--rule); border-radius: 4px;
     overflow: hidden; margin-bottom: 16px;
   }
-  .portrait {
-    position: relative; display: block; border: none; border-right: 1px solid var(--rule);
-    background: #EDE6D6; cursor: pointer; padding: 0; overflow: hidden; text-align: left; min-height: 220px;
+  .hero-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .about-btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: none;
+    border: 1px solid var(--rule-strong); border-radius: 4px; color: var(--ink); font-size: 13.5px; font-weight: 700; cursor: pointer;
+    transition: border-color 140ms var(--ease-out), color 140ms var(--ease-out);
   }
-  .portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 500ms var(--ease-out); }
-  .portrait:hover img { transform: scale(1.04); }
-  .portrait-cap {
-    position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px;
-    background: var(--ground); border-top: 1px solid var(--rule); color: var(--ink);
-    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  }
-  .portrait-cap svg { width: 16px; height: 16px; fill: none; stroke: var(--amber); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .about-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .about-btn svg { width: 16px; height: 16px; fill: none; stroke: var(--amber); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .hero-main { display: flex; flex-direction: column; min-width: 0; }
-  .hero-top { padding: 22px 28px 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .hero-top { padding: 20px 28px 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
   .hero-label { font-size: 15px; font-weight: 700; font-stretch: 90%; color: var(--ink-2); }
   .hero-sub { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
   .led {
     display: inline-grid; align-self: flex-start; margin: 6px 0 8px;
     font-family: var(--led); font-weight: 800; color: var(--amber);
-    font-size: clamp(110px, 17vw, 264px); line-height: 0.95; letter-spacing: 0.03em;
+    font-size: clamp(76px, 10.5vw, 150px); line-height: 0.95; letter-spacing: 0.03em;
   }
   .hero-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 40px; flex-wrap: wrap; }
   .hero-dates { display: flex; gap: 40px; padding-bottom: 14px; }
@@ -211,7 +206,7 @@
   .card-link { font-size: 13.5px; font-weight: 700; color: var(--amber); }
   .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
   .span-8 { grid-column: span 8; } .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; }
-  .span-4 { grid-column: span 4; } .span-3 { grid-column: span 3; } .span-12 { grid-column: span 12; }
+  .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-3 { grid-column: span 3; } .span-12 { grid-column: span 12; }
 
   /* Arrivals rows: fixed slots, hairline rules */
   .arr-head, .arr-row, .catch-head {
@@ -414,14 +409,177 @@
   .lb-meta { display: flex; flex-wrap: wrap; gap: 8px 28px; }
   .lb-meta span.v { display: block; font-size: 14px; color: var(--ink); }
   .lightbox.single .lb-arrow, .lightbox.single #lbPlay { display: none; }
+  /* Fishing journey: moments hang off one rail, no nested cards */
+  .jn-sub { font-size: 13.5px; color: var(--ink-2); margin-top: 4px; max-width: 62ch; }
+  .journey .box-title-row { align-items: flex-start; }
+  .jn-strip {
+    list-style: none; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; position: relative;
+    padding: 6px 30px 18px; margin: 0 -8px; scroll-padding-inline: 30px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+  }
+  .jn-strip:focus-visible { outline-offset: -2px; }
+  .jn-item { flex: 0 0 auto; width: 328px; scroll-snap-align: start; position: relative; padding-left: 8px; }
+  .jn-rail { position: relative; height: 58px; }
+  .jn-date { position: absolute; left: 0; top: 0; font-size: 13.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+  .jn-dot { position: absolute; left: 0; top: 30px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--amber); background: var(--ground); z-index: 1; }
+  .jn-dot.is-story { background: var(--amber); outline: 1px solid rgba(255, 178, 62, 0.55); outline-offset: 3px; }
+  .jn-rail::after { content: ""; position: absolute; left: 16px; top: 37px; width: calc(100% - 8px); height: 2px; background: var(--rule-strong); }
+  .jn-item.is-last .jn-rail::after { background: none; border-top: 2px dashed var(--rule-strong); height: 0; }
+  .jn-item.jn-next .jn-rail::after { display: none; }
+  .jn-item.jn-next .jn-dot { border-style: dashed; background: none; }
+  .jn-gap { position: absolute; left: calc(16px + (100% - 24px) / 2); top: 27px; transform: translateX(-50%); z-index: 1; padding: 0 9px; font-size: 12px; font-weight: 600; color: var(--ink-2); background: var(--panel-strong); border-radius: 2px; white-space: nowrap; }
+  .jn-content { position: relative; padding: 0 28px 0 32px; display: flex; flex-direction: column; gap: 10px; min-height: 120px; }
+  .jn-content::before { content: ""; position: absolute; left: 7px; top: -10px; bottom: 0; width: 1px; background: linear-gradient(var(--rule-strong), transparent); }
+  .jn-photo { display: block; width: 100%; padding: 0; border: none; background: var(--ground); border-radius: 4px; overflow: hidden; cursor: zoom-in; aspect-ratio: 4 / 3; }
+  .jn-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 500ms var(--ease-out); }
+  .jn-photo:hover img { transform: scale(1.04); }
+  .jn-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .jn-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px 3px 6px; font-size: 12px; font-weight: 700; color: var(--ink-2); border: 1px solid var(--rule-strong); border-radius: 3px; }
+  .jn-chip svg { width: 14px; height: 14px; fill: none; stroke: var(--amber); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .jn-title { font-size: 19px; font-weight: 800; font-stretch: 88%; line-height: 1.2; text-wrap: balance; }
+  .jn-note { font-size: 15.5px; line-height: 1.55; color: var(--ink); text-wrap: pretty; max-width: 36ch; }
+  .jn-foot { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid var(--rule); margin-top: auto; }
+  .jn-foot .arr-no { font-size: 18px; }
+  .jn-sp { min-width: 0; flex: 1; }
+  .jn-sp b { display: block; font-size: 14.5px; font-weight: 700; overflow-wrap: anywhere; }
+  .jn-sp i { display: block; font-style: normal; font-size: 12.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+  .jn-loc { font-size: 13px; color: var(--ink-2); margin-top: -6px; }
+  .jn-next-no { font-family: var(--led); font-weight: 800; font-size: 40px; letter-spacing: 0.05em; color: var(--amber); opacity: 0.55; line-height: 1; }
+  .jn-next-text { font-size: 14.5px; color: var(--ink-2); max-width: 26ch; line-height: 1.5; }
+  .jn-strip.pending .jn-item { opacity: 0; }
+  .jn-strip.play .jn-item { animation: jnIn 640ms var(--ease-out) both; animation-delay: calc(var(--i) * 80ms); }
+  @keyframes jnIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  /* Departures: sea, sky and tide. Same board grammar: fixed slots, hairlines, LED numerals, one amber signal. */
+  .dp-bar { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 16px; }
+  .dp-spot { flex: 1 1 260px; max-width: 420px; }
+  .dp-spot .field-label { margin-bottom: 6px; }
+  .dp-bar .toggle-btn { flex: none; height: 41px; }
+  .dp-status { margin-left: auto; font-size: 13px; color: var(--ink-2); padding-bottom: 10px; }
+  .dp-verdict { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); background: var(--panel); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+  .dp-v-main { padding: 22px 28px 24px; min-width: 0; }
+  .dp-v-wordrow { display: flex; align-items: center; gap: 16px; }
+  .dp-v-icon { width: clamp(38px, 5vw, 60px); height: clamp(38px, 5vw, 60px); flex-shrink: 0; fill: none; stroke: var(--amber); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .dp-v-word { font-family: var(--led); font-weight: 800; font-size: clamp(44px, 6.4vw, 92px); line-height: 1; letter-spacing: 0.04em; color: var(--amber); }
+  .dp-v-1 .dp-v-word { text-decoration: underline; text-decoration-style: dashed; text-decoration-thickness: 3px; text-underline-offset: 8px; }
+  .dp-v-2 .dp-v-word, .dp-v-2 .dp-v-icon { color: var(--coral); stroke: var(--coral); }
+  .dp-v-wait .dp-v-word { color: var(--ink-3); }
+  .dp-v-lead { margin-top: 12px; font-size: 16px; font-weight: 600; max-width: 46ch; text-wrap: pretty; }
+  .dp-v-reasons { list-style: none; margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .dp-v-reasons li { font-size: 14px; color: var(--ink-2); padding-left: 16px; position: relative; }
+  .dp-v-reasons li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 8px; height: 2px; background: var(--ink-3); }
+  .dp-v-reasons li.is-bad { color: var(--ink); font-weight: 600; }
+  .dp-v-reasons li.is-bad::before { background: var(--coral); height: 3px; }
+  .dp-v-cells { display: flex; flex-direction: column; border-left: 1px solid var(--rule); }
+  .dp-cell { padding: 16px 22px; border-bottom: 1px solid var(--rule); flex: 1; }
+  .dp-cell:last-child { border-bottom: none; }
+  .dp-led-row { display: flex; align-items: baseline; gap: 10px; }
+  .dp-led { font-family: var(--led); font-weight: 800; font-size: 40px; letter-spacing: 0.04em; line-height: 1; color: var(--amber); }
+  .dp-led-sub { font-size: 13px; color: var(--ink-2); }
+  .dp-best { font-size: 18px; font-weight: 800; font-stretch: 90%; }
+  .dp-limits summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .dp-limits label { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--ink-2); }
+  .dp-limits .input { width: 72px; padding: 6px 8px; }
+  .dp-limits p { font-size: 12.5px; color: var(--ink-3); margin-top: 8px; }
+  .dp-tabs { display: inline-flex; margin-bottom: 16px; }
+  .dp-tabs button { padding: 7px 20px; font-size: 14px; }
+  .dp-view[hidden] { display: none; }
+  .dp-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink); border: 1px solid var(--rule-strong); border-radius: 3px; padding: 3px 10px; }
+  .dp-wx { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .dp-arrow { fill: var(--amber); flex-shrink: 0; vertical-align: -3px; }
+  .dp-note { font-size: 13px; color: var(--ink-3); margin-top: 12px; max-width: 70ch; text-wrap: pretty; }
+  .dp-dim { font-size: 13.5px; color: var(--ink-2); }
+  .dp-sub { font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-2); margin: 14px 0 8px; }
+  .dp-tag { display: inline-block; margin-top: 6px; font-size: 12.5px; font-weight: 700; color: var(--amber); }
+  .dp-tide-svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .dp-tidelist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin-top: 8px; }
+  .dp-tl { display: grid; grid-template-columns: 22px 44px 54px 62px 1fr; align-items: center; gap: 6px; padding: 9px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+  .dp-tl .wmark { color: var(--salt); }
+  .dp-daybar { position: relative; height: 12px; background: var(--rule); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .dp-seg { position: absolute; top: 0; bottom: 0; }
+  .dp-now { position: absolute; top: -2px; bottom: -2px; width: 3px; background: var(--ink); margin-left: -1px; }
+  .dp-daylabels { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); margin-top: 4px; }
+  .dp-times { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; margin: 12px 0 4px; }
+  .dp-times > div { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+  .dp-k { font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-2); }
+  .dp-moonrow { display: flex; align-items: center; gap: 14px; padding: 14px 0 0; border-top: 1px solid var(--rule); margin-top: 8px; }
+  .dp-moonrow b { font-size: 15px; }
+  .dp-moon { flex-shrink: 0; }
+  .dp-windwrap { display: flex; align-items: center; gap: 12px; }
+  .dp-dial { width: 172px; height: 172px; flex-shrink: 0; }
+  .dp-windnums { min-width: 0; }
+  .dp-bars { display: flex; align-items: flex-end; gap: 4px; height: 96px; padding-bottom: 20px; position: relative; }
+  .dp-hb { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+  .dp-bar-fill { display: block; width: 100%; background: var(--amber); border-radius: 2px 2px 0 0; min-height: 3px; }
+  .dp-bar-fill.is-warn { background: repeating-linear-gradient(45deg, var(--coral) 0 3px, #7a2f26 3px 6px); }
+  .dp-bar-t { position: absolute; bottom: -20px; font-size: 11.5px; color: var(--ink-3); }
+  .dp-rows { display: flex; flex-direction: column; }
+  .dp-row { display: grid; grid-template-columns: 78px 66px 34px minmax(0, 1fr); align-items: center; gap: 6px; padding: 11px 0; border-top: 1px solid var(--rule); }
+  .dp-row:first-child { border-top: none; padding-top: 2px; }
+  .dp-v { font-family: var(--led); font-weight: 800; font-size: 26px; letter-spacing: 0.04em; text-align: right; line-height: 1; }
+  .dp-v-text { font-family: var(--sans); font-size: 17px; letter-spacing: 0; text-align: right; font-weight: 800; font-stretch: 90%; }
+  .dp-u { font-size: 12.5px; color: var(--ink-2); }
+  .dp-d { font-size: 13px; color: var(--ink-2); min-width: 0; }
+  .dp-wins { list-style: none; }
+  .dp-win { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 13px 0; border-top: 1px solid var(--rule); }
+  .dp-win:first-child { border-top: none; }
+  .dp-win-no { font-family: var(--led); font-weight: 800; font-size: 34px; color: var(--amber); line-height: 1; }
+  .dp-win b { font-size: 16px; font-weight: 800; font-stretch: 92%; }
+  .dp-win-tier { display: flex; flex-direction: column; align-items: flex-end; font-size: 13px; font-weight: 700; }
+  .dp-win-tier i { font-style: normal; font-family: var(--led); font-weight: 800; font-size: 22px; color: var(--amber); }
+  .dp-check { list-style: none; }
+  .dp-check li { border-top: 1px solid var(--rule); }
+  .dp-check li:first-child { border-top: none; }
+  .dp-check label { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; cursor: pointer; font-size: 14.5px; }
+  .dp-check input { appearance: none; width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; border: 2px solid var(--rule-strong); border-radius: 3px; background: var(--ground); cursor: pointer; display: grid; place-items: center; }
+  .dp-check input:checked { background: var(--amber); border-color: var(--amber); }
+  .dp-check input:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-amber); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  .dp-check input:checked + span { color: var(--ink-2); text-decoration: line-through; text-decoration-color: var(--ink-3); }
+  .dp-linkbtn { background: none; border: none; cursor: pointer; text-decoration: underline; }
+  .dp-boardwrap { overflow: auto; max-height: 560px; border-top: 1px solid var(--rule-strong); }
+  .dp-board { min-width: 720px; }
+  .dp-bhead, .dp-brow { display: grid; grid-template-columns: 78px minmax(170px, 1.4fr) 34px minmax(110px, 1fr) minmax(110px, 1fr) 64px 52px; gap: 0 14px; align-items: center; }
+  .dp-bhead { position: sticky; top: 0; z-index: 2; background: var(--panel-strong); padding: 10px 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule-strong); }
+  .dp-brow { padding: 9px 8px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .dp-brow.is-past { opacity: 0.5; }
+  .dp-brow.is-win { background: rgba(255, 178, 62, 0.08); }
+  .dp-brow.is-now { background: var(--hover); }
+  .dp-bt { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .dp-bt i { font-style: normal; margin-left: 6px; font-size: 11.5px; font-weight: 700; color: var(--amber); }
+  .dp-bi { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .dp-bi b { font-family: var(--led); font-weight: 800; font-size: 18px; width: 40px; text-align: right; letter-spacing: 0.04em; }
+  .dp-bi em { font-style: normal; font-size: 12.5px; color: var(--ink-2); }
+  .dp-meter { flex: 1; height: 8px; background: var(--ground); border-radius: 2px; overflow: hidden; min-width: 40px; }
+  .dp-meter span { display: block; height: 100%; background: var(--amber); }
+  .dp-brow.is-nogo .dp-meter span { background: repeating-linear-gradient(45deg, var(--coral) 0 3px, #7a2f26 3px 6px); }
+  .dp-brow.is-nogo .dp-bi b { color: var(--coral); font-family: var(--sans); font-size: 13px; width: auto; }
+  .dp-bx .dp-wx { color: var(--ink-2); }
+  .dp-bh, .dp-bw { display: flex; align-items: center; gap: 6px; }
+  .dp-slack { font-style: normal; font-size: 12.5px; color: var(--ink-3); margin-right: 4px; }
+  .dp-bw small { color: var(--ink-3); font-size: 12.5px; }
+  .dp-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .dp-sweet { font-size: 16px; line-height: 1.5; max-width: 62ch; text-wrap: pretty; margin-bottom: 8px; }
+  .dp-sweet b { color: var(--amber); font-weight: 800; }
+  .dp-pgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 32px; }
+  .dp-pslot { display: grid; grid-template-columns: 138px minmax(0, 1fr) 34px; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--rule); }
+  .dp-pname { font-size: 14px; font-weight: 600; }
+  #dpRadarMap { height: min(560px, 62vh); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--ground); }
+  .dp-radarbar { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
+  .dp-radarbar input[type="range"] { flex: 1; accent-color: var(--amber); min-width: 0; }
+  .dp-radartime { font-size: 13.5px; font-weight: 700; min-width: 190px; text-align: right; }
+  .dp-ringlabel { background: none; border: none; color: var(--amber); font-size: 11.5px; font-weight: 700; text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+  .dp-extlink { display: inline-block; margin-top: 12px; font-weight: 700; color: var(--amber); }
+  .dp-credit { font-size: 12.5px; color: var(--ink-3); margin-top: 20px; max-width: 90ch; line-height: 1.55; }
+  .dp-credit a { color: var(--ink-2); }
   .bottom-nav { display: none; }
 
   @media (max-width: 1100px) {
-    .hero { grid-template-columns: 200px minmax(0, 1fr); }
     .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cell-water { grid-column: 1 / -1; order: -1; border-left: none; }
     .cell:nth-child(n+3) { border-top: 1px solid var(--rule); }
-    .span-8, .span-7, .span-5, .span-4, .span-3 { grid-column: span 12; }
+    .span-8, .span-7, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
+    .dp-verdict { grid-template-columns: 1fr; }
+    .dp-v-cells { border-left: none; border-top: 1px solid var(--rule); }
     .deck-right .deck-clock { display: none; }
   }
   @media (max-width: 760px) {
@@ -434,12 +592,8 @@
     #editModeLinkTop { display: none; }
     body.is-owner #editModeLinkTop { display: block; }
     .page-title { font-size: 22px; }
-    .hero { grid-template-columns: 1fr; }
-    .portrait { display: grid; grid-template-columns: 92px 1fr; align-items: center; min-height: 0; border-right: none; border-bottom: 1px solid var(--rule); background: var(--ground); }
-    .portrait img { position: static; width: 92px; height: 92px; }
-    .portrait-cap { position: static; border-top: none; background: none; font-size: 14px; padding: 12px 16px; }
     .hero-top { padding: 16px 16px 0; }
-    .led { font-size: clamp(84px, 33vw, 138px); }
+    .led { font-size: clamp(64px, 24vw, 104px); }
     .hero-dates { padding-bottom: 12px; gap: 28px; }
     .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cell { padding: 12px 14px 14px; border-left: none; border-top: 1px solid var(--rule); }
@@ -471,6 +625,25 @@
     .catch-data { grid-template-columns: minmax(0, 1fr); }
     .form-wrap { padding: 20px 16px; }
     .shot { width: 168px; }
+    .jn-item { width: 296px; }
+    .dp-verdict { grid-template-columns: 1fr; }
+    .dp-v-main { padding: 18px 16px 20px; }
+    .dp-v-cells { border-left: none; border-top: 1px solid var(--rule); }
+    .dp-cell { padding: 14px 16px; }
+    .dp-windwrap { flex-direction: column; align-items: flex-start; }
+    .dp-dial { width: 150px; height: 150px; }
+    .dp-tidelist { grid-template-columns: 1fr; }
+    .dp-times { grid-template-columns: 1fr; }
+    .dp-tabs { display: flex; }
+    .dp-tabs button { flex: 1; padding: 8px 4px; }
+    .dp-row { grid-template-columns: 70px 58px 30px minmax(0, 1fr); }
+    .dp-pslot { grid-template-columns: 116px minmax(0, 1fr) 30px; }
+    .dp-status { margin-left: 0; width: 100%; padding-bottom: 0; }
+    .dp-radartime { min-width: 0; text-align: left; }
+    .dp-radarbar { flex-wrap: wrap; }
+    .bottom-nav .nav-item { min-width: 48px; padding: 6px 2px; font-size: 11.5px; }
+    .jn-content { padding-right: 20px; }
+    .jn-nav .icon-btn { display: none; }
     .gallery-nav .icon-btn { display: none; }
     .lb-bar { padding: 12px 14px; }
     .lb-stage { grid-template-columns: minmax(0, 1fr); padding: 0 8px; }
@@ -504,6 +677,7 @@
       <button class="nav-item active" data-tab="dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20V9M3 20h18"/></svg>Dashboard</button>
       <button class="nav-item" data-tab="log"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Catch Log</button>
       <button class="nav-item" data-tab="species"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.6-4.2 6.2-5.6 10-4.6 2.2.6 3.6 2.4 4 4.6-.4 2.2-1.8 4-4 4.6-3.8 1-7.4-.4-10-4.6zM16.5 12L21.5 8v8z"/><circle cx="7.5" cy="11.3" r=".8"/></svg>Species</button>
+      <button class="nav-item" data-tab="departures"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M12 4l6 9h-6M11 6l-5 7h5M4 17h16l-2.5 4h-11z"/></svg>Departures</button>
       <button class="nav-item" data-tab="add" id="addNavBtn" style="display:none;"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Log Entry</button>
       <button class="nav-item" data-tab="newgear" id="newGearNavBtn" style="display:none;"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>New Gear</button>
     </nav>
@@ -535,13 +709,12 @@
       </div>
 
       <div class="hero">
-        <button id="aboutCard" class="portrait" aria-label="About Del">
-          <img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat, holding up a snapper" />
-          <span class="portrait-cap">About Del <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-        </button>
         <div class="hero-main">
           <div class="hero-top">
-            <div class="hero-label">Fish caught, lifetime</div>
+            <div class="hero-head">
+              <div class="hero-label">Fish caught, lifetime</div>
+              <button type="button" id="aboutCard" class="about-btn">About Del <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
             <div class="hero-row">
               <div class="led" id="statCatchesLed" data-ghost="8888" role="img" aria-label="0 catches"><span id="statCatches">0</span></div>
               <dl class="hero-dates">
@@ -583,6 +756,20 @@
         </div>
       </div>
 
+      <div class="box journey" id="journeyBox" style="display:none; margin-bottom:16px;">
+        <div class="box-title-row">
+          <div>
+            <span class="card-title">Fishing journey</span>
+            <p class="jn-sub" id="journeySub">Stories, records and new waters, in the order they happened.</p>
+          </div>
+          <div class="gallery-nav jn-nav">
+            <button type="button" class="icon-btn" id="journeyPrev" aria-label="Scroll journey left"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+            <button type="button" class="icon-btn" id="journeyNext" aria-label="Scroll journey right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+        </div>
+        <ol class="jn-strip" id="journeyStrip" tabindex="0" aria-label="Fishing journey, scroll sideways"></ol>
+      </div>
+
       <div class="box" id="galleryBox" style="display:none; margin-bottom:16px;">
         <div class="box-title-row">
           <span class="card-title">Catch photos</span>
@@ -593,12 +780,6 @@
           </div>
         </div>
         <div class="gallery-strip" id="galleryStrip"></div>
-      </div>
-
-      <div class="box" style="margin-bottom:16px;">
-        <div class="box-title-row"><span class="card-title">Recent catches</span><a href="#" class="card-link" id="allCatchesLink">All catches</a></div>
-        <div class="arr-head" aria-hidden="true"><span>No.</span><span class="h-date">Date</span><span class="h-water"></span><span>Species</span><span class="h-loc">Location</span></div>
-        <div id="recentCatches"></div>
       </div>
 
       <div class="grid">
@@ -705,6 +886,12 @@
           </div>
         </div>
       </div>
+
+      <div class="box" style="margin-top:16px;">
+        <div class="box-title-row"><span class="card-title">Recent catches</span><a href="#" class="card-link" id="allCatchesLink">All catches</a></div>
+        <div class="arr-head" aria-hidden="true"><span>No.</span><span class="h-date">Date</span><span class="h-water"></span><span>Species</span><span class="h-loc">Location</span></div>
+        <div id="recentCatches"></div>
+      </div>
     </section>
 
     <!-- CATCH LOG -->
@@ -797,6 +984,51 @@
       <div id="speciesList" class="species-scroll"></div>
     </section>
 
+    <!-- DEPARTURES -->
+    <section id="panel-departures" class="panel">
+      <div class="dp-bar">
+        <label class="dp-spot"><span class="field-label">Spot</span><select class="input" id="dpSpot"></select></label>
+        <button type="button" class="toggle-btn nowrap" id="dpGps">Use my GPS</button>
+        <button type="button" class="toggle-btn nowrap" id="dpUnit" aria-label="Switch wind speed unit">km/h</button>
+        <button type="button" class="toggle-btn nowrap" id="dpRefresh">Refresh</button>
+        <span class="dp-status" id="dpStatus" role="status" aria-live="polite"></span>
+      </div>
+
+      <div class="dp-verdict dp-v-wait" id="dpVerdict"></div>
+
+      <div class="level-tabs dp-tabs" id="dpTabs" role="tablist" aria-label="Departures views">
+        <button type="button" data-view="now" class="active">Now</button>
+        <button type="button" data-view="plan">Plan</button>
+        <button type="button" data-view="radar">Radar</button>
+        <button type="button" data-view="patterns">Patterns</button>
+      </div>
+
+      <div id="dpView-now" class="dp-view"><div id="dpNow"></div></div>
+      <div id="dpView-plan" class="dp-view" hidden><div id="dpPlan"></div></div>
+      <div id="dpView-radar" class="dp-view" hidden>
+        <div class="box">
+          <div class="box-title-row">
+            <span class="card-title">Radar and cloud tops</span>
+            <div class="level-tabs" id="dpRadarKind"><button type="button" data-kind="rain" class="active">Rain radar</button><button type="button" data-kind="ir">Cloud tops</button></div>
+          </div>
+          <div id="dpRadarMap"></div>
+          <div class="dp-radarbar">
+            <button type="button" class="toggle-btn nowrap" id="dpRadarPlay" style="flex:none;">Play</button>
+            <input type="range" id="dpRadarSlider" min="0" max="0" value="0" aria-label="Radar frame">
+            <span class="dp-radartime" id="dpRadarTime"></span>
+          </div>
+          <p class="dp-note" id="dpRadarMsg"></p>
+        </div>
+        <div class="box" style="margin-top:16px;">
+          <div class="box-title-row"><span class="card-title">Lightning</span></div>
+          <div id="dpLightning"></div>
+        </div>
+      </div>
+      <div id="dpView-patterns" class="dp-view" hidden><div id="dpPatterns"></div></div>
+
+      <p class="dp-credit">Weather and sea model by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0). Radar by <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>. Cloud tops from JMA Himawari via <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a>. Maps by OpenStreetMap contributors. This is fishing guidance, not a navigation or safety service: when in doubt, stay ashore.</p>
+    </section>
+
     <!-- NEW GEAR (owner only) -->
     <section id="panel-newgear" class="panel">
       <div class="form-wrap">
@@ -879,6 +1111,7 @@
   <button class="nav-item active" data-tab="dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-7M12 20V5M19 20V9M3 20h18"/></svg>Dash</button>
   <button class="nav-item" data-tab="log"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Log</button>
   <button class="nav-item" data-tab="species"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.6-4.2 6.2-5.6 10-4.6 2.2.6 3.6 2.4 4 4.6-.4 2.2-1.8 4-4 4.6-3.8 1-7.4-.4-10-4.6zM16.5 12L21.5 8v8z"/><circle cx="7.5" cy="11.3" r=".8"/></svg>Species</button>
+  <button class="nav-item" data-tab="departures"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M12 4l6 9h-6M11 6l-5 7h5M4 17h16l-2.5 4h-11z"/></svg>Departures</button>
   <button class="nav-item" data-tab="add" id="addNavBtnMobile" style="display:none;"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>Entry</button>
   <button class="nav-item" data-tab="newgear" id="newGearNavBtnMobile" style="display:none;"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Gear</button>
 </nav>
@@ -1085,6 +1318,7 @@
   setInterval(updateClock, 30000);
 
   function render() {
+    if (typeof dp !== "undefined" && dp.inited) { dpRenderSpotSelect(); if (dp.view === "patterns") dpRenderPatterns(); }
     populateGearOptions();
     renderDashboard();
     renderLog();
@@ -1594,6 +1828,7 @@
     setTotal(catches.length);
     document.getElementById("allCatchesLink").textContent = `All ${state.catches.length} catches`;
     renderGallery(catches);
+    renderJourney();
     const datedAll = state.catches.map(c => c.date).filter(d => VALID_DATE_RE.test(d)).sort();
     document.getElementById("heroFirst").textContent = datedAll.length ? shortDate(datedAll[0]) : "—";
     document.getElementById("heroLast").textContent = datedAll.length ? shortDate(datedAll[datedAll.length - 1]) : "—";
@@ -1828,6 +2063,7 @@
               ${c.fight ? row("Fight level", escapeHtml(c.fight)) : ""}
               ${row("Location", escapeHtml(c.location))}
               ${row("Weather", escapeHtml(c.weather) || "—")}
+              ${c.cond ? row("Sea and sky", escapeHtml(condText(c.cond))) : ""}
               ${c.weight ? row("Weight", `${escapeHtml(c.weight)} kg`) : ""}
               ${row("Bait", escapeHtml(c.bait) || "—")}
               ${row("Method", escapeHtml(c.method) || "—")}
@@ -1982,6 +2218,1005 @@
     window.addEventListener("resize", updateGalleryArrows);
   })();
 
+  // ---- Fishing journey: the moments worth remembering, derived from the catch data.
+  // A catch becomes a moment when it has a note, sets a new weight record, or is the first fish at a spot.
+  const JN_ICONS = {
+    start: "M5 21V4M5 5h11l-2 4 2 4H5",
+    story: "M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4",
+    record: "M12 19V5M5 12l7-7 7 7",
+    weigh: "M12 4v16M6 8h12M8 8l-3 7a3 3 0 0 0 6 0zM16 8l-3 7a3 3 0 0 0 6 0z",
+    spot: "M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11zM12 12a2.3 2.3 0 1 0 0-4.6 2.3 2.3 0 0 0 0 4.6z",
+  };
+  const JN_LABELS = { start: "Beginning", story: "Story", record: "New record", weigh: "First weighed", spot: "New water" };
+  function parseKg(w) {
+    const n = parseFloat(String(w ?? "").replace(",", "."));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+  function journeyMoments() {
+    const ordered = state.catches
+      .filter(c => VALID_DATE_RE.test(c.date))
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id));
+    const seenSpots = new Set();
+    let maxKg = 0, weighed = 0;
+    const moments = [];
+    ordered.forEach((c, i) => {
+      const spotKey = String(c.location || "").trim().toLowerCase();
+      const newSpot = !!spotKey && !seenSpots.has(spotKey);
+      if (spotKey) seenSpots.add(spotKey);
+      const kg = parseKg(c.weight);
+      let record = null;
+      if (kg !== null) {
+        if (kg > maxKg) { record = weighed === 0 ? "weigh" : "record"; maxKg = kg; }
+        weighed++;
+      }
+      const note = String(c.notes || "").trim();
+      const tags = [];
+      if (i === 0) tags.push("start");
+      if (note) tags.push("story");
+      if (record) tags.push(record);
+      if (newSpot && i !== 0) tags.push("spot");
+      if (tags.length) moments.push({ c, tags, note, kg });
+    });
+    return moments;
+  }
+  function momentHeadline(m) {
+    const kg = m.kg !== null ? `${+m.kg.toFixed(2)} kg` : "";
+    if (m.tags.includes("start")) return "The journey begins";
+    if (m.tags.includes("record")) return `New record: ${kg}`;
+    if (m.tags.includes("weigh")) return `First weighed catch: ${kg}`;
+    if (m.tags.includes("spot")) return `First fish at ${m.c.location}`;
+    return m.c.species;
+  }
+  function daysBetween(a, b) {
+    return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+  }
+  function gapLabel(days) {
+    if (days <= 0) return "same day";
+    if (days === 1) return "1 day later";
+    return `${days} days later`;
+  }
+  let journeySig = "";
+  function renderJourney() {
+    const box = document.getElementById("journeyBox");
+    const strip = document.getElementById("journeyStrip");
+    const sig = state.catches.map(c => [c.id, c.date, c.notes, c.weight, c.location, c.species, c.photo ? c.photo.length : 0].join("|")).join("~");
+    if (sig === journeySig) return;
+    journeySig = sig;
+    const moments = journeyMoments();
+    if (moments.length === 0) { box.style.display = "none"; return; }
+    box.style.display = "";
+    const nos = catchNumbers();
+    const photoList = catchPhotos(state.catches);
+    const first = moments[0].c.date;
+    document.getElementById("journeySub").textContent =
+      `${moments.length} ${moments.length === 1 ? "moment" : "moments"} since ${shortDate(first)}. Stories, records and new waters, in the order they happened.`;
+    const today = new Date().toISOString().slice(0, 10);
+    const items = moments.map((m, idx) => {
+      const c = m.c;
+      const next = moments[idx + 1];
+      const gap = next ? gapLabel(daysBetween(c.date, next.c.date)) : (daysBetween(c.date, today) > 0 ? `${daysBetween(c.date, today)} days and counting` : "today");
+      const chips = m.tags.map(t => `<span class="jn-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${JN_ICONS[t]}"/></svg>${JN_LABELS[t]}</span>`).join("");
+      const showLoc = !m.tags.includes("spot") && !m.tags.includes("start");
+      return `
+        <li class="jn-item${next ? "" : " is-last"}" style="--i:${idx};">
+          <div class="jn-rail">
+            <span class="jn-date">${shortDate(c.date)}</span>
+            <span class="jn-dot${m.note ? " is-story" : ""}"></span>
+            <span class="jn-gap">${gap}</span>
+          </div>
+          <div class="jn-content">
+            ${c.photo ? `<button type="button" class="jn-photo" data-id="${c.id}" aria-label="Enlarge photo of ${escapeHtml(c.species)}"><img src="${c.photo}" alt="${escapeHtml(c.species)}" loading="lazy" decoding="async" /></button>` : ""}
+            <div class="jn-tags">${chips}</div>
+            <h3 class="jn-title">${escapeHtml(momentHeadline(m))}</h3>
+            ${m.note ? `<p class="jn-note">${escapeHtml(m.note)}</p>` : ""}
+            ${showLoc ? `<div class="jn-loc">${escapeHtml(c.location)}</div>` : ""}
+            <div class="jn-foot">
+              <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
+              <span class="jn-sp"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "")}</i></span>
+              ${waterMark(c.waterType)}
+            </div>
+          </div>
+        </li>`;
+    }).join("");
+    const nextNo = pad3(state.catches.length + 1);
+    strip.innerHTML = items + `
+        <li class="jn-item jn-next" style="--i:${moments.length};">
+          <div class="jn-rail"><span class="jn-date">Next</span><span class="jn-dot"></span></div>
+          <div class="jn-content">
+            <span class="jn-next-no">${nextNo}</span>
+            <p class="jn-next-text">The next chapter starts with the next catch.</p>
+          </div>
+        </li>`;
+    strip.querySelectorAll(".jn-photo").forEach(b => b.addEventListener("click", () => {
+      openLightbox(photoList, Math.max(0, photoList.findIndex(x => x.id === Number(b.dataset.id))), b);
+    }));
+    // land on the newest chapter, then let the moments arrive one by one the first time the section is seen
+    const lastReal = strip.querySelector(".jn-item.is-last");
+    const itemW = strip.querySelector(".jn-item").offsetWidth;
+    strip.scrollLeft = strip.clientWidth >= itemW * 2.4 ? strip.scrollWidth : Math.max(0, lastReal.offsetLeft - 30);
+    updateJourneyArrows();
+    if ("IntersectionObserver" in window && !reduceMotion()) {
+      strip.classList.remove("play"); strip.classList.add("pending");
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some(e => e.isIntersecting)) {
+          io.disconnect();
+          strip.classList.remove("pending"); strip.classList.add("play");
+        }
+      }, { threshold: 0.15 });
+      io.observe(box);
+    }
+  }
+  function updateJourneyArrows() {
+    const strip = document.getElementById("journeyStrip");
+    document.getElementById("journeyPrev").disabled = strip.scrollLeft <= 2;
+    document.getElementById("journeyNext").disabled = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
+  }
+  (function wireJourneyArrows() {
+    const strip = document.getElementById("journeyStrip");
+    const by = (dir) => strip.scrollBy({ left: dir * Math.max(280, strip.clientWidth * 0.75), behavior: reduceMotion() ? "auto" : "smooth" });
+    document.getElementById("journeyPrev").addEventListener("click", () => by(-1));
+    document.getElementById("journeyNext").addEventListener("click", () => by(1));
+    strip.addEventListener("scroll", updateJourneyArrows, { passive: true });
+    window.addEventListener("resize", updateJourneyArrows);
+  })();
+
+  // leaflet.heat throws when its map is redrawn while the panel is hidden (zero-size canvas); skip those redraws
+  if (window.L && L.HeatLayer && !L.HeatLayer.__guarded) {
+    const origRedraw = L.HeatLayer.prototype._redraw;
+    L.HeatLayer.prototype._redraw = function () {
+      const size = this._map && this._map.getSize();
+      if (!size || size.x === 0 || size.y === 0) return;
+      return origRedraw.apply(this, arguments);
+    };
+    L.HeatLayer.__guarded = true;
+  }
+
+  // ==========================================================================
+  // DEPARTURES: sea, sky and tide for the next cast.
+  // Data: Open-Meteo (weather + marine model), RainViewer radar, NASA GIBS Himawari infrared.
+  // Everything here is guidance for choosing when to fish, not for navigation.
+  // ==========================================================================
+  const DP_HOME = { id: "home", name: "Karimun waters", lat: 1.05, lng: 103.43, water: "salt" };
+  const DP_KEYS = { spot: "dp_spot", unit: "dp_unit", limits: "dp_limits", cache: "dp_cache", list: "dp_checklist", gps: "dp_gps" };
+  const dp = { inited: false, spot: DP_HOME, gps: null, model: null, view: "now", day: 0, unit: "kmh", limits: { gust: 30, wave: 1.0 }, loading: false, error: "", offline: false, timer: null };
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage may be unavailable */ } };
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const num = (v, d = 0) => (typeof v === "number" && Number.isFinite(v) ? v : d);
+  const has = (v) => typeof v === "number" && Number.isFinite(v);
+
+  // ---- astronomy (compact port of the public-domain formulas used by SunCalc) ----
+  const AS = (() => {
+    const rad = Math.PI / 180, dayMs = 86400000, J1970 = 2440588, J2000 = 2451545, e = rad * 23.4397;
+    const toDays = (ms) => ms / dayMs - 0.5 + J1970 - J2000;
+    const ra = (l, b) => Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l));
+    const dec = (l, b) => Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l));
+    const alt = (H, phi, d) => Math.asin(Math.sin(phi) * Math.sin(d) + Math.cos(phi) * Math.cos(d) * Math.cos(H));
+    const sidereal = (d, lw) => rad * (280.16 + 360.9856235 * d) - lw;
+    function sunC(d) {
+      const M = rad * (357.5291 + 0.98560028 * d);
+      const C = rad * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+      const L = M + C + rad * 102.9372 + Math.PI;
+      return { dec: dec(L, 0), ra: ra(L, 0) };
+    }
+    function moonC(d) {
+      const L = rad * (218.316 + 13.176396 * d), M = rad * (134.963 + 13.064993 * d), F = rad * (93.272 + 13.22935 * d);
+      const l = L + rad * 6.289 * Math.sin(M), b = rad * 5.128 * Math.sin(F);
+      return { ra: ra(l, b), dec: dec(l, b), dist: 385001 - 20905 * Math.cos(M) };
+    }
+    const refr = (h) => { if (h < 0) h = 0; return 0.0002967 / Math.tan(h + 0.00312536 / (h + 0.08901179)); };
+    return {
+      sunAlt(ms, lat, lng) { const d = toDays(ms), c = sunC(d); return alt(sidereal(d, rad * -lng) - c.ra, rad * lat, c.dec) / rad; },
+      moonAlt(ms, lat, lng) { const d = toDays(ms), c = moonC(d); let h = alt(sidereal(d, rad * -lng) - c.ra, rad * lat, c.dec); h += refr(h); return h / rad; },
+      moonPhase(ms) {
+        const d = toDays(ms), s = sunC(d), m = moonC(d), sd = 149598000;
+        const phi = Math.acos(Math.sin(s.dec) * Math.sin(m.dec) + Math.cos(s.dec) * Math.cos(m.dec) * Math.cos(s.ra - m.ra));
+        const inc = Math.atan2(sd * Math.sin(phi), m.dist - sd * Math.cos(phi));
+        const ang = Math.atan2(Math.cos(s.dec) * Math.sin(s.ra - m.ra), Math.sin(s.dec) * Math.cos(m.dec) - Math.cos(s.dec) * Math.sin(m.dec) * Math.cos(s.ra - m.ra));
+        return { fraction: (1 + Math.cos(inc)) / 2, phase: 0.5 + (0.5 * inc * (ang < 0 ? -1 : 1)) / Math.PI };
+      },
+    };
+  })();
+  function crossings(fn, fromMs, toMs, level, stepMin = 5) {
+    const out = [], step = stepMin * 60000;
+    let pt = fromMs, prev = fn(pt) - level;
+    for (let t = fromMs + step; t <= toMs; t += step) {
+      const v = fn(t) - level;
+      if ((prev < 0) !== (v < 0)) out.push({ ms: pt + (prev / (prev - v)) * step, rising: v > prev });
+      prev = v; pt = t;
+    }
+    return out;
+  }
+  function extrema(fn, fromMs, toMs, stepMin = 10) {
+    const out = [], step = stepMin * 60000;
+    let a = fn(fromMs), b = fn(fromMs + step);
+    for (let t = fromMs + 2 * step; t <= toMs; t += step) {
+      const c = fn(t);
+      if ((b > a && b >= c) || (b < a && b <= c)) out.push({ ms: t - step, high: b > a });
+      a = b; b = c;
+    }
+    return out;
+  }
+  function dpSun(dayStartUtc, lat, lng) {
+    const end = dayStartUtc + 86400000, f = (t) => AS.sunAlt(t, lat, lng);
+    const pick = (level, rising) => { const c = crossings(f, dayStartUtc, end, level).find(x => x.rising === rising); return c ? c.ms : null; };
+    return { dawn: pick(-6, true), sunrise: pick(-0.833, true), sunset: pick(-0.833, false), dusk: pick(-6, false) };
+  }
+  function dpMoon(dayStartUtc, lat, lng) {
+    const end = dayStartUtc + 129600000, f = (t) => AS.moonAlt(t, lat, lng);
+    const cr = crossings(f, dayStartUtc, end, -0.3, 10);
+    const ex = extrema(f, dayStartUtc, end, 10);
+    const noon = dayStartUtc + 43200000, ph = AS.moonPhase(noon);
+    const daysFrom = (p) => Math.min(Math.abs(ph.phase - p), Math.abs(ph.phase - p - 1), Math.abs(ph.phase - p + 1)) * 29.53;
+    const spring = Math.min(daysFrom(0), daysFrom(0.5)) <= 1.6;
+    const neap = Math.min(daysFrom(0.25), daysFrom(0.75)) <= 1.6;
+    const names = ["New moon", "Waxing crescent", "First quarter", "Waxing gibbous", "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"];
+    return {
+      rise: (cr.find(x => x.rising) || {}).ms || null, set: (cr.find(x => !x.rising) || {}).ms || null,
+      over: (ex.find(x => x.high) || {}).ms || null, under: (ex.find(x => !x.high) || {}).ms || null,
+      phase: ph.phase, fraction: ph.fraction, name: names[Math.round(ph.phase * 8) % 8], spring, neap,
+    };
+  }
+
+  // ---- formatting helpers ----
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const fmtWall = (ms) => { const d = new Date(ms); return `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`; }; // ms is "local wall clock as UTC"
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayLabel = (ms, idx) => (idx === 0 ? "Today" : idx === 1 ? "Tomorrow" : `${DAY_NAMES[new Date(ms).getUTCDay()]} ${pad2(new Date(ms).getUTCDate())}`);
+  const COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  const compass = (deg) => COMPASS[Math.round((((deg % 360) + 360) % 360) / 22.5) % 16];
+  const fmtUnit = (kmh) => (dp.unit === "kn" ? Math.round(kmh / 1.852) : Math.round(kmh));
+  const unitLabel = () => (dp.unit === "kn" ? "kn" : "km/h");
+  const BEAUFORT = [[1, "Calm"], [6, "Light air"], [12, "Light breeze"], [20, "Gentle breeze"], [29, "Moderate breeze"], [39, "Fresh breeze"], [50, "Strong breeze"], [62, "Near gale"], [75, "Gale"], [999, "Storm"]];
+  const beaufort = (kmh) => { const i = BEAUFORT.findIndex(b => kmh < b[0]); return { n: i, name: BEAUFORT[i][1] }; };
+  const arrowSvg = (deg, size = 18) => `<svg class="dp-arrow" style="width:${size}px;height:${size}px;transform:rotate(${Math.round(deg)}deg)" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l6 8h-4v10h-4V11H6z"/></svg>`;
+  function wxIcon(code, night) {
+    let body;
+    const cloud = "M7 18a4 4 0 0 1-.6-7.96A5.6 5.6 0 0 1 17.2 9.4 4.3 4.3 0 0 1 17.5 18z";
+    if (code === 0 || code === 1) body = night ? '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>' : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>';
+    else if (code === 2) body = '<path d="M8 8.5a3.5 3.5 0 1 1 6.5-1.7"/><path d="M7.5 20a3.6 3.6 0 0 1-.5-7.2 5 5 0 0 1 9.6-.9A3.8 3.8 0 0 1 16.8 20z"/>';
+    else if (code === 3) body = `<path d="${cloud}"/>`;
+    else if (code >= 45 && code <= 48) body = '<path d="M4 9h16M6 13h12M4 17h16"/>';
+    else if (code >= 95) body = `<path d="M17 15a4.3 4.3 0 0 0 .5-8.6A5.6 5.6 0 0 0 6.4 7.5 4 4 0 0 0 7 15"/><path d="M12.5 11l-2.5 4.5h3.5L11 20"/>`;
+    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) body = `<path d="M17 14a4.3 4.3 0 0 0 .5-8.6A5.6 5.6 0 0 0 6.4 6.5 4 4 0 0 0 7 14"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3"/>`;
+    else body = `<path d="${cloud}"/>`;
+    return `<svg class="dp-wx" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+  }
+  const wxName = (code) => code === 0 ? "Clear" : code === 1 ? "Mostly clear" : code === 2 ? "Partly cloudy" : code === 3 ? "Overcast" : code >= 95 ? "Thunderstorm" : code >= 80 ? "Showers" : code >= 61 ? "Rain" : code >= 51 ? "Drizzle" : code >= 45 ? "Fog" : "Cloudy";
+
+  // ---- data ----
+  const DP_W_HOURLY = "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cape";
+  const DP_M_HOURLY = "wave_height,wave_period,wave_direction,swell_wave_height,ocean_current_velocity,ocean_current_direction,sea_surface_temperature,sea_level_height_msl";
+  async function fetchJSON(url, ms = 12000) {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), ms);
+    try {
+      const r = await fetch(url, { signal: ctl.signal });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+  async function dpFetch(spot) {
+    const q = `latitude=${spot.lat.toFixed(4)}&longitude=${spot.lng.toFixed(4)}&timezone=auto`;
+    const wReq = fetchJSON(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,precipitation,cloud_cover&hourly=${DP_W_HOURLY}&daily=uv_index_max,temperature_2m_max,temperature_2m_min&past_days=1&forecast_days=4`);
+    const mReq = spot.water === "fresh" ? Promise.resolve(null) : fetchJSON(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${DP_M_HOURLY}&past_days=1&forecast_days=4`).catch(() => null);
+    const [w, m] = await Promise.all([wReq, mReq]);
+    return { w, m, fetchedAt: Date.now() };
+  }
+  const dpCacheKey = (s) => `${s.lat.toFixed(2)},${s.lng.toFixed(2)},${s.water}`;
+  function dpCacheGet(spot) { const all = lsGet(DP_KEYS.cache, {}); return all[dpCacheKey(spot)] || null; }
+  function dpCachePut(spot, raw) {
+    const all = lsGet(DP_KEYS.cache, {});
+    all[dpCacheKey(spot)] = raw;
+    const keys = Object.keys(all).sort((a, b) => all[b].fetchedAt - all[a].fetchedAt).slice(0, 3);
+    const keep = {}; keys.forEach(k => { keep[k] = all[k]; });
+    lsSet(DP_KEYS.cache, keep);
+  }
+
+  // ---- model: align weather + marine hourly rows, derive tide, risk, scores, sun and moon ----
+  function dpBuild(raw, spot) {
+    const w = raw.w, m = raw.m, offset = (w.utc_offset_seconds || 0) * 1000;
+    const wall = (iso) => Date.parse(iso + ":00Z");
+    const mIdx = new Map();
+    if (m && m.hourly) m.hourly.time.forEach((t, i) => mIdx.set(t, i));
+    const h = w.hourly;
+    const rows = h.time.map((iso, i) => {
+      const mi = mIdx.get(iso);
+      const mv = (k) => (m && m.hourly && mi !== undefined && has(m.hourly[k][mi]) ? m.hourly[k][mi] : null);
+      return {
+        iso, ms: wall(iso), utc: wall(iso) - offset,
+        temp: h.temperature_2m[i], feels: h.apparent_temperature[i], rh: h.relative_humidity_2m[i], pop: h.precipitation_probability[i],
+        rain: h.precipitation[i], code: h.weather_code[i], cloud: h.cloud_cover[i], press: h.pressure_msl[i],
+        ws: h.wind_speed_10m[i], wd: h.wind_direction_10m[i], wg: h.wind_gusts_10m[i], cape: h.cape[i],
+        wave: mv("wave_height"), wper: mv("wave_period"), wdir: mv("wave_direction"), swell: mv("swell_wave_height"),
+        cur: mv("ocean_current_velocity"), curd: mv("ocean_current_direction"), sst: mv("sea_surface_temperature"), tide: mv("sea_level_height_msl"),
+      };
+    });
+    const cur = w.current, nowKey = cur.time.slice(0, 13) + ":00";
+    let now = rows.findIndex(r => r.iso === nowKey);
+    if (now < 0) now = Math.min(24, rows.length - 1);
+    const hasTide = rows.some(r => r.tide !== null);
+    rows.forEach((r, i) => {
+      const a = rows[i - 1], b = rows[i + 1];
+      r.rate = a && b && has(a.tide) && has(b.tide) ? (b.tide - a.tide) / 2 : null;
+      r.dp3 = rows[i - 3] && has(rows[i - 3].press) && has(r.press) ? r.press - rows[i - 3].press : null;
+    });
+    // tide extremes (parabolic refinement of the hourly model)
+    const extremes = [];
+    for (let i = 1; i < rows.length - 1 && hasTide; i++) {
+      const y0 = rows[i - 1].tide, y1 = rows[i].tide, y2 = rows[i + 1].tide;
+      if (![y0, y1, y2].every(has)) continue;
+      const hi = y1 > y0 && y1 >= y2, lo = y1 < y0 && y1 <= y2;
+      if (!hi && !lo) continue;
+      const den = y0 - 2 * y1 + y2, off = den ? clamp((0.5 * (y0 - y2)) / den, -0.5, 0.5) : 0;
+      extremes.push({ high: hi, ms: rows[i].ms + off * 3600000, utc: rows[i].utc + off * 3600000, h: y1 - 0.25 * (y0 - y2) * off });
+    }
+    const maxRate = Math.max(0.08, ...rows.map(r => Math.abs(num(r.rate))));
+    // sun + moon for yesterday..+3 days (local days)
+    const todayWall = Math.floor(rows[now].ms / 86400000) * 86400000;
+    const days = [];
+    for (let d = -1; d <= 3; d++) {
+      const start = todayWall + d * 86400000, startUtc = start - offset;
+      days.push({ idx: d, wall: start, utc: startUtc, sun: dpSun(startUtc, spot.lat, spot.lng), moon: dpMoon(startUtc, spot.lat, spot.lng) });
+    }
+    const dayOf = (r) => days[clamp(Math.floor((r.ms - todayWall) / 86400000) + 1, 0, days.length - 1)];
+    const lim = dp.limits, fresh = spot.water === "fresh";
+    rows.forEach((r) => {
+      const sun = dayOf(r).sun, mid = r.utc + 1800000;
+      const near = (t) => (t == null ? 1e9 : Math.abs(mid - t) / 60000);
+      const dl = Math.min(near(sun.sunrise), near(sun.sunset));
+      const up = sun.sunrise != null && sun.sunset != null && mid >= sun.sunrise && mid <= sun.sunset;
+      r.light = dl <= 60 ? 1 : dl <= 120 ? 0.8 : up ? 0.45 : 0.5;
+      r.lightTag = near(sun.sunrise) <= 75 ? "first light" : near(sun.sunset) <= 75 ? "last light" : up ? "daylight" : "night";
+      const storm = num(r.code) >= 95 || (num(r.cape) >= 1500 && num(r.pop) >= 50);
+      const watch = (num(r.cape) >= 1000 && num(r.pop) >= 40) || (num(r.code) >= 80 && num(r.code) <= 82);
+      const tags = [];
+      let level = 0;
+      if (num(r.wg) >= lim.gust * 1.35) { level = 2; tags.push("gust"); } else if (num(r.wg) >= lim.gust) { level = Math.max(level, 1); tags.push("gust"); }
+      if (!fresh && has(r.wave)) { if (r.wave >= lim.wave * 1.35) { level = 2; tags.push("wave"); } else if (r.wave >= lim.wave) { level = Math.max(level, 1); tags.push("wave"); } }
+      if (storm) { level = 2; tags.push("storm"); } else if (watch) { level = Math.max(level, 1); tags.push("storm"); }
+      r.risk = level; r.riskTags = [...new Set(tags)];
+      const windF = clamp(1 - (num(r.ws) - 10) / 18, 0, 1), rainF = clamp(1 - (num(r.pop) - 20) / 60, 0.1, 1);
+      const pBonus = has(r.dp3) ? (r.dp3 <= -0.5 && r.dp3 >= -3 ? 6 : r.dp3 < -4 ? -12 : 0) : 0;
+      let s;
+      if (fresh || !has(r.rate)) s = 100 * (0.4 * r.light + 0.3 * windF + 0.2 * rainF + 0.1 * 0.6) + pBonus;
+      else s = 100 * (0.35 * clamp(Math.abs(r.rate) / maxRate, 0, 1) + 0.25 * r.light + 0.25 * windF + 0.15 * rainF) + pBonus;
+      r.score = level === 2 ? 0 : Math.round(clamp(s, 0, 100) * (level === 1 ? 0.8 : 1));
+      r.tidePhase = !has(r.rate) ? null : Math.abs(r.rate) < 0.04 ? "slack" : r.rate > 0 ? "rising" : "falling";
+    });
+    // best windows: contiguous runs of good, safe hours from now on
+    const windows = [];
+    let run = [];
+    const flush = () => {
+      if (run.length > 5) {
+        let bestI = 0, bestM = -1;
+        for (let i = 0; i + 4 <= run.length; i++) { const mm = run.slice(i, i + 4).reduce((a, r) => a + r.score, 0) / 4; if (mm > bestM) { bestM = mm; bestI = i; } }
+        run = run.slice(bestI, bestI + 4);
+      }
+      if (run.length) { const mean = run.reduce((a, r) => a + r.score, 0) / run.length; windows.push({ rows: run, mean, len: run.length, rank: mean * (1 + 0.12 * Math.min(run.length, 4)) }); }
+      run = [];
+    };
+    rows.forEach((r, i) => { if (i >= now && i < now + 72 && r.risk < 2 && r.score >= 58) { if (run.length && rows.indexOf(run[run.length - 1]) !== i - 1) flush(); run.push(r); } else flush(); });
+    flush();
+    windows.sort((a, b) => b.rank - a.rank);
+    return { spot, raw, rows, now, offset, cur, daily: w.daily, extremes, hasTide, days, todayWall, windows, maxRate, fetchedAt: raw.fetchedAt, hasMarine: !!m && hasTide, tz: w.timezone_abbreviation };
+  }
+  const tierOf = (r) => (r.risk === 2 ? "No-go" : r.score >= 75 ? "Prime" : r.score >= 58 ? "Good" : r.score >= 38 ? "Fair" : "Poor");
+  function windowReason(win) {
+    const mid = win.rows[Math.floor(win.rows.length / 2)], bits = [];
+    if (mid.tidePhase === "rising" || mid.tidePhase === "falling") bits.push(`${mid.tidePhase} tide`);
+    if (num(mid.ws) <= 12) bits.push("light wind"); else if (num(mid.ws) <= 20) bits.push("moderate wind");
+    if (mid.lightTag === "first light" || mid.lightTag === "last light") bits.push(mid.lightTag);
+    if (num(mid.pop) <= 20) bits.push("dry"); else if (num(mid.pop) >= 50) bits.push("showers possible");
+    return bits.join(", ") || "steady conditions";
+  }
+  function dpVerdict(model) {
+    const { rows, now } = model, ahead = rows.slice(now, now + 6);
+    const nowRow = rows[now];
+    let level = 0;
+    ahead.forEach((r, i) => { if (r.risk === 2) level = Math.max(level, i <= 2 ? 2 : 1); else if (r.risk === 1) level = Math.max(level, 1); });
+    const reasons = [];
+    const peakG = ahead.reduce((a, r) => (num(r.wg) > num(a.wg) ? r : a), ahead[0]);
+    const peakW = model.hasMarine ? ahead.reduce((a, r) => (num(r.wave) > num(a.wave) ? r : a), ahead[0]) : null;
+    const lim = dp.limits;
+    if (num(peakG.wg) >= lim.gust) reasons.push({ bad: true, t: `Gusts up to ${fmtUnit(peakG.wg)} ${unitLabel()} around ${fmtWall(peakG.ms)}` });
+    if (peakW && has(peakW.wave) && peakW.wave >= lim.wave) reasons.push({ bad: true, t: `Waves up to ${peakW.wave.toFixed(1)} m around ${fmtWall(peakW.ms)}` });
+    const stormRow = ahead.find(r => r.riskTags.includes("storm"));
+    if (stormRow) reasons.push({ bad: true, t: `${stormRow.risk === 2 ? "Thunderstorm risk" : "Storm cells possible"} around ${fmtWall(stormRow.ms)}` });
+    const rainRow = ahead.find(r => num(r.pop) >= 60 || num(r.rain) >= 0.5);
+    if (rainRow && !stormRow) reasons.push({ bad: false, t: `Rain likely around ${fmtWall(rainRow.ms)} (${num(rainRow.pop)}%)` });
+    if (!reasons.some(x => x.bad)) {
+      reasons.push({ bad: false, t: `Wind ${fmtUnit(nowRow.ws)} ${unitLabel()} ${compass(nowRow.wd)}, gusts ${fmtUnit(nowRow.wg)}` });
+      if (model.hasMarine && has(nowRow.wave)) reasons.push({ bad: false, t: `Waves ${nowRow.wave.toFixed(1)} m, ${nowRow.wper ? nowRow.wper.toFixed(0) + " s period" : "gentle swell"}` });
+    }
+    if (model.hasTide) {
+      const nx = model.extremes.find(x => x.utc > nowRow.utc);
+      if (nx) reasons.push({ bad: false, t: `Tide ${nx.high ? "rising" : "falling"} until ${fmtWall(nx.ms)} (${nx.high ? "high" : "low"} ${nx.h.toFixed(2)} m)` });
+    }
+    const word = level === 2 ? "STAY ASHORE" : level === 1 ? "CAUTION" : "GO";
+    const lead = level === 2 ? "Conditions are unsafe for a small boat in the next hours." : level === 1 ? "Doable, but watch the flagged hours and keep the shore close." : "Comfortable conditions for the next six hours.";
+    return { level, word, lead, reasons: reasons.slice(0, 4) };
+  }
+
+  // ---- rendering: location bar + verdict ----
+  function dpSpots() {
+    const groups = new Map();
+    state.catches.forEach(c => {
+      if (!has(c.lat) || !has(c.lng)) return;
+      const key = String(c.location || "").trim().toLowerCase() || `${c.lat.toFixed(2)},${c.lng.toFixed(2)}`;
+      let g = groups.get(key);
+      if (!g) { g = { id: "s:" + key, name: String(c.location || "Pinned spot").trim(), lat: 0, lng: 0, n: 0, fresh: 0 }; groups.set(key, g); }
+      g.lat += c.lat; g.lng += c.lng; g.n++; if (c.waterType === "Air Tawar") g.fresh++;
+    });
+    return [...groups.values()].map(g => ({ id: g.id, name: g.name, lat: g.lat / g.n, lng: g.lng / g.n, n: g.n, water: g.fresh === g.n ? "fresh" : "salt" })).sort((a, b) => b.n - a.n);
+  }
+  function dpAllSpots() { return [DP_HOME, ...(dp.gps ? [dp.gps] : []), ...dpSpots()]; }
+  function dpRenderSpotSelect() {
+    const sel = document.getElementById("dpSpot");
+    const spots = dpSpots();
+    sel.innerHTML =
+      `<option value="home">${escapeHtml(DP_HOME.name)}</option>` +
+      (dp.gps ? `<option value="gps">My position (GPS)</option>` : "") +
+      (spots.length ? `<optgroup label="Your catch spots">${spots.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)} · ${s.n} ${s.n === 1 ? "catch" : "catches"}${s.water === "fresh" ? " · freshwater" : ""}</option>`).join("")}</optgroup>` : "");
+    sel.value = dp.spot.id;
+    if (sel.value !== dp.spot.id) { dp.spot = DP_HOME; sel.value = "home"; }
+  }
+  function dpStatusText() {
+    if (dp.loading) return "Reading the sea…";
+    if (!dp.model) return dp.error || "";
+    const mins = Math.max(0, Math.round((Date.now() - dp.model.fetchedAt) / 60000));
+    return `${dp.offline ? "Offline, showing data from " : "Updated "}${mins < 1 ? "just now" : mins < 60 ? mins + " min ago" : Math.round(mins / 60) + " h ago"}`;
+  }
+  function dpRenderStatus() {
+    document.getElementById("dpStatus").textContent = dpStatusText();
+    document.getElementById("dpRefresh").disabled = dp.loading;
+  }
+  const VERDICT_ICON = {
+    0: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+    1: '<path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.5v.01"/>',
+    2: '<path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  };
+  function dpRenderVerdict() {
+    const box = document.getElementById("dpVerdict");
+    if (!dp.model) {
+      box.className = "dp-verdict dp-v-wait";
+      box.innerHTML = `<div class="dp-v-main"><div class="dp-v-word">${dp.loading ? "…" : "—"}</div><p class="dp-v-lead">${escapeHtml(dp.loading ? "Reading the sea and sky for this spot." : dp.error || "No data yet.")}</p></div>`;
+      return;
+    }
+    const m = dp.model, v = dpVerdict(m), r = m.rows[m.now];
+    const todays = m.windows.find(w => Math.floor((w.rows[0].ms - m.todayWall) / 86400000) === 0) || m.windows[0];
+    const tdi = todays ? Math.floor((todays.rows[0].ms - m.todayWall) / 86400000) : 0;
+    const bestTxt = todays ? `${dayLabel(m.todayWall + tdi * 86400000, tdi)} ${fmtWall(todays.rows[0].ms)}–${fmtWall(todays.rows[todays.rows.length - 1].ms + 3600000)}` : "No good window in the next 3 days";
+    box.className = `dp-verdict dp-v-${v.level}`;
+    box.innerHTML = `
+      <div class="dp-v-main">
+        <div class="dp-v-wordrow"><svg class="dp-v-icon" viewBox="0 0 24 24" aria-hidden="true">${VERDICT_ICON[v.level]}</svg><div class="dp-v-word" role="status">${v.word}</div></div>
+        <p class="dp-v-lead">${v.lead}</p>
+        <ul class="dp-v-reasons">${v.reasons.map(x => `<li class="${x.bad ? "is-bad" : ""}">${escapeHtml(x.t)}</li>`).join("")}</ul>
+      </div>
+      <div class="dp-v-cells">
+        <div class="dp-cell"><div class="cell-label">Fishing index now</div><div class="dp-led-row"><span class="dp-led">${r.score}</span><span class="dp-led-sub">/100 · ${tierOf(r)}</span></div></div>
+        <div class="dp-cell"><div class="cell-label">Best window</div><div class="dp-best">${escapeHtml(bestTxt)}</div>${todays ? `<div class="cell-delta">${escapeHtml(windowReason(todays))}</div>` : ""}</div>
+        <div class="dp-cell"><div class="cell-label">Safety limits</div>
+          <details class="dp-limits"><summary>Gusts ${dp.limits.gust} km/h · waves ${dp.limits.wave.toFixed(1)} m</summary>
+            <label>Caution at gusts of <input type="number" id="dpLimGust" min="10" max="80" value="${dp.limits.gust}" class="input"> km/h</label>
+            <label>Caution at waves of <input type="number" id="dpLimWave" min="0.3" max="3" step="0.1" value="${dp.limits.wave}" class="input"> m</label>
+            <p>Stay ashore starts at 1.35 times these limits, or with thunderstorm risk.</p>
+          </details></div>
+      </div>`;
+    const g = document.getElementById("dpLimGust"), w = document.getElementById("dpLimWave");
+    const apply = () => {
+      const gg = clamp(parseFloat(g.value) || 30, 10, 80), ww = clamp(parseFloat(w.value) || 1, 0.3, 3);
+      dp.limits = { gust: gg, wave: ww }; lsSet(DP_KEYS.limits, dp.limits);
+      dp.model = dpBuild(dp.model.raw, dp.spot); dpRenderVerdict(); dpRenderAll();
+    };
+    g.addEventListener("change", apply); w.addEventListener("change", apply);
+  }
+
+  // ---- rendering: NOW ----
+  function smoothPath(P) {
+    let d = `M${P[0][0].toFixed(1)},${P[0][1].toFixed(1)}`;
+    for (let i = 0; i < P.length - 1; i++) {
+      const p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || p2;
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  function tideChart(m) {
+    const i0 = Math.max(0, m.now - 6), i1 = Math.min(m.rows.length - 1, m.now + 18), pts = m.rows.slice(i0, i1 + 1).filter(r => has(r.tide));
+    if (pts.length < 6) return "";
+    const host = document.getElementById("dpNow"), W = clamp(Math.round((host ? host.clientWidth : 720) * (window.innerWidth > 1100 ? 0.64 : 0.94)) - 40, 300, 720), H = 250, pl = 40, pr = 14, pt = 34, pb = 46;
+    const lo = Math.min(...pts.map(r => r.tide)) - 0.15, hi = Math.max(...pts.map(r => r.tide)) + 0.15;
+    const t0 = pts[0].ms, t1 = pts[pts.length - 1].ms;
+    const x = (ms) => pl + ((ms - t0) / (t1 - t0)) * (W - pl - pr), y = (v) => pt + (1 - (v - lo) / (hi - lo)) * (H - pt - pb);
+    const P = pts.map(r => [x(r.ms), y(r.tide)]);
+    const line = smoothPath(P), area = `${line} L${P[P.length - 1][0].toFixed(1)},${H - pb} L${P[0][0].toFixed(1)},${H - pb} Z`;
+    const ticksY = [lo + 0.15, (lo + hi) / 2, hi - 0.15].map(v => Math.round(v * 10) / 10);
+    const grid = ticksY.map(v => `<line x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}" stroke="#243040"/><text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#A3B4C4">${v.toFixed(1)}</text>`).join("");
+    const xt = pts.filter(r => new Date(r.ms).getUTCHours() % 3 === 0).map(r => `<text x="${x(r.ms)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#A3B4C4">${fmtWall(r.ms)}</text>`).join("");
+    const band = pts.map((r, i) => { const nx = pts[i + 1]; if (!nx) return ""; const c = r.lightTag === "night" ? "#243040" : r.lightTag === "daylight" ? "#FFB23E" : "#B7842D"; const op = r.lightTag === "night" ? 0.9 : r.lightTag === "daylight" ? 0.55 : 0.4; return `<rect x="${x(r.ms)}" y="${H - pb + 8}" width="${x(nx.ms) - x(r.ms) + 0.5}" height="6" fill="${c}" opacity="${op}"/>`; }).join("");
+    const ex = m.extremes.filter(e => e.ms >= t0 && e.ms <= t1).map(e => {
+      const ex_ = x(e.ms), ey = y(e.h), above = e.high;
+      return `<rect x="${x(e.ms - 2400000)}" y="${pt}" width="${x(e.ms + 2400000) - x(e.ms - 2400000)}" height="${H - pt - pb}" fill="#E9EEF3" opacity="0.045"/>
+        <circle cx="${ex_}" cy="${ey}" r="4.5" fill="#0F151C" stroke="#4FC3D9" stroke-width="2"/>
+        <text x="${ex_}" y="${above ? ey - 25 : ey + 19}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#E9EEF3">${fmtWall(e.ms)}</text><text x="${ex_}" y="${above ? ey - 12 : ey + 32}" text-anchor="middle" font-size="11.5" fill="#A3B4C4">${e.h.toFixed(2)} m</text>`;
+    }).join("");
+    const nowR = m.rows[m.now], nx = x(nowR.ms), ny = y(nowR.tide);
+    const cap = m.extremes.find(e => e.utc > nowR.utc);
+    return `<svg class="dp-tide-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tide height for the next 18 hours. Now ${num(nowR.tide).toFixed(2)} metres, ${nowR.tidePhase || "steady"}${cap ? ", next " + (cap.high ? "high" : "low") + " at " + fmtWall(cap.ms) : ""}.">
+      ${grid}${band}<path d="${area}" fill="#4FC3D9" opacity="0.14"/><path d="${line}" fill="none" stroke="#4FC3D9" stroke-width="2.5" stroke-linecap="round"/>
+      ${ex}<line x1="${nx}" x2="${nx}" y1="${pt - 8}" y2="${H - pb}" stroke="#FFB23E" stroke-width="2" stroke-dasharray="4 4"/><circle cx="${nx}" cy="${ny}" r="6" fill="#FFB23E"/>
+      <text x="${nx}" y="${pt - 12}" text-anchor="middle" font-size="12" font-weight="800" fill="#FFB23E">NOW ${num(nowR.tide).toFixed(2)} m</text>${xt}</svg>`;
+  }
+  function moonGlyph(phase, size = 60) {
+    const r = 22, k = Math.cos(phase * 2 * Math.PI), rx = Math.abs(k) * r, right = phase < 0.5;
+    const outer = right ? `M0 ${-r} A${r} ${r} 0 0 1 0 ${r}` : `M0 ${-r} A${r} ${r} 0 0 0 0 ${r}`;
+    const sweep = right ? (k > 0 ? 0 : 1) : (k > 0 ? 1 : 0);
+    return `<svg class="dp-moon" viewBox="-26 -26 52 52" width="${size}" height="${size}" aria-hidden="true"><circle r="${r}" fill="#151D27" stroke="#354456" stroke-width="1.5"/><path d="${outer} A${rx.toFixed(2)} ${r} 0 0 ${sweep} 0 ${-r} Z" fill="#E9EEF3"/></svg>`;
+  }
+  function sunBar(m) {
+    const d = m.days.find(x => x.idx === 0), off = m.offset, span = 86400000;
+    const f = (utc) => (utc == null ? null : clamp((utc - d.utc) / span, 0, 1) * 100);
+    const s = d.sun, dawn = f(s.dawn), rise = f(s.sunrise), set = f(s.sunset), dusk = f(s.dusk);
+    const nowF = clamp((m.rows[m.now].utc + 1800000 - d.utc) / span, 0, 1) * 100;
+    const seg = (a, b, c, o) => (a == null || b == null ? "" : `<span class="dp-seg" style="left:${a}%;width:${Math.max(0, b - a)}%;background:${c};opacity:${o}"></span>`);
+    const tw = (t) => (t == null ? "unknown" : fmtWall(t + off));
+    return `<div class="dp-daybar" role="img" aria-label="Daylight today: first light ${tw(s.dawn)}, sunrise ${tw(s.sunrise)}, sunset ${tw(s.sunset)}, last light ${tw(s.dusk)}">
+      ${seg(dawn, rise, "#FFB23E", 0.35)}${seg(rise, set, "#FFB23E", 0.7)}${seg(set, dusk, "#FFB23E", 0.35)}<span class="dp-now" style="left:${nowF}%"></span></div>
+      <div class="dp-daylabels"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>`;
+  }
+  function windDial(wd, ws) {
+    const S = 200, c = S / 2, R = 74;
+    let ticks = "";
+    for (let i = 0; i < 36; i++) {
+      const long = i % 3 === 0, a = (i * 10 - 90) * Math.PI / 180, r1 = R - (long ? 10 : 5);
+      ticks += `<line x1="${c + Math.cos(a) * r1}" y1="${c + Math.sin(a) * r1}" x2="${c + Math.cos(a) * R}" y2="${c + Math.sin(a) * R}" stroke="${long ? "#A3B4C4" : "#354456"}" stroke-width="${long ? 2 : 1}"/>`;
+    }
+    const lab = [["N", 0], ["E", 90], ["S", 180], ["W", 270]].map(([t, a]) => { const rr = R + 15, ra = (a - 90) * Math.PI / 180; return `<text x="${c + Math.cos(ra) * rr}" y="${c + Math.sin(ra) * rr + 4}" text-anchor="middle" font-size="12" font-weight="800" fill="${t === "N" ? "#FFB23E" : "#E9EEF3"}">${t}</text>`; }).join("");
+    const from = (wd - 90) * Math.PI / 180;
+    return `<svg class="dp-dial" viewBox="0 0 ${S} ${S}" role="img" aria-label="Wind from ${compass(wd)}, ${Math.round(wd)} degrees, ${fmtUnit(ws)} ${unitLabel()}">
+      <circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="#354456" stroke-width="1.5"/>${ticks}${lab}
+      <circle cx="${c + Math.cos(from) * R}" cy="${c + Math.sin(from) * R}" r="5" fill="#0F151C" stroke="#FFB23E" stroke-width="2"/>
+      <g transform="rotate(${Math.round(wd + 180)} ${c} ${c})"><path d="M${c} ${c - 54} L${c + 11} ${c - 30} L${c + 4} ${c - 30} L${c + 4} ${c + 40} L${c - 4} ${c + 40} L${c - 4} ${c - 30} L${c - 11} ${c - 30} Z" fill="#FFB23E"/></g></svg>`;
+  }
+  function hourBars(rows, get, opts) {
+    const vals = rows.map(get), max = Math.max(opts.min, ...vals.map(v => num(v)));
+    return `<div class="dp-bars" role="img" aria-label="${escapeHtml(opts.label)}">` + rows.map((r, i) => {
+      const v = num(vals[i]), warn = opts.warn != null && v >= opts.warn;
+      return `<div class="dp-hb" title="${fmtWall(r.ms)}: ${opts.fmt(v)}"><span class="dp-bar-fill${warn ? " is-warn" : ""}" style="height:${Math.max(4, (v / max) * 100)}%"></span><span class="dp-bar-t">${i % 3 === 0 ? pad2(new Date(r.ms).getUTCHours()) : ""}</span></div>`;
+    }).join("") + `</div>`;
+  }
+  const trendWord = (dp3) => (!has(dp3) ? "" : dp3 <= -1.5 ? "falling" : dp3 >= 1.5 ? "rising" : "steady");
+  function dpRenderNow() {
+    const m = dp.model, r = m.rows[m.now], next12 = m.rows.slice(m.now, m.now + 12), fresh = m.spot.water === "fresh";
+    const day = m.days.find(x => x.idx === 0), off = m.offset;
+    const bf = beaufort(num(r.ws));
+    const peakWind = next12.reduce((a, x) => (num(x.ws) > num(a.ws) ? x : a), next12[0]);
+    const nextRain = next12.find(x => num(x.pop) >= 50 || num(x.rain) >= 0.3);
+    const stormR = next12.reduce((a, x) => (num(x.cape) > num(a.cape) ? x : a), next12[0]);
+    const stormLevel = next12.some(x => x.riskTags.includes("storm") && x.risk === 2) ? "High" : next12.some(x => x.riskTags.includes("storm")) ? "Watch" : "Low";
+    const nx = m.extremes.filter(e => e.utc > r.utc).slice(0, 4);
+    const uv = m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1] : null;
+    const sun = day.sun, moon = day.moon;
+    const mt = (t) => (t ? fmtWall(t + off) + (t - day.utc >= 86400000 ? " (+1)" : "") : "—");
+    const tideBox = m.hasMarine ? `
+      <section class="box span-8"><div class="box-title-row"><span class="card-title">Tide</span><span class="dp-chip">${r.tidePhase ? (r.tidePhase === "rising" ? "Rising" : r.tidePhase === "falling" ? "Falling" : "Slack") : ""}${has(r.tide) ? ` · ${r.tide.toFixed(2)} m` : ""}</span></div>
+        ${tideChart(m)}
+        <div class="dp-tidelist">${nx.map(e => `<div class="dp-tl"><span class="wmark">${arrowSvg(e.high ? 0 : 180, 16)}</span><b>${e.high ? "High" : "Low"}</b><span class="mono">${fmtWall(e.ms)}</span><span class="mono">${e.h.toFixed(2)} m</span><span class="dp-dim">in ${Math.floor((e.utc - r.utc) / 3600000)} h ${pad2(Math.round(((e.utc - r.utc) % 3600000) / 60000))} m</span></div>`).join("")}</div>
+        <p class="dp-note">The strip under the curve is daylight (bright) and night (dark). Height comes from a global ocean model, so times can be off by tens of minutes near narrow straits: a guide, not a tide table.</p>
+      </section>` : `
+      <section class="box span-8"><div class="box-title-row"><span class="card-title">${fresh ? "Freshwater spot: next 12 hours" : "Sea data unavailable here"}</span></div>
+        ${fresh ? `<p class="dp-note" style="margin:0 0 12px;">Tide, waves and current don't apply on still water. Wind, rain and light decide the day.</p>` : `<p class="dp-note">The marine model has no data for this position. Weather still works.</p>`}
+        <div class="dp-sub">Wind (${unitLabel()})</div>${hourBars(next12, x => (dp.unit === "kn" ? x.ws / 1.852 : x.ws), { min: 10, label: "Wind next 12 hours", fmt: v => `${Math.round(v)} ${unitLabel()}` })}
+        <div class="dp-sub">Chance of rain (%)</div>${hourBars(next12, x => x.pop, { min: 100, label: "Rain chance next 12 hours", fmt: v => `${Math.round(v)}%` })}
+      </section>`;
+    const sunBox = `
+      <section class="box span-4"><div class="box-title-row"><span class="card-title">Sun and moon</span></div>
+        ${sunBar(m)}
+        <div class="dp-times">
+          <div><span class="dp-k">First light</span><b>${sun.dawn ? fmtWall(sun.dawn + off) : "—"}</b></div>
+          <div><span class="dp-k">Sunrise</span><b>${sun.sunrise ? fmtWall(sun.sunrise + off) : "—"}</b></div>
+          <div><span class="dp-k">Sunset</span><b>${sun.sunset ? fmtWall(sun.sunset + off) : "—"}</b></div>
+          <div><span class="dp-k">Last light</span><b>${sun.dusk ? fmtWall(sun.dusk + off) : "—"}</b></div>
+        </div>
+        <div class="dp-moonrow">${moonGlyph(moon.phase)}<div><b>${moon.name}</b><div class="dp-dim">${Math.round(moon.fraction * 100)}% lit · rises ${mt(moon.rise)} · sets ${mt(moon.set)}</div>
+          ${moon.spring ? `<div class="dp-tag">Spring tides: bigger swings, stronger current</div>` : moon.neap ? `<div class="dp-tag">Neap tides: smaller swings, gentler current</div>` : ""}</div></div>
+        <p class="dp-note">Moon overhead ${mt(moon.over)}, underfoot ${mt(moon.under)}. Anglers traditionally fish around these (the solunar idea). It is folklore, not proven.</p>
+      </section>`;
+    const windBox = `
+      <section class="box span-4"><div class="box-title-row"><span class="card-title">Wind</span><span class="dp-chip">Force ${bf.n} · ${bf.name}</span></div>
+        <div class="dp-windwrap">${windDial(r.wd, r.ws)}<div class="dp-windnums"><div class="dp-led-row"><span class="dp-led">${fmtUnit(r.ws)}</span><span class="dp-led-sub">${unitLabel()}</span></div>
+          <div class="dp-dim">from ${compass(r.wd)} · ${Math.round(r.wd)}°</div><div class="dp-dim">gusts ${fmtUnit(r.wg)} ${unitLabel()}</div></div></div>
+        <div class="dp-sub">Next 12 hours (${unitLabel()}), peak ${fmtUnit(peakWind.ws)} at ${fmtWall(peakWind.ms)}</div>
+        ${hourBars(next12, x => (dp.unit === "kn" ? x.wg / 1.852 : x.wg), { min: 10, warn: dp.unit === "kn" ? dp.limits.gust / 1.852 : dp.limits.gust, label: "Gusts next 12 hours", fmt: v => `${Math.round(v)} ${unitLabel()}` })}
+      </section>`;
+    const seaBox = m.hasMarine ? `
+      <section class="box span-4"><div class="box-title-row"><span class="card-title">Sea state</span></div>
+        <div class="dp-rows">
+          <div class="dp-row"><span class="dp-k">Waves</span><span class="dp-v">${has(r.wave) ? r.wave.toFixed(1) : "—"}</span><span class="dp-u">m</span><span class="dp-d">${has(r.wper) ? Math.round(r.wper) + " s · " : ""}${has(r.wdir) ? "from " + compass(r.wdir) + " " + arrowSvg(r.wdir + 180, 14) : ""}</span></div>
+          <div class="dp-row"><span class="dp-k">Swell</span><span class="dp-v">${has(r.swell) ? r.swell.toFixed(1) : "—"}</span><span class="dp-u">m</span><span class="dp-d">${has(r.swell) && has(r.wave) && r.swell > r.wave * 0.7 ? "swell-driven" : "wind chop"}</span></div>
+          <div class="dp-row"><span class="dp-k">Current</span><span class="dp-v">${has(r.cur) ? (dp.unit === "kn" ? (r.cur / 1.852).toFixed(1) : r.cur.toFixed(1)) : "—"}</span><span class="dp-u">${unitLabel()}</span><span class="dp-d">${has(r.curd) ? "flowing " + compass(r.curd) + " " + arrowSvg(r.curd, 14) : ""}</span></div>
+          <div class="dp-row"><span class="dp-k">Water</span><span class="dp-v">${has(r.sst) ? r.sst.toFixed(1) : "—"}</span><span class="dp-u">°C</span><span class="dp-d">surface temperature</span></div>
+        </div>
+      </section>` : `
+      <section class="box span-4"><div class="box-title-row"><span class="card-title">Sea state</span></div><p class="dp-note">${fresh ? "Not applicable on freshwater." : "No marine data for this position."}</p></section>`;
+    const skyBox = `
+      <section class="box span-4"><div class="box-title-row"><span class="card-title">Sky</span><span class="dp-chip">${wxIcon(num(r.code), r.lightTag === "night")}${wxName(num(r.code))}</span></div>
+        <div class="dp-rows">
+          <div class="dp-row"><span class="dp-k">Air</span><span class="dp-v">${Math.round(num(r.temp))}</span><span class="dp-u">°C</span><span class="dp-d">feels ${Math.round(num(r.feels))}° · humidity ${num(r.rh)}%</span></div>
+          <div class="dp-row"><span class="dp-k">Rain</span><span class="dp-v">${num(r.pop)}</span><span class="dp-u">%</span><span class="dp-d">${nextRain ? "likely around " + fmtWall(nextRain.ms) : "dry for the next 12 h"}</span></div>
+          <div class="dp-row"><span class="dp-k">Pressure</span><span class="dp-v">${Math.round(num(r.press))}</span><span class="dp-u">hPa</span><span class="dp-d">${trendWord(r.dp3) ? trendWord(r.dp3) + " (" + (r.dp3 > 0 ? "+" : "") + r.dp3.toFixed(1) + " / 3 h)" : ""}</span></div>
+          <div class="dp-row"><span class="dp-k">Cloud</span><span class="dp-v">${num(r.cloud)}</span><span class="dp-u">%</span><span class="dp-d">${uv != null ? "UV index up to " + Math.round(uv) : ""}</span></div>
+          <div class="dp-row"><span class="dp-k">Storms</span><span class="dp-v dp-v-text">${stormLevel}</span><span class="dp-u"></span><span class="dp-d">${stormLevel === "Low" && num(stormR.cape) >= 1500 ? "energy is high but no rain is forecast" : "CAPE " + Math.round(num(stormR.cape)) + " J/kg, modelled"}</span></div>
+        </div>
+      </section>`;
+    const two = (h) => h.replace('class="box span-4"', 'class="box span-6"');
+    document.getElementById("dpNow").innerHTML = `<div class="grid dp-grid">${tideBox}${sunBox}${fresh ? two(windBox) + two(skyBox) : windBox + seaBox + skyBox}</div>`;
+  }
+
+  // ---- rendering: PLAN ----
+  function dpChecklist(m) {
+    const next = m.rows.slice(m.now, m.now + 14), r = m.rows[m.now];
+    const items = [
+      { id: "lj", t: "Life jackets on board and worn on the water" },
+      { id: "tell", t: "Tell someone your spot and when you'll be back" },
+      { id: "ph", t: "Phone charged, power bank packed, dry bag for both" },
+      { id: "wf", t: "Drinking water and food for the whole trip" },
+    ];
+    const uv = m.daily && m.daily.uv_index_max ? m.daily.uv_index_max[1] : null;
+    if (uv != null && uv >= 6) items.push({ id: "uv", t: `Sunscreen, hat and long sleeves (UV index up to ${Math.round(uv)})` });
+    if (next.some(x => num(x.pop) >= 50 || num(x.rain) >= 0.5)) items.push({ id: "rain", t: "Rain jacket and a dry place for the gear" });
+    if (next.some(x => num(x.ws) >= 20)) items.push({ id: "wind", t: "Windbreaker and a secure hat, it will be breezy" });
+    if (m.hasMarine) {
+      const low = m.extremes.find(e => !e.high && e.utc > r.utc && e.utc < r.utc + 14 * 3600000);
+      if (low) items.push({ id: "low", t: `Low water at ${fmtWall(low.ms)} (${low.h.toFixed(2)} m): check depth at the jetty and around the spot` });
+    }
+    if (next.some(x => x.riskTags.includes("storm"))) items.push({ id: "storm", t: "Storm cells possible: agree a turn-back time and watch the sky to the west" });
+    return items;
+  }
+  function dpRenderPlan() {
+    const m = dp.model, day = m.days.filter(d => d.idx >= 0 && d.idx <= 2)[dp.day] || m.days[1], idx = day.idx;
+    const dayRows = m.rows.filter(r => r.ms >= day.wall && r.ms < day.wall + 86400000);
+    const off = m.offset, wins = m.windows.slice(0, 3);
+    const winHtml = wins.length ? wins.map((w, i) => {
+      const di = Math.floor((w.rows[0].ms - m.todayWall) / 86400000), last = w.rows[w.rows.length - 1];
+      const r0 = w.rows[Math.floor(w.rows.length / 2)];
+      return `<li class="dp-win"><span class="dp-win-no">${i + 1}</span><div><b>${dayLabel(m.todayWall + di * 86400000, di)} · ${fmtWall(w.rows[0].ms)}–${fmtWall(last.ms + 3600000)}</b><div class="dp-dim">${escapeHtml(windowReason(w))}</div></div><span class="dp-win-tier">${tierOf(r0)}<i>${Math.round(w.mean)}</i></span></li>`;
+    }).join("") : `<li class="dp-dim" style="padding:12px 0;">No good, safe window in the next three days. Try another spot, or check back later.</li>`;
+    const list = lsGet(DP_KEYS.list, {});
+    const items = dpChecklist(m);
+    const board = dayRows.map(r => {
+      const hr = new Date(r.ms).getUTCHours(), isNow = idx === 0 && r === m.rows[m.now], past = idx === 0 && r.ms < m.rows[m.now].ms;
+      const inWin = wins.some(w => w.rows.includes(r));
+      return `<div class="dp-brow${isNow ? " is-now" : ""}${past ? " is-past" : ""}${inWin ? " is-win" : ""}${r.risk === 2 ? " is-nogo" : ""}">
+        <span class="dp-bt">${pad2(hr)}:00${isNow ? '<i>now</i>' : ""}</span>
+        <span class="dp-bi"><span class="dp-meter"><span style="width:${r.score}%"></span></span><b>${r.risk === 2 ? "No-go" : r.score}</b><em>${r.risk === 2 ? "" : tierOf(r)}</em></span>
+        <span class="dp-bx">${wxIcon(num(r.code), r.lightTag === "night")}</span>
+        <span class="dp-bh">${has(r.tide) ? `${r.tidePhase === "rising" ? arrowSvg(0, 14) : r.tidePhase === "falling" ? arrowSvg(180, 14) : '<i class="dp-slack">slack</i>'}<span class="mono">${r.tide.toFixed(2)} m</span>` : "—"}</span>
+        <span class="dp-bw">${arrowSvg(num(r.wd) + 180, 14)}<span class="mono">${fmtUnit(r.ws)}<small>/${fmtUnit(r.wg)}</small></span></span>
+        <span class="dp-bv">${has(r.wave) ? r.wave.toFixed(1) + " m" : "—"}</span>
+        <span class="dp-br">${num(r.pop)}%</span></div>`;
+    }).join("");
+    document.getElementById("dpPlan").innerHTML = `
+      <div class="grid dp-grid">
+        <section class="box span-7"><div class="box-title-row"><span class="card-title">Best windows, next 3 days</span></div>
+          <ol class="dp-wins">${winHtml}</ol>
+          <p class="dp-note">Index 0 to 100 from tide movement (moving water fishes better), light (first and last light), wind and rain. It is a rule of thumb, not a bite prediction, and any unsafe hour scores zero.</p>
+        </section>
+        <section class="box span-5"><div class="box-title-row"><span class="card-title">Before you go</span><button type="button" class="card-link dp-linkbtn" id="dpChkReset">Reset</button></div>
+          <ul class="dp-check">${items.map(it => `<li><label><input type="checkbox" data-chk="${it.id}" ${list[it.id] ? "checked" : ""}><span>${escapeHtml(it.t)}</span></label></li>`).join("")}</ul>
+        </section>
+      </div>
+      <div class="box">
+        <div class="box-title-row"><span class="card-title">Hour by hour</span>
+          <div class="level-tabs" id="dpDayTabs">${m.days.filter(d => d.idx >= 0 && d.idx <= 2).map((d, i) => `<button data-day="${i}" class="${i === dp.day ? "active" : ""}">${dayLabel(d.wall, d.idx)}</button>`).join("")}</div></div>
+        <div class="dp-boardwrap"><div class="dp-board">
+          <div class="dp-bhead"><span>Time</span><span>Fishing index</span><span></span><span>Tide</span><span>Wind ${unitLabel()} (gust)</span><span>Waves</span><span>Rain</span></div>
+          ${board}
+        </div></div>
+      </div>`;
+    document.querySelectorAll("#dpDayTabs button").forEach(b => b.addEventListener("click", () => { dp.day = Number(b.dataset.day); dpRenderPlan(); }));
+    document.querySelectorAll("[data-chk]").forEach(c => c.addEventListener("change", () => { const l = lsGet(DP_KEYS.list, {}); l[c.dataset.chk] = c.checked; lsSet(DP_KEYS.list, l); }));
+    document.getElementById("dpChkReset").addEventListener("click", () => { lsSet(DP_KEYS.list, {}); dpRenderPlan(); });
+    const nowRow = document.querySelector(".dp-brow.is-now");
+    if (nowRow) { const wrap = nowRow.closest(".dp-boardwrap"); wrap.scrollTop = Math.max(0, nowRow.offsetTop - 64); }
+  }
+
+  // ---- radar + cloud-top satellite map ----
+  const radar = { map: null, layers: [], frames: [], kind: "rain", idx: 0, playing: false, timer: null, marker: null, rings: [], cache: {}, token: 0 };
+  function dpTileXY(lat, lng, z) {
+    const n = 2 ** z, x = Math.floor(((lng + 180) / 360) * n), la = (lat * Math.PI) / 180;
+    return { x, y: Math.floor(((1 - Math.log(Math.tan(la) + 1 / Math.cos(la)) / Math.PI) / 2) * n) };
+  }
+  const gibsIso = (ms) => new Date(ms).toISOString().slice(0, 16) + ":00Z";
+  const gibsUrl = (ms) => `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/${gibsIso(ms)}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`;
+  function probeTile(ms, spot) {
+    const t = dpTileXY(spot.lat, spot.lng, 6);
+    return new Promise(res => { const img = new Image(); const to = setTimeout(() => res(false), 6000); img.onload = () => { clearTimeout(to); res(true); }; img.onerror = () => { clearTimeout(to); res(false); }; img.src = gibsUrl(ms).replace("{z}", 6).replace("{y}", t.y).replace("{x}", t.x); });
+  }
+  async function radarFrames(kind) {
+    if (kind === "rain") {
+      const j = await fetchJSON("https://api.rainviewer.com/public/weather-maps.json");
+      const list = [...(j.radar.past || []), ...(j.radar.nowcast || [])];
+      return list.map(f => ({ time: f.time * 1000, url: `${j.host}${f.path}/256/{z}/{x}/{y}/2/1_1.png`, zoom: 7 }));
+    }
+    const step = 600000;
+    let latest = Math.floor((Date.now() - 20 * 60000) / step) * step;
+    for (let k = 0; k < 8; k++, latest -= step) if (await probeTile(latest, dp.spot)) break;
+    const out = [];
+    for (let i = 11; i >= 0; i--) out.push({ time: latest - i * step, url: gibsUrl(latest - i * step), zoom: 6 });
+    return out;
+  }
+  function radarClear() {
+    radar.layers.forEach(l => radar.map.removeLayer(l)); radar.layers = []; radar.frames = [];
+    clearInterval(radar.timer); radar.playing = false; document.getElementById("dpRadarPlay").textContent = "Play";
+  }
+  function radarShow(i) {
+    radar.idx = clamp(i, 0, radar.frames.length - 1);
+    radar.layers.forEach((l, k) => l.setOpacity(k === radar.idx ? (radar.kind === "rain" ? 0.78 : 0.5) : 0));
+    const f = radar.frames[radar.idx], off = dp.model ? dp.model.offset : 7 * 3600000;
+    const mins = Math.round((Date.now() - f.time) / 60000);
+    document.getElementById("dpRadarSlider").value = radar.idx;
+    document.getElementById("dpRadarTime").textContent = `${fmtWall(f.time + off)} · ${mins > 0 ? mins + " min ago" : mins < 0 ? "in " + -mins + " min (forecast)" : "now"}`;
+  }
+  function radarPlay(on) {
+    clearInterval(radar.timer); radar.playing = on;
+    document.getElementById("dpRadarPlay").textContent = on ? "Pause" : "Play";
+    if (on) radar.timer = setInterval(() => radarShow((radar.idx + 1) % radar.frames.length), 650);
+  }
+  async function radarLoad(kind) {
+    const token = ++radar.token;
+    radar.kind = kind;
+    document.querySelectorAll("#dpRadarKind button").forEach(b => b.classList.toggle("active", b.dataset.kind === kind));
+    const msg = document.getElementById("dpRadarMsg");
+    msg.textContent = "Loading frames…";
+    radarClear();
+    try {
+      const frames = await radarFrames(kind);
+      if (token !== radar.token) return;
+      if (!frames.length) throw new Error("no frames");
+      radar.frames = frames;
+      radar.layers = frames.map(f => L.tileLayer(f.url, { pane: "dpRadarPane", opacity: 0, maxNativeZoom: f.zoom, maxZoom: 12, tileSize: 256, keepBuffer: 1 }).addTo(radar.map));
+      const slider = document.getElementById("dpRadarSlider");
+      slider.max = frames.length - 1;
+      radarShow(frames.length - 1);
+      msg.textContent = kind === "rain" ? "Rain radar, last two hours. Cooler colours are light rain, warmer are heavy." : "Himawari infrared: bright white cloud tops are tall storm clouds.";
+    } catch (e) {
+      if (token !== radar.token) return;
+      msg.textContent = "This layer isn't available right now. Try the other one, or check back in a few minutes.";
+    }
+  }
+  function radarSpotOverlay() {
+    if (!radar.map) return;
+    if (radar.marker) radar.map.removeLayer(radar.marker);
+    radar.rings.forEach(r => radar.map.removeLayer(r)); radar.rings = [];
+    const { lat, lng } = dp.spot;
+    radar.marker = L.circleMarker([lat, lng], { radius: 7, color: "#0B0F14", weight: 2, fillColor: "#FFB23E", fillOpacity: 1 }).addTo(radar.map).bindTooltip(dp.spot.name);
+    [25, 50, 100].forEach(km => {
+      radar.rings.push(L.circle([lat, lng], { radius: km * 1000, color: "#FFB23E", weight: 1, opacity: 0.55, dashArray: "3 7", fill: false, interactive: false }).addTo(radar.map));
+      radar.rings.push(L.marker([lat + km / 111.32, lng], { interactive: false, icon: L.divIcon({ className: "dp-ringlabel", html: `${km} km`, iconSize: [46, 16], iconAnchor: [23, 8] }) }).addTo(radar.map));
+    });
+  }
+  async function dpRadarOpen() {
+    if (!radar.map) {
+      radar.map = L.map("dpRadarMap", { zoomControl: true }).setView([dp.spot.lat, dp.spot.lng], 8);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12, attribution: "© OpenStreetMap contributors" }).addTo(radar.map);
+      radar.map.createPane("dpRadarPane").style.zIndex = 350;
+      radar.map.getPane("dpRadarPane").style.pointerEvents = "none";
+      radarSpotOverlay();
+      document.querySelectorAll("#dpRadarKind button").forEach(b => b.addEventListener("click", () => radarLoad(b.dataset.kind)));
+      document.getElementById("dpRadarPlay").addEventListener("click", () => radarPlay(!radar.playing));
+      document.getElementById("dpRadarSlider").addEventListener("input", (e) => { radarPlay(false); radarShow(Number(e.target.value)); });
+      setTimeout(() => { radar.map.invalidateSize(); radarLoad("rain"); }, 60);
+    } else {
+      setTimeout(() => radar.map.invalidateSize(), 60);
+    }
+  }
+  function dpRenderLightning() {
+    const box = document.getElementById("dpLightning");
+    if (!dp.model) { box.innerHTML = ""; return; }
+    const m = dp.model, next = m.rows.slice(m.now, m.now + 12);
+    const level = next.some(x => x.risk === 2 && x.riskTags.includes("storm")) ? "High" : next.some(x => x.riskTags.includes("storm")) ? "Watch" : "Low";
+    const peak = next.reduce((a, x) => (num(x.cape) > num(a.cape) ? x : a), next[0]);
+    const { lat, lng } = dp.spot;
+    box.innerHTML = `
+      <div class="dp-rows">
+        <div class="dp-row"><span class="dp-k">Storm risk</span><span class="dp-v dp-v-text">${level}</span><span class="dp-u"></span><span class="dp-d">next 12 hours, modelled</span></div>
+        <div class="dp-row"><span class="dp-k">Peak energy</span><span class="dp-v">${Math.round(num(peak.cape))}</span><span class="dp-u">J/kg</span><span class="dp-d">at ${fmtWall(peak.ms)} (CAPE)</span></div>
+      </div>
+      <p class="dp-note">Convective energy (CAPE) only matters when rain is forecast too: high energy on a dry day is not a storm. Live strike data isn't free to embed, so this page shows the modelled risk next to the radar and cloud tops. Confirm with the live network before you commit.</p>
+      <a class="dp-extlink" href="https://map.blitzortung.org/#9/${lat.toFixed(3)}/${lng.toFixed(3)}" target="_blank" rel="noopener">Open the live lightning map</a>`;
+  }
+
+  // ---- conditions saved with each catch (patterns) ----
+  const dayCache = new Map();
+  function hourOfCatch(timeStr) {
+    const s = String(timeStr || ""), m = s.match(/\((\d{1,2})[.:](\d{2})\)/);
+    if (m) return clamp(parseInt(m[1], 10), 0, 23);
+    const k = s.trim().split(" ")[0];
+    return { Subuh: 5, Pagi: 8, Siang: 12, Sore: 16, Malam: 21 }[k] ?? 8;
+  }
+  async function dpDayData(lat, lng, dateStr, water) {
+    const key = `${lat.toFixed(2)},${lng.toFixed(2)},${dateStr},${water}`;
+    if (dayCache.has(key)) return dayCache.get(key);
+    const prev = new Date(Date.parse(dateStr) - 86400000).toISOString().slice(0, 10);
+    const q = `latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&start_date=${prev}&end_date=${dateStr}&timezone=auto`;
+    const age = (Date.now() - Date.parse(dateStr)) / 86400000;
+    const wBase = age <= 60 ? "https://api.open-meteo.com/v1/forecast" : "https://historical-forecast-api.open-meteo.com/v1/forecast";
+    const wReq = fetchJSON(`${wBase}?${q}&hourly=temperature_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m`);
+    const mReq = water === "Air Tawar" ? Promise.resolve(null) : fetchJSON(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=wave_height,wave_period,ocean_current_velocity,sea_surface_temperature,sea_level_height_msl`).catch(() => null);
+    const [w, m] = await Promise.all([wReq, mReq]);
+    const out = { w, m };
+    dayCache.set(key, out);
+    return out;
+  }
+  function condFromDay(day, hour) {
+    const i = 24 + hour, put = (o, k, v, d = 1) => { if (has(v)) o[k] = Math.round(v * 10 ** d) / 10 ** d; };
+    const g = (obj, k, idx = i) => (obj && obj.hourly && obj.hourly[k] ? obj.hourly[k][idx] : null);
+    const c = { h: hour };
+    put(c, "t", g(day.w, "temperature_2m")); put(c, "ws", g(day.w, "wind_speed_10m")); put(c, "wg", g(day.w, "wind_gusts_10m"));
+    if (has(g(day.w, "wind_direction_10m"))) c.wd = Math.round(g(day.w, "wind_direction_10m"));
+    put(c, "p", g(day.w, "pressure_msl"));
+    const p0 = g(day.w, "pressure_msl", i - 3), p1 = g(day.w, "pressure_msl");
+    if (has(p0) && has(p1)) put(c, "pt", p1 - p0);
+    if (day.m) {
+      put(c, "wh", g(day.m, "wave_height"), 2); put(c, "wp", g(day.m, "wave_period")); put(c, "cur", g(day.m, "ocean_current_velocity"));
+      put(c, "sst", g(day.m, "sea_surface_temperature")); put(c, "tide", g(day.m, "sea_level_height_msl"), 2);
+      const a = g(day.m, "sea_level_height_msl", i - 1), b = g(day.m, "sea_level_height_msl", i + 1);
+      if (has(a) && has(b)) { const rate = (b - a) / 2; c.td = Math.abs(rate) < 0.04 ? "s" : rate > 0 ? "r" : "f"; }
+    }
+    return c;
+  }
+  async function dpAttach(c) {
+    const pos = has(c.lat) && has(c.lng);
+    const day = await dpDayData(pos ? c.lat : DP_HOME.lat, pos ? c.lng : DP_HOME.lng, c.date, c.waterType);
+    const cond = condFromDay(day, hourOfCatch(c.time));
+    if (!pos) cond.est = 1;
+    c.cond = cond;
+  }
+  async function attachConditions(id) {
+    const c = state.catches.find(x => x.id === id);
+    if (!c || c.cond || !VALID_DATE_RE.test(c.date)) return;
+    try { await dpAttach(c); render(); scheduleSave(); } catch (e) { console.warn("Conditions unavailable for this catch", e); }
+  }
+  function condText(c) {
+    const bits = [];
+    if (c.td) bits.push(`${{ r: "Rising", f: "Falling", s: "Slack" }[c.td]} tide${has(c.tide) ? " " + c.tide.toFixed(1) + " m" : ""}`);
+    if (has(c.ws)) bits.push(`wind ${Math.round(c.ws)} km/h${has(c.wd) ? " " + compass(c.wd) : ""}`);
+    if (has(c.wh)) bits.push(`waves ${c.wh.toFixed(1)} m`);
+    if (has(c.p)) bits.push(`${Math.round(c.p)} hPa${has(c.pt) ? " (" + trendWord(c.pt) + ")" : ""}`);
+    if (has(c.t)) bits.push(`${Math.round(c.t)}°C`);
+    return bits.join(" · ") + (c.est ? " · regional estimate" : "");
+  }
+  async function dpBackfill() {
+    const btn = document.getElementById("dpBackfill"), out = document.getElementById("dpBackfillMsg");
+    const todo = state.catches.filter(c => !c.cond && VALID_DATE_RE.test(c.date));
+    if (!todo.length) { out.textContent = "Every catch already has conditions."; return; }
+    btn.disabled = true;
+    let done = 0, failed = 0;
+    for (const c of todo) {
+      out.textContent = `Reading conditions for catch ${done + failed + 1} of ${todo.length}…`;
+      try { await dpAttach(c); done++; } catch (e) { failed++; }
+      await new Promise(r => setTimeout(r, 300));
+    }
+    if (done) { render(); scheduleSave(); }
+    dp.backfillNote = `${done} ${done === 1 ? "catch" : "catches"} filled${failed ? `, ${failed} couldn't be reached (try again later)` : ""}.`;
+    out.textContent = dp.backfillNote;
+    btn.disabled = false;
+    if (dp.view === "patterns") dpRenderPatterns();
+  }
+  const PATTERNS = [
+    { title: "Tide", get: c => c.td || null, cats: [["r", "Rising tide", "on a rising tide"], ["f", "Falling tide", "on a falling tide"], ["s", "Slack water", "at slack water"]] },
+    { title: "Wind", get: c => (has(c.ws) ? (c.ws < 8 ? "calm" : c.ws < 15 ? "light" : c.ws < 25 ? "mod" : "fresh") : null), cats: [["calm", "Calm, under 8 km/h", "in calm air (under 8 km/h)"], ["light", "Light, 8 to 15", "in light wind (8 to 15 km/h)"], ["mod", "Moderate, 15 to 25", "in moderate wind (15 to 25 km/h)"], ["fresh", "Fresh, 25 and up", "in fresh wind (25 km/h and up)"]] },
+    { title: "Pressure", get: c => (has(c.pt) ? (c.pt <= -1.5 ? "fall" : c.pt >= 1.5 ? "rise" : "steady") : null), cats: [["fall", "Falling", "as pressure fell"], ["steady", "Steady", "with steady pressure"], ["rise", "Rising", "as pressure rose"]] },
+    { title: "Waves", get: c => (has(c.wh) ? (c.wh < 0.3 ? "flat" : c.wh < 0.8 ? "slight" : "mod") : null), cats: [["flat", "Flat, under 0.3 m", "in flat seas (under 0.3 m)"], ["slight", "Slight, 0.3 to 0.8", "in slight seas (0.3 to 0.8 m)"], ["mod", "Moderate, 0.8 and up", "in moderate seas (0.8 m and up)"]] },
+  ];
+  function dpRenderPatterns() {
+    const box = document.getElementById("dpPatterns");
+    if (!box) return;
+    const total = state.catches.length, withC = state.catches.map(c => c.cond ? { ...c.cond, waterType: c.waterType } : null).filter(Boolean);
+    const owner = typeof editUnlocked !== "undefined" && editUnlocked;
+    const missing = state.catches.filter(c => !c.cond && VALID_DATE_RE.test(c.date)).length;
+    const cta = owner ? `<div class="dp-cta">${missing ? `<button type="button" class="toggle-btn" id="dpBackfill" style="flex:none;">Fill conditions for ${missing} ${missing === 1 ? "catch" : "catches"}</button>` : ""}<span class="dp-dim" id="dpBackfillMsg">${escapeHtml(dp.backfillNote || (missing ? "" : "Every catch has conditions."))}</span></div>` : "";
+    if (withC.length < 5) {
+      box.innerHTML = `<div class="box"><div class="box-title-row"><span class="card-title">Your patterns</span></div>
+        <p class="empty-state">${withC.length} of ${total} catches have conditions saved. Once five or more do, this page shows which tide, wind and pressure the fish came in.</p>${cta}</div>`;
+    } else {
+      const blocks = PATTERNS.map(p => {
+        const counts = new Map(p.cats.map(c => [c[0], 0])); let n = 0;
+        withC.forEach(c => { const k = p.get(c); if (k && counts.has(k)) { counts.set(k, counts.get(k) + 1); n++; } });
+        if (n < 3) return "";
+        const max = Math.max(...counts.values());
+        const top = p.cats.reduce((a, c) => (counts.get(c[0]) > counts.get(a[0]) ? c : a), p.cats[0]);
+        return { title: p.title, n, top, rows: p.cats.map(c => `<div class="dp-pslot"><span class="dp-pname">${c[1]}</span><span class="tod-track"><span class="tod-fill" style="width:${max ? (counts.get(c[0]) / max) * 100 : 0}%"></span></span><span class="tod-count">${counts.get(c[0])}</span></div>`).join("") };
+      }).filter(Boolean);
+      const sweet = blocks.map(b => b.top[2]).join(", ");
+      box.innerHTML = `<div class="box"><div class="box-title-row"><span class="card-title">Your patterns</span><span class="gallery-count">${withC.length} of ${total} catches have conditions</span></div>
+        <p class="dp-sweet">Most of your fish so far came <b>${escapeHtml(sweet)}</b>.</p>
+        <div class="dp-pgrid">${blocks.map(b => `<div><div class="dp-sub">${b.title}, ${b.n} catches</div>${b.rows}</div>`).join("")}</div>
+        <p class="dp-note">This shows the conditions you fished in, not why the fish bit: you may simply fish more often at some times. Conditions come from the same model as the forecast, matched to each catch's date, time and spot.</p>${cta}</div>`;
+    }
+    const bf = document.getElementById("dpBackfill");
+    if (bf) bf.addEventListener("click", dpBackfill);
+  }
+
+  // ---- orchestration ----
+  function dpShowView(v) {
+    dp.view = v;
+    document.querySelectorAll("#dpTabs button").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+    ["now", "plan", "radar", "patterns"].forEach(k => { document.getElementById("dpView-" + k).hidden = k !== v; });
+    if (v === "radar") dpRadarOpen();
+    dpRenderAll();
+  }
+  function dpRenderAll() {
+    dpRenderStatus();
+    const errBox = (id) => { document.getElementById(id).innerHTML = `<div class="box"><p class="empty-state">${escapeHtml(dp.loading ? "Reading the sea and sky…" : dp.error || "No data yet.")}</p>${dp.loading ? "" : `<button type="button" class="toggle-btn" data-retry style="flex:none;">Try again</button>`}</div>`; const b = document.querySelector(`#${id} [data-retry]`); if (b) b.addEventListener("click", () => dpLoad(true)); };
+    if (dp.view === "now") { if (dp.model) dpRenderNow(); else errBox("dpNow"); }
+    if (dp.view === "plan") { if (dp.model) dpRenderPlan(); else errBox("dpPlan"); }
+    if (dp.view === "patterns") dpRenderPatterns();
+    dpRenderLightning();
+  }
+  let dpToken = 0;
+  async function dpLoad(force) {
+    const token = ++dpToken, spot = dp.spot;
+    dp.loading = true; dp.error = ""; dpRenderVerdict(); dpRenderAll();
+    try {
+      let raw = force ? null : dpCacheGet(spot);
+      if (!raw || Date.now() - raw.fetchedAt > 15 * 60000) { raw = await dpFetch(spot); dpCachePut(spot, raw); dp.offline = false; }
+      if (token !== dpToken) return;
+      dp.model = dpBuild(raw, spot);
+    } catch (e) {
+      if (token !== dpToken) return;
+      console.warn("Departures load failed", e);
+      const cached = dpCacheGet(spot);
+      if (cached) { dp.model = dpBuild(cached, spot); dp.offline = true; }
+      else { dp.model = null; dp.error = "Couldn't reach the weather service. Check your signal and try again."; }
+    }
+    dp.loading = false;
+    dpRenderVerdict(); dpRenderAll();
+    if (radar.map) { radarSpotOverlay(); radar.map.setView([spot.lat, spot.lng], radar.map.getZoom()); }
+  }
+  function dpSetSpot(id) {
+    const s = dpAllSpots().find(x => x.id === id) || DP_HOME;
+    dp.spot = s; lsSet(DP_KEYS.spot, s.id); dp.model = null; dp.day = 0;
+    dpLoad(false);
+  }
+  function dpInit() {
+    dp.inited = true;
+    dp.unit = lsGet(DP_KEYS.unit, "kmh") === "kn" ? "kn" : "kmh";
+    const lim = lsGet(DP_KEYS.limits, null); if (lim && has(lim.gust) && has(lim.wave)) dp.limits = lim;
+    dp.gps = lsGet(DP_KEYS.gps, null);
+    const saved = lsGet(DP_KEYS.spot, "home");
+    dp.spot = dpAllSpots().find(x => x.id === saved) || DP_HOME;
+    document.getElementById("dpUnit").textContent = dp.unit === "kn" ? "knots" : "km/h";
+    document.getElementById("dpSpot").addEventListener("change", (e) => dpSetSpot(e.target.value));
+    document.getElementById("dpRefresh").addEventListener("click", () => dpLoad(true));
+    document.getElementById("dpUnit").addEventListener("click", (e) => { dp.unit = dp.unit === "kn" ? "kmh" : "kn"; lsSet(DP_KEYS.unit, dp.unit); e.target.textContent = dp.unit === "kn" ? "knots" : "km/h"; dpRenderVerdict(); dpRenderAll(); });
+    document.getElementById("dpGps").addEventListener("click", () => {
+      const st = document.getElementById("dpStatus");
+      if (!navigator.geolocation) { st.textContent = "This device can't share its position."; return; }
+      st.textContent = "Finding you…";
+      navigator.geolocation.getCurrentPosition((pos) => {
+        dp.gps = { id: "gps", name: "My position", lat: pos.coords.latitude, lng: pos.coords.longitude, water: "salt" };
+        lsSet(DP_KEYS.gps, dp.gps); dpRenderSpotSelect(); document.getElementById("dpSpot").value = "gps"; dpSetSpot("gps");
+      }, () => { st.textContent = "Couldn't get your position. Allow location access, or pick a spot from the list."; }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+    });
+    document.querySelectorAll("#dpTabs button").forEach(b => b.addEventListener("click", () => dpShowView(b.dataset.view)));
+    setInterval(() => {
+      const active = document.getElementById("panel-departures").classList.contains("active") && !document.hidden;
+      if (!active) return;
+      if (dp.model && Date.now() - dp.model.fetchedAt > 10 * 60000 && !dp.loading) dpLoad(true); else dpRenderStatus();
+    }, 60000);
+  }
+  function dpOpen() {
+    if (!dp.inited) dpInit();
+    dpRenderSpotSelect();
+    dpRenderVerdict();
+    if (!dp.model || Date.now() - dp.model.fetchedAt > 10 * 60000) dpLoad(false); else dpRenderAll();
+    if (dp.view === "radar") dpRadarOpen();
+  }
+
+
   function lbRender() {
     const c = lb.items[lb.i];
     if (!c) return;
@@ -2070,6 +3305,7 @@
     add: ["New Catch", "Log today's catch"],
     species: ["Species", "Local name to English"],
     newgear: ["New Gear", "Add or update a gear set"],
+    departures: ["Departures", "Sea, sky and tide for your next cast"],
   };
   let editingCatchId = null;
   function switchTab(tab) {
@@ -2093,6 +3329,7 @@
     document.getElementById("pageSub").textContent = sub;
     if (tab === "add" && pickMapInstance) setTimeout(() => pickMapInstance.invalidateSize(), 0);
     if (tab === "dashboard") setTimeout(() => renderDashboardHeatMap(getFilteredCatchesExcluding("coord")), 0);
+    if (tab === "departures") dpOpen();
   }
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -2550,7 +3787,11 @@
       ms.map.setView(boundLatLngs[0], 13);
     }
   }
-  function renderDashboardHeatMap(filteredCatches) { renderHeatMapInto(mapStates.dash, filteredCatches); }
+  function renderDashboardHeatMap(filteredCatches) {
+    const box = document.getElementById("dashboardMapContainer");
+    if (!box || box.offsetWidth === 0) return; // panel hidden: switchTab redraws it when shown
+    renderHeatMapInto(mapStates.dash, filteredCatches);
+  }
 
   function checkFormValid() {
     const date = document.getElementById("f-date").value;
@@ -2647,6 +3888,7 @@
       lng: pendingLng,
     };
 
+    const isNewCatch = editingCatchId === null;
     let targetId;
     if (editingCatchId !== null) {
       const idx = state.catches.findIndex(c => c.id === editingCatchId);
@@ -2674,6 +3916,7 @@
     switchTab("log");
     render();
     scheduleSave();
+    if (isNewCatch) attachConditions(targetId);
   });
 
 
