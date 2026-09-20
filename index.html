@@ -652,6 +652,10 @@
   .keep-row input[type="checkbox"] { appearance: none; width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--rule-strong); border-radius: 3px; background: var(--ground); cursor: pointer; display: grid; place-items: center; }
   .keep-row input[type="checkbox"]:checked { background: var(--amber); border-color: var(--amber); }
   .keep-row input[type="checkbox"]:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-amber); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  /* until the logbook arrives, dim the placeholder numbers so they are not mistaken for real zeros */
+  .is-loading .led, .is-loading .cell-num, .is-loading .arr-name, .is-loading .tod-count { opacity: 0.28; }
+  .is-loading #statusText::before { animation: dpPulse 1s ease-in-out infinite; }
+  @keyframes dpPulse { 50% { opacity: 0.25; } }
   .bottom-nav { display: none; }
 
   @media (max-width: 1100px) {
@@ -755,7 +759,7 @@
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
-<body>
+<body class="is-loading">
 
 <div class="app">
   <header class="deck">
@@ -773,7 +777,7 @@
     </nav>
     <div class="deck-right">
       <span class="deck-clock mono" id="clockDate">—</span>
-      <span id="statusText">Loading...</span>
+      <span id="statusText">Loading the logbook…</span>
       <a href="#" id="editModeLink" class="edit-link">Edit mode</a>
     </div>
   </header>
@@ -1209,7 +1213,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import { initializeAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, indexedDBLocalPersistence, browserSessionPersistence, browserLocalPersistence, browserPopupRedirectResolver } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDdcnK_u3w9qKXj4IWoXSDzFkl9YBFVQzI",
@@ -1226,7 +1230,7 @@
   const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
   let IS_OWNER = false;
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence] });
   const googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: "select_account" });
   const restoredUser = await new Promise((resolve) => {
@@ -1266,7 +1270,7 @@
       function onGo() {
         if (busy) return;
         busy = true; go.disabled = true; err.style.display = "none";
-        signInWithPopup(auth, googleProvider)
+        signInWithPopup(auth, googleProvider, browserPopupRedirectResolver)
           .then(() => finish(true))
           .catch((ex) => show(AUTH_MESSAGES[ex && ex.code] || "Couldn't sign in. Try again."))
           .finally(() => { busy = false; go.disabled = false; });
@@ -4390,6 +4394,7 @@
     firebaseReady = true;
     flushPendingVisits();
     render();
+    document.body.classList.remove("is-loading");
   });
 </script>
 </body>
