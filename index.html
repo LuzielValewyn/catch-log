@@ -1049,6 +1049,8 @@
         </div>
         <label class="field-wrap"><span class="field-label">Water type</span>
           <select class="input" id="f-water"><option>Air Laut</option><option>Air Tawar</option></select></label>
+        <label class="field-wrap"><span class="field-label">How many fish?</span>
+          <input class="input" type="number" id="f-qty" min="1" max="999" step="1" inputmode="numeric" value="1"></label>
         <label class="field-wrap"><span class="field-label">Location</span>
           <input class="input" type="text" id="f-location" placeholder="e.g. Laut Karimun, Pulau Assan"></label>
         <div class="field-wrap">
@@ -1067,7 +1069,7 @@
         </div>
         <label class="field-wrap"><span class="field-label">Weather</span>
           <input class="input" type="text" id="f-weather" placeholder="e.g. Cerah"></label>
-        <label class="field-wrap"><span class="field-label">Weight (kg)</span>
+        <label class="field-wrap"><span class="field-label">Weight (kg, per fish)</span>
           <input class="input" type="text" id="f-weight" placeholder="e.g. 1.8"></label>
         <label class="field-wrap"><span class="field-label">Bait / Lure</span>
           <input class="input" type="text" id="f-bait" placeholder="e.g. Udang"></label>
@@ -1750,7 +1752,9 @@
     renderDashboardStats();
   });
 
-  function getFilteredCatches() {
+  function getFilteredCatches() { return fishUnits(filteredRecords()); }
+  function getFilteredCatchesExcluding(excludeDim) { return fishUnits(filteredRecordsExcluding(excludeDim)); }
+  function filteredRecords() {
     return state.catches.filter(c => {
       const f = dashboardFilters;
       if (f.dateRange && (c.date < f.dateRange.start || c.date > f.dateRange.end)) return false;
@@ -1765,7 +1769,7 @@
   }
   // Same as above but skips one dimension's own filter — so a visual can still show
   // all of its own categories (with the active one highlighted) instead of hiding itself.
-  function getFilteredCatchesExcluding(excludeDim) {
+  function filteredRecordsExcluding(excludeDim) {
     return state.catches.filter(c => {
       const f = dashboardFilters;
       if (excludeDim !== "dateRange" && f.dateRange && (c.date < f.dateRange.start || c.date > f.dateRange.end)) return false;
@@ -2079,13 +2083,32 @@
   }
 
   // Lifetime catch numbers: No. 001 is the oldest catch, ties broken by id.
+  // A catch can hold several fish of the same kind (qty). Every fish gets its own lifetime number.
+  function qtyOf(c) { const n = Math.floor(Number(c && c.qty)); return Number.isFinite(n) && n >= 1 ? Math.min(n, 999) : 1; }
   function catchNumbers() {
     const m = new Map();
+    let n = 0;
     [...state.catches]
       .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id))
-      .forEach((c, i) => m.set(c.id, i + 1));
+      .forEach(c => { m.set(c.id, n + 1); n += qtyOf(c); });
     return m;
   }
+  function fishTotal() { return state.catches.reduce((sum, c) => sum + qtyOf(c), 0); }
+  // One entry per fish: a catch with qty 3 becomes three entries (numbered in a row). Single fish are returned as they are.
+  function fishUnits(list) {
+    const nos = catchNumbers();
+    const out = [];
+    (list || state.catches).forEach(c => {
+      const q = qtyOf(c);
+      if (q === 1) { out.push(c); return; }
+      const start = nos.get(c.id) || 0;
+      for (let k = 0; k < q; k++) out.push({ ...c, _k: k, _no: start + k });
+    });
+    return out;
+  }
+  const noOf = (c, nos) => c._no || nos.get(c.id) || 0;
+  const unitKey = (c) => (c._k ? c.id + "-" + c._k : String(c.id));
+  const xQty = (c) => (qtyOf(c) > 1 ? " ×" + qtyOf(c) : "");
   const pad3 = (n) => String(n).padStart(3, "0");
   function shortDate(iso) {
     const [y, m, d] = String(iso).split("-");
@@ -2123,7 +2146,7 @@
   }
 
   function renderDashboardStats() {
-    const allCatches = state.catches;
+    const allCatches = fishUnits(state.catches);
     syncSlicers();
     const catches = getFilteredCatches();
 
@@ -2153,7 +2176,7 @@
 
     document.getElementById("statSpecies").textContent = speciesCount;
     setTotal(catches.length);
-    document.getElementById("allCatchesLink").textContent = `All ${state.catches.length} catches`;
+    document.getElementById("allCatchesLink").textContent = `All ${allCatches.length} catches`;
     renderGallery(catches);
     renderJourney();
     const datedAll = state.catches.map(c => c.date).filter(d => VALID_DATE_RE.test(d)).sort();
@@ -2201,12 +2224,12 @@
 
     // Recent catches (up to 7 most recent, scrollable) — reflects the fully filtered set,
     // clicking a row jumps the date filter to that exact day
-    const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : -1);
-    const recent = sorted.slice(0, 7);
     const nos = catchNumbers();
+    const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos));
+    const recent = sorted.slice(0, 7);
     document.getElementById("recentCatches").innerHTML = recent.map(c => `
       <div class="arr-row recent-row recent-clickable" data-date="${c.date}" style="cursor:pointer;">
-        <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
+        <span class="arr-no">${pad3(noOf(c, nos))}</span>
         <span class="arr-date">${shortDate(c.date)}</span>
         ${waterMark(c.waterType)}
         <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "—")}</i></span>
@@ -2362,20 +2385,21 @@
 
   function renderLog() {
     const list = document.getElementById("logList");
-    const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : -1));
+    const nos = catchNumbers();
+    const sorted = fishUnits(state.catches).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos)));
     if (sorted.length === 0) {
       list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "Log Entry".</p>`;
       return;
     }
-    const nos = catchNumbers();
     list.innerHTML = sorted.map(c => {
-      const isOpen = expandedId === c.id;
+      const key = unitKey(c);
+      const isOpen = expandedId === key;
       const en = state.species[c.species] || "—";
       const row = (label, value) => `<div class="data-row"><span class="data-label">${label}</span><span class="data-value">${value}</span></div>`;
       return `
         <article class="catch-card${isOpen ? " is-open" : ""}">
-          <button class="catch-head" data-id="${c.id}" aria-expanded="${isOpen}">
-            <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
+          <button class="catch-head" data-key="${key}" aria-expanded="${isOpen}">
+            <span class="arr-no">${pad3(noOf(c, nos))}</span>
             <span class="arr-date">${shortDate(c.date)}</span>
             ${waterMark(c.waterType)}
             <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(en)}</i></span>
@@ -2385,6 +2409,7 @@
           <div class="catch-body ${isOpen ? "open" : ""}">
             ${c.photo ? `<button type="button" class="photo-open" data-photo-id="${c.id}" aria-label="Enlarge photo of ${escapeHtml(c.species)}"><img src="${c.photo}" alt="${escapeHtml(c.species)}" class="catch-photo" /></button>` : ""}
             <div class="catch-data">
+              ${qtyOf(c) > 1 ? row("Logged together", `${qtyOf(c)} fish in this entry`) : ""}
               ${row("Time of day", escapeHtml(c.time))}
               ${row("Water type", escapeHtml(c.waterType))}
               ${c.fight ? row("Fight level", escapeHtml(c.fight)) : ""}
@@ -2415,8 +2440,8 @@
     });
     list.querySelectorAll(".catch-head").forEach(btn => {
       btn.addEventListener("click", () => {
-        const id = Number(btn.dataset.id);
-        expandedId = expandedId === id ? null : id;
+        const key = btn.dataset.key;
+        expandedId = expandedId === key ? null : key;
         renderLog();
       });
     });
@@ -2432,7 +2457,7 @@
         const id = Number(btn.dataset.deleteId);
         const c = state.catches.find(x => x.id === id);
         if (!c) return;
-        const ok = confirm(`Delete this catch?\n\n${c.species} — ${c.date}\n\nThis can't be undone.`);
+        const ok = confirm(`Delete this catch?\n\n${c.species} — ${c.date}${qtyOf(c) > 1 ? `\n\nThis removes all ${qtyOf(c)} fish logged in this entry.` : ""}\n\nThis can't be undone.`);
         if (!ok) return;
         state.catches = state.catches.filter(x => x.id !== id);
         deletedCatchIds.add(id);
@@ -2446,7 +2471,7 @@
             deletedSpeciesNames.add(c.species);
           }
         }
-        if (expandedId === id) expandedId = null;
+        if (String(expandedId).split("-")[0] === String(id)) expandedId = null;
         if (editingCatchId === id) resetCatchForm();
         render();
         scheduleSave();
@@ -2484,7 +2509,7 @@
       el.addEventListener("click", (e) => {
         e.preventDefault();
         const name = el.dataset.species;
-        const usedCount = state.catches.filter(c => c.species === name).length;
+        const usedCount = state.catches.filter(c => c.species === name).reduce((sum, c) => sum + qtyOf(c), 0);
         const warn = usedCount > 0
           ? `\n\nHeads up: ${usedCount} logged catch(es) still use this species name — they'll keep "${name}" as plain text, just without an English/Latin translation.`
           : "";
@@ -2506,7 +2531,8 @@
   const lb = { el: document.getElementById("lightbox"), items: [], i: 0, timer: null, opener: null };
   const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function catchPhotos(list) {
-    return [...list].filter(c => c.photo).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+    const seen = new Set();
+    return [...list].filter(c => c.photo && !seen.has(c.id) && seen.add(c.id)).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
   }
   let galleryItems = [];
   function updateGalleryArrows() {
@@ -2531,7 +2557,7 @@
     strip.innerHTML = galleryItems.map((c, idx) => `
       <button type="button" class="shot" data-idx="${idx}" aria-label="Open photo: ${escapeHtml(c.species)}, ${shortDate(c.date)}">
         <img src="${c.photo}" alt="" loading="lazy" decoding="async" />
-        <span class="shot-cap"><span class="arr-no">${pad3(nos.get(c.id) || 0)}</span><span class="shot-name">${escapeHtml(c.species)}</span>${waterMark(c.waterType)}</span>
+        <span class="shot-cap"><span class="arr-no">${pad3(nos.get(c.id) || 0)}</span><span class="shot-name">${escapeHtml(c.species)}${xQty(c)}</span>${waterMark(c.waterType)}</span>
       </button>`).join("");
     strip.querySelectorAll(".shot").forEach(b => b.addEventListener("click", () => openLightbox(galleryItems, Number(b.dataset.idx), b)));
     strip.scrollLeft = 0;
@@ -2607,7 +2633,7 @@
   function renderJourney() {
     const box = document.getElementById("journeyBox");
     const strip = document.getElementById("journeyStrip");
-    const sig = state.catches.map(c => [c.id, c.date, c.notes, c.weight, c.location, c.species, c.photo ? c.photo.length : 0].join("|")).join("~");
+    const sig = state.catches.map(c => [c.id, c.date, c.notes, c.weight, c.qty, c.location, c.species, c.photo ? c.photo.length : 0].join("|")).join("~");
     if (sig === journeySig) return;
     journeySig = sig;
     const moments = journeyMoments();
@@ -2640,13 +2666,13 @@
             ${showLoc ? `<div class="jn-loc">${escapeHtml(c.location)}</div>` : ""}
             <div class="jn-foot">
               <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
-              <span class="jn-sp"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "")}</i></span>
+              <span class="jn-sp"><b>${escapeHtml(c.species)}${xQty(c)}</b><i>${escapeHtml(state.species[c.species] || "")}</i></span>
               ${waterMark(c.waterType)}
             </div>
           </div>
         </li>`;
     }).join("");
-    const nextNo = pad3(state.catches.length + 1);
+    const nextNo = pad3(fishTotal() + 1);
     strip.innerHTML = items + `
         <li class="jn-item jn-next" style="--i:${moments.length};">
           <div class="jn-rail"><span class="jn-date">Next</span><span class="jn-dot"></span></div>
@@ -3089,7 +3115,7 @@
 
   function dpSpots() {
     const groups = new Map();
-    state.catches.forEach(c => {
+    fishUnits(state.catches).forEach(c => {
       if (!has(c.lat) || !has(c.lng)) return;
       const key = String(c.location || "").trim().toLowerCase() || `${c.lat.toFixed(2)},${c.lng.toFixed(2)}`;
       let g = groups.get(key);
@@ -3722,7 +3748,8 @@
   function dpRenderPatterns() {
     const box = document.getElementById("dpPatterns");
     if (!box) return;
-    const total = state.catches.length, withC = state.catches.map(c => c.cond ? { ...c.cond, waterType: c.waterType } : null).filter(Boolean);
+    const units = fishUnits(state.catches);
+    const total = units.length, withC = units.map(c => c.cond ? { ...c.cond, waterType: c.waterType } : null).filter(Boolean);
     const owner = typeof editUnlocked !== "undefined" && editUnlocked;
     const missing = state.catches.filter(c => !c.cond && VALID_DATE_RE.test(c.date)).length;
     const cta = owner ? `<div class="dp-cta">${missing ? `<button type="button" class="toggle-btn" id="dpBackfill" style="flex:none;">Fill conditions for ${missing} ${missing === 1 ? "catch" : "catches"}</button>` : ""}<span class="dp-dim" id="dpBackfillMsg">${escapeHtml(dp.backfillNote || (missing ? "" : "Every catch has conditions."))}</span></div>` : "";
@@ -3840,7 +3867,7 @@
       .filter(([, v]) => v)
       .map(([k, v]) => `<div><span class="data-label">${k}</span><span class="v">${escapeHtml(v)}</span></div>`).join("");
     document.getElementById("lbInfo").innerHTML = `
-      <div class="lb-title"><span class="arr-no">${pad3(nos.get(c.id) || 0)}</span><div><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "")}</i></div>${waterMark(c.waterType)}</div>
+      <div class="lb-title"><span class="arr-no">${pad3(nos.get(c.id) || 0)}</span><div><b>${escapeHtml(c.species)}${xQty(c)}</b><i>${escapeHtml(state.species[c.species] || "")}</i></div>${waterMark(c.waterType)}</div>
       <div class="lb-meta">${meta}</div>`;
     lb.el.classList.toggle("single", lb.items.length < 2);
   }
@@ -4065,7 +4092,7 @@
   editLinks.forEach(el => el.addEventListener("click", toggleEditMode));
 
   // Form
-  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-bait","f-method","f-fight","f-gear","f-notes"];
+  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-qty","f-bait","f-method","f-fight","f-gear","f-notes"];
   let pendingPhotoData = "";
   let editPhotoPending = false; // editing a catch whose photo is still being fetched: leave its photo alone
 
@@ -4309,7 +4336,7 @@
     const container = document.getElementById(ms.containerId);
     if (!container) return;
     if (container.offsetParent === null) return; // hidden (different tab active) — skip, refreshed next time it's shown
-    const source = sourceCatches || state.catches;
+    const source = sourceCatches || fishUnits(state.catches);
     const points = source.filter(c => typeof c.lat === "number" && typeof c.lng === "number");
     document.getElementById(ms.countId).textContent = points.length
       ? `${points.length} of ${source.length} catches pinned`
@@ -4350,9 +4377,9 @@
       const count = group.catches.length;
       const visibleRadius = count > 1 ? Math.min(6 + count, 14) : 4;
       const isSel = dashboardFilters.coord === group.key;
-      const popupHtml = group.catches
+      const popupHtml = [...new Map(group.catches.map(c => [c.id, c])).values()]
         .sort((a, b) => a.date < b.date ? 1 : -1)
-        .map(c => `<b>${escapeHtml(c.species)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
+        .map(c => `<b>${escapeHtml(c.species)}${xQty(c)}</b><br>${escapeHtml(c.date)}<br>${escapeHtml(c.location || "")}`)
         .join(`<hr style="margin:6px 0; border-color:#354456;">`);
       const header = count > 1 ? `<div style="font-size:11px; color:#A3B4C4; margin-bottom:4px;">${count} catches at this spot</div>` : "";
       const distFooter = myLocation
@@ -4431,6 +4458,7 @@
     formIds.forEach(id => document.getElementById(id).value = "");
     document.getElementById("f-english").value = "";
     document.getElementById("f-latin").value = "";
+    document.getElementById("f-qty").value = "1";
     document.getElementById("f-time").value = "Pagi (Morning)";
     document.getElementById("f-water").value = "Air Laut";
     document.getElementById("f-gear").value = "Set 1";
@@ -4456,6 +4484,7 @@
     document.getElementById("f-location").value = c.location;
     document.getElementById("f-weather").value = c.weather;
     document.getElementById("f-weight").value = c.weight;
+    document.getElementById("f-qty").value = qtyOf(c);
     document.getElementById("f-bait").value = c.bait;
     document.getElementById("f-method").value = c.method;
     document.getElementById("f-fight").value = c.fight || "";
@@ -4491,6 +4520,7 @@
       location: document.getElementById("f-location").value,
       weather: document.getElementById("f-weather").value,
       weight: document.getElementById("f-weight").value,
+      qty: Math.max(1, Math.min(999, Math.floor(Number(document.getElementById("f-qty").value)) || 1)),
       bait: document.getElementById("f-bait").value,
       method: document.getElementById("f-method").value,
       fight: document.getElementById("f-fight").value,
@@ -4530,7 +4560,7 @@
     }
 
     resetCatchForm();
-    expandedId = targetId;
+    expandedId = String(targetId);
     switchTab("log");
     render();
     scheduleSave();
