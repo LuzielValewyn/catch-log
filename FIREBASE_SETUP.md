@@ -22,6 +22,17 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
    Emailmu (`mrdelvirio@gmail.com`) sudah tertulis di dalamnya. Kalau nanti mau memakai email lain, tambahkan di daftar itu
    dan di `OWNER_EMAILS` pada `index.html`, semuanya dengan huruf kecil.
 
+4. **Aturan untuk foto (kalau file `firestore.rules` berubah, publikasikan ulang seperti langkah 3)**
+   Foto sekarang disimpan di koleksi `photos` (satu foto = satu dokumen), bukan di dalam dokumen utama.
+   Tanpa aturan `photos` yang sudah dipublikasikan, tombol "Move photos" dan upload foto baru akan gagal.
+
+## Keamanan data (khusus owner, tab Catch Log)
+
+- **Download backup**: mengunduh semua catatan beserta fotonya ke satu file .json. Lakukan sesekali.
+- **Move photos**: memindahkan foto lama ke dokumen terpisah (backup otomatis diunduh dulu, tiap foto dicek ulang sebelum dianggap pindah).
+- Kalau tidak ada sinyal, catatan yang kamu simpan ditahan di HP dan dikirim otomatis saat sinyal kembali.
+  Situs juga bisa dibuka tanpa sinyal setelah pernah dibuka sekali dengan sinyal.
+
 ## Cara memakainya
 
 - Buka alamat situsmu dengan `?owner=1` di belakangnya, yaitu `https://del-catch-log-weld.vercel.app/?owner=1`,
