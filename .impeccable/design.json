@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T14:00:00Z",
+  "title": "Design System: Del's Catch Log",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Matte Ground", "canonical": "#090D12", "tonalRamp": ["#090D12", "#0F151C", "#151D27", "#1B2632", "#243040", "#354456", "#8093A6", "#E9EEF3"] },
+      "board": { "role": "neutral", "displayName": "Board", "canonical": "#0F151C", "tonalRamp": ["#090D12", "#0F151C", "#151D27", "#1B2632", "#243040", "#354456", "#8093A6", "#E9EEF3"] },
+      "plate": { "role": "neutral", "displayName": "Plate", "canonical": "#151D27", "tonalRamp": ["#090D12", "#0F151C", "#151D27", "#1B2632", "#243040", "#354456", "#8093A6", "#E9EEF3"] },
+      "raise": { "role": "neutral", "displayName": "Raise", "canonical": "#1B2632", "tonalRamp": ["#090D12", "#0F151C", "#151D27", "#1B2632", "#243040", "#354456", "#8093A6", "#E9EEF3"] },
+      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#243040", "tonalRamp": ["#0F151C", "#151D27", "#1B2632", "#243040", "#2C3A4C", "#354456", "#5A6B7E", "#8093A6"] },
+      "rule-strong": { "role": "neutral", "displayName": "Rule Strong", "canonical": "#354456", "tonalRamp": ["#0F151C", "#151D27", "#243040", "#2C3A4C", "#354456", "#5A6B7E", "#8093A6", "#A3B4C4"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#E9EEF3", "tonalRamp": ["#354456", "#5A6B7E", "#8093A6", "#A3B4C4", "#C4D0DB", "#D5DEE6", "#E9EEF3", "#F6F8FA"] },
+      "ink-2": { "role": "neutral", "displayName": "Ink 2", "canonical": "#A3B4C4", "tonalRamp": ["#354456", "#5A6B7E", "#8093A6", "#93A4B5", "#A3B4C4", "#C4D0DB", "#D5DEE6", "#E9EEF3"] },
+      "ink-3": { "role": "neutral", "displayName": "Ink 3", "canonical": "#8093A6", "tonalRamp": ["#243040", "#354456", "#5A6B7E", "#6C7F92", "#8093A6", "#A3B4C4", "#C4D0DB", "#E9EEF3"] },
+      "amber": { "role": "primary", "displayName": "LED Amber", "canonical": "#FFB23E", "tonalRamp": ["#3D2A0A", "#6B4710", "#99651A", "#CC8829", "#FFB23E", "#FFC468", "#FFD895", "#FFF1CC"] },
+      "on-amber": { "role": "neutral", "displayName": "On Amber", "canonical": "#0B0F14", "tonalRamp": ["#0B0F14", "#090D12", "#0F151C", "#151D27", "#1B2632", "#243040", "#354456", "#8093A6"] },
+      "salt": { "role": "secondary", "displayName": "Saltwater Aqua", "canonical": "#4FC3D9", "tonalRamp": ["#0E2F36", "#16505D", "#207286", "#2F97AE", "#4FC3D9", "#78D3E3", "#A3E2EE", "#D0F1F7"] },
+      "fresh": { "role": "secondary", "displayName": "Freshwater Leaf", "canonical": "#8FD16B", "tonalRamp": ["#1D3312", "#2F5220", "#437630", "#5E9C43", "#8FD16B", "#A9DE8B", "#C4EAAE", "#E1F5D5"] },
+      "coral": { "role": "tertiary", "displayName": "Alert Coral", "canonical": "#FF6B57", "tonalRamp": ["#3D130D", "#6B2218", "#99352A", "#CC4838", "#FF6B57", "#FF8F7F", "#FFB5A9", "#FFDAD4"] },
+      "portrait-plate": { "role": "neutral", "displayName": "Portrait Plate", "canonical": "#EDE6D6", "tonalRamp": ["#4A463B", "#6E6858", "#928B77", "#B5AD97", "#D0C8B2", "#EDE6D6", "#F5F0E4", "#FBF8F1"] }
+    },
+    "typographyMeta": {
+      "led-display": { "displayName": "LED Display", "purpose": "The lifetime total only, with ghost cells behind." },
+      "led-cell": { "displayName": "LED Cell", "purpose": "Board-cell numerals." },
+      "led-row": { "displayName": "LED Row", "purpose": "Arrival numbers, time-slot counts, location counts." },
+      "headline": { "displayName": "Headline", "purpose": "Page title, Archivo at 85% width." },
+      "title": { "displayName": "Title", "purpose": "Box titles." },
+      "body": { "displayName": "Body", "purpose": "Rows, forms, notes." },
+      "row-name": { "displayName": "Row Name", "purpose": "Species names in arrival rows." },
+      "label": { "displayName": "Label", "purpose": "Board column headers and data labels, uppercase." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "All state transitions, 140 to 240ms; bar fill 500ms; row-in 320ms. Disabled under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "1100px" },
+      { "name": "phone", "value": "760px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Arrival Row",
+      "kind": "custom",
+      "refersTo": "arrival-row",
+      "description": "Fixed-slot row: number, date, water mark, species, location. The unit of the whole board.",
+      "html": "<div class=\"ds-arr-row\"><span class=\"ds-arr-no\">224</span><span class=\"ds-arr-date\">12 Sep 2026</span><span class=\"ds-wmark\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0\"/></svg></span><span class=\"ds-arr-name\"><b>Kakap Merah</b><i>Red snapper</i></span><span class=\"ds-arr-loc\">Pulau Abang</span></div>",
+      "css": ".ds-arr-row { display: grid; grid-template-columns: 56px 96px 26px minmax(0, 340px) minmax(0, 1fr); gap: 0 18px; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--rule, #243040); background: var(--board, #0F151C); color: var(--ink, #E9EEF3); font-family: 'Archivo', system-ui, sans-serif; transition: background 140ms cubic-bezier(0.16,1,0.3,1); } .ds-arr-row:hover { background: var(--plate, #151D27); } .ds-arr-no { font-family: 'Doto', 'Archivo', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.06em; color: var(--amber, #FFB23E); line-height: 1; } .ds-arr-date { font-size: 13.5px; font-weight: 600; white-space: nowrap; } .ds-wmark { display: inline-flex; align-items: center; color: var(--salt, #4FC3D9); } .ds-wmark svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .ds-arr-name b { display: block; font-size: 16px; font-weight: 700; font-stretch: 92%; } .ds-arr-name i { display: block; font-style: normal; font-size: 13px; color: var(--ink-2, #A3B4C4); } .ds-arr-loc { font-size: 13.5px; color: var(--ink-2, #A3B4C4); }"
+    },
+    {
+      "name": "LED Total",
+      "kind": "custom",
+      "refersTo": "led-total",
+      "description": "The monumental amber lifetime total with dim ghost cells behind it.",
+      "html": "<div class=\"ds-led\" data-ghost=\"8888\"><span>224</span></div>",
+      "css": ".ds-led { display: inline-grid; font-family: 'Doto', 'Archivo', sans-serif; font-weight: 800; color: var(--amber, #FFB23E); font-size: clamp(110px, 17vw, 264px); line-height: 0.95; letter-spacing: 0.03em; } .ds-led::before { content: attr(data-ghost); grid-area: 1 / 1; justify-self: end; color: var(--amber, #FFB23E); opacity: 0.1; } .ds-led > span { grid-area: 1 / 1; justify-self: end; }"
+    },
+    {
+      "name": "Board Cell",
+      "kind": "custom",
+      "refersTo": "board-cell",
+      "description": "Header cell with uppercase label and Doto numeral; cells are divided by a left hairline.",
+      "html": "<div class=\"ds-cell\"><div class=\"ds-cell-label\">Fishing trips</div><div class=\"ds-cell-num\">61</div></div>",
+      "css": ".ds-cell { padding: 14px 20px 16px; border-left: 1px solid var(--rule, #243040); color: var(--ink, #E9EEF3); font-family: 'Archivo', sans-serif; } .ds-cell-label { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2, #A3B4C4); margin-bottom: 8px; } .ds-cell-num { font-family: 'Doto', 'Archivo', sans-serif; font-weight: 800; font-size: 34px; line-height: 1; letter-spacing: 0.04em; color: var(--ink, #E9EEF3); }"
+    },
+    {
+      "name": "Water Split Bar",
+      "kind": "custom",
+      "refersTo": "water-split-bar",
+      "description": "Salt as solid aqua, fresh as hatched green, so the split reads without colour.",
+      "html": "<div class=\"ds-water-bar\"><span class=\"ds-salt\" style=\"width:62%\"></span><span class=\"ds-fresh\" style=\"width:38%\"></span></div>",
+      "css": ".ds-water-bar { display: flex; height: 8px; border-radius: 2px; overflow: hidden; background: var(--ground, #090D12); } .ds-salt { background: var(--salt, #4FC3D9); } .ds-fresh { background: repeating-linear-gradient(45deg, var(--fresh, #8FD16B) 0 2px, var(--board, #0F151C) 2px 5px); box-shadow: inset 0 0 0 1px var(--fresh, #8FD16B); }"
+    },
+    {
+      "name": "Time-of-Day Slot",
+      "kind": "custom",
+      "refersTo": "time-slot",
+      "description": "Filter row: name, amber fill track, LED count.",
+      "html": "<button type=\"button\" class=\"ds-tod-slot\"><span class=\"ds-tod-name\">Pagi</span><span class=\"ds-tod-track\"><span class=\"ds-tod-fill\" style=\"width:70%\"></span></span><span class=\"ds-tod-count\">41</span></button>",
+      "css": ".ds-tod-slot { display: grid; grid-template-columns: 64px minmax(0, 1fr) 40px; align-items: center; gap: 12px; width: 100%; padding: 12px 4px; background: none; border: none; border-bottom: 1px solid var(--rule, #243040); cursor: pointer; color: var(--ink, #E9EEF3); text-align: left; font-family: 'Archivo', sans-serif; transition: background 140ms cubic-bezier(0.16,1,0.3,1); } .ds-tod-slot:hover { background: var(--plate, #151D27); } .ds-tod-slot:focus-visible { outline: 2px solid var(--amber, #FFB23E); outline-offset: 2px; } .ds-tod-name { font-size: 14px; font-weight: 700; } .ds-tod-track { height: 10px; background: var(--ground, #090D12); border-radius: 2px; overflow: hidden; } .ds-tod-fill { display: block; height: 100%; background: var(--amber, #FFB23E); border-radius: 2px; } .ds-tod-count { font-family: 'Doto', 'Archivo', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.05em; text-align: right; line-height: 1; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid amber submit; the outline variant is the owner edit action.",
+      "html": "<button class=\"ds-submit-btn\">Post arrival</button>",
+      "css": ".ds-submit-btn { width: 100%; padding: 13px; background: var(--amber, #FFB23E); color: var(--on-amber, #0B0F14); border: none; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: filter 140ms cubic-bezier(0.16,1,0.3,1), transform 140ms cubic-bezier(0.16,1,0.3,1); } .ds-submit-btn:hover { filter: brightness(1.08); } .ds-submit-btn:active { transform: translateY(1px); } .ds-submit-btn:focus-visible { outline: 2px solid var(--amber, #FFB23E); outline-offset: 2px; } .ds-submit-btn:disabled { background: var(--raise, #1B2632); color: var(--ink-3, #8093A6); cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Owner edit action; coral border and text for delete.",
+      "html": "<button class=\"ds-outline-btn\">Edit</button>",
+      "css": ".ds-outline-btn { padding: 8px 16px; background: none; border: 1px solid var(--amber, #FFB23E); border-radius: 4px; color: var(--amber, #FFB23E); font-family: 'Archivo', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 140ms cubic-bezier(0.16,1,0.3,1); } .ds-outline-btn:hover { background: rgba(255,178,62,0.14); } .ds-outline-btn:focus-visible { outline: 2px solid var(--amber, #FFB23E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Ground-filled well with rule-strong stroke and amber focus.",
+      "html": "<label class=\"ds-field-label\">Location<input class=\"ds-input\" placeholder=\"Where\" /></label>",
+      "css": ".ds-field-label { display: block; font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-2, #A3B4C4); } .ds-input { display: block; width: 100%; margin-top: 6px; padding: 10px 12px; font-size: 14.5px; background: var(--ground, #090D12); border: 1px solid var(--rule-strong, #354456); border-radius: 4px; color: var(--ink, #E9EEF3); font-family: 'Archivo', sans-serif; transition: border-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-input:hover { border-color: var(--ink-3, #8093A6); } .ds-input:focus { outline: 2px solid var(--amber, #FFB23E); outline-offset: 1px; border-color: var(--amber, #FFB23E); } .ds-input::placeholder { color: var(--ink-3, #8093A6); }"
+    },
+    {
+      "name": "Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Deck tab with line icon; amber text and scaling underline when active.",
+      "html": "<button class=\"ds-nav-item active\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 20v-7M12 20V5M19 20V9M3 20h18\"/></svg>Dashboard</button>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 9px; height: 60px; padding: 0 14px; border: none; background: none; cursor: pointer; color: var(--ink-2, #A3B4C4); font-family: 'Archivo', sans-serif; font-size: 14px; font-weight: 600; font-stretch: 92%; position: relative; white-space: nowrap; transition: color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-nav-item::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 2px; background: var(--amber, #FFB23E); transform: scaleX(0); transform-origin: left; transition: transform 240ms cubic-bezier(0.16,1,0.3,1); } .ds-nav-item:hover { color: var(--ink, #E9EEF3); } .ds-nav-item.active { color: var(--amber, #FFB23E); } .ds-nav-item.active::after { transform: scaleX(1); } .ds-nav-item:focus-visible { outline: 2px solid var(--amber, #FFB23E); outline-offset: -2px; } .ds-nav-icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Panel Box",
+      "kind": "card",
+      "refersTo": "panel-box",
+      "description": "The one container: Board fill, hairline, 4px corners, no shadow.",
+      "html": "<section class=\"ds-box\"><div class=\"ds-box-title-row\"><h3 class=\"ds-card-title\">Recent arrivals</h3><a class=\"ds-card-link\" href=\"#\">See all</a></div><p>Panel content</p></section>",
+      "css": ".ds-box { background: var(--board, #0F151C); border: 1px solid var(--rule, #243040); border-radius: 4px; padding: 18px 20px 20px; color: var(--ink, #E9EEF3); font-family: 'Archivo', sans-serif; } .ds-box-title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; } .ds-card-title { font-size: 16px; font-weight: 800; font-stretch: 88%; letter-spacing: 0.01em; } .ds-card-link { font-size: 13.5px; font-weight: 700; color: var(--amber, #FFB23E); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Arrivals Board",
+    "overview": "Every fish Del has caught is an arrival: numbered, dated and posted on one dark board, like a ferry-terminal arrivals board in the Riau Islands. The app reads as a single board with fixed slots, not a grid of stat cards. Panels are matte, separated by hairline rules, and never blurred or shadowed. It is dark-only and carries no traditional or nautical ornament.\n\nOne signal carries the whole system: LED amber. Numerals are dot-matrix (Doto) and everything else is Archivo, a variable-width grotesque squeezed narrow for headings and left at normal width for reading. Water type is never colour alone: saltwater is aqua with a wave mark, freshwater is leaf green with a drop mark and diagonal hatch. The one warm object on the page is Del's illustrated portrait on a cream plate.",
+    "keyCharacteristics": [
+      "Fixed-slot rows: number, date, water mark, species, location, always in the same columns.",
+      "The monumental amber LED total with dim ghost cells (8888) behind it.",
+      "Hairline rules and tonal steps for depth; no blur, no panel shadows.",
+      "Amber is the single signal; aqua and green mean water type only.",
+      "Numerals in Doto dot-matrix; text in Archivo.",
+      "Compact 4px corners; 2px on bars."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Amber is the only accent. If something needs emphasis, it goes amber or it goes ink; it does not get a new hue.", "section": "colors" },
+      { "name": "The Shape Carries It Rule", "body": "Salt and fresh are always paired with their mark (wave, drop, hatch). Colour alone never states water type.", "section": "colors" },
+      { "name": "The Ink Line Rule", "body": "The cumulative line on charts is neutral ink, dashed, so it never competes with amber bars.", "section": "colors" },
+      { "name": "The Dots Are Numbers Rule", "body": "Doto sets numerals only. Words, dates, names and units are Archivo.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "font-variant-numeric: tabular-nums is on the body so counts and dates hold their slots.", "section": "typography" },
+      { "name": "The Eleven Floor Rule", "body": "No functional text under 11px; chart axis text is the only 11px.", "section": "typography" },
+      { "name": "The Flat Board Rule", "body": "Panels, rows and cells are separated by rules and tone, never by shadow or blur.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every panel on Board with a 1px rule border and 4px corners.",
+      "Do post lists as fixed-slot rows with hairline dividers, not cards.",
+      "Do set every numeral in Doto and everything else in Archivo.",
+      "Do pair salt with the wave mark and fresh with the drop mark and hatch.",
+      "Do keep amber to the one signal role and use ink for anything else that needs weight.",
+      "Do keep functional text at 11px or above and ink-3 as the dimmest readable text."
+    ],
+    "donts": [
+      "Don't add blur, glass, or drop shadows to panels, rows or cells.",
+      "Don't introduce a second accent hue or use water colours for anything but water type.",
+      "Don't use light surfaces; the only warm light plate is the portrait.",
+      "Don't put Doto on words, names or dates.",
+      "Don't lay stats out as a grid of separate cards; extend the board's cells and rows."
+    ]
+  }
+}
