@@ -645,6 +645,13 @@
   .dp-dbw b { display: block; font-weight: 800; }
   .dp-dw small { color: var(--ink-3); font-size: 12.5px; }
   .dp-swipe { display: none; }
+  .g-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 14px; background: #fff; color: #1f1f1f; border: 1px solid #dadce0; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; transition: filter 140ms var(--ease-out); }
+  .g-btn:hover:not(:disabled) { filter: brightness(0.94); }
+  .g-btn:disabled { opacity: 0.6; cursor: wait; }
+  .keep-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--ink-2); margin: 4px 0 6px; cursor: pointer; }
+  .keep-row input[type="checkbox"] { appearance: none; width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--rule-strong); border-radius: 3px; background: var(--ground); cursor: pointer; display: grid; place-items: center; }
+  .keep-row input[type="checkbox"]:checked { background: var(--amber); border-color: var(--amber); }
+  .keep-row input[type="checkbox"]:checked::after { content: ""; width: 5px; height: 10px; border: solid var(--on-amber); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
   .bottom-nav { display: none; }
 
   @media (max-width: 1100px) {
@@ -1136,19 +1143,14 @@
   </main>
 </div>
 
-<div id="ownerGate" class="modal-overlay">
+<div id="ownerGate" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ownerGateTitle">
   <div class="modal-box">
-    <div class="modal-title">Owner access</div>
-    <p class="modal-text" style="margin-bottom:16px;">Enter your password to manage the catch log. Or just browse it like anyone else.</p>
-    <form autocomplete="off" onsubmit="return false;">
-      <input type="text" name="fake-username" autocomplete="off" style="position:absolute; opacity:0; height:0; width:0; pointer-events:none;" tabindex="-1" aria-hidden="true" />
-      <input type="password" id="ownerGateInput" name="del-catch-log-owner-pw" class="input" placeholder="Password" autocomplete="new-password" aria-label="Owner password" style="margin-bottom:8px;" />
-    </form>
-    <p id="ownerGateError" style="display:none; color:var(--coral); font-size:13px; margin-bottom:8px;">Wrong password — try again.</p>
-    <div style="display:flex; gap:10px; margin-top:12px;">
-      <button id="ownerGateGuestBtn" class="toggle-btn" style="flex:1;">Enter as guest</button>
-      <button id="ownerGateOkBtn" class="submit-btn" style="flex:1; margin-top:0;">OK</button>
-    </div>
+    <div class="modal-title" id="ownerGateTitle">Owner sign-in</div>
+    <p class="modal-text" style="margin-bottom:16px;">Sign in with your Google account to manage the catch log. Or just browse it like anyone else.</p>
+    <button type="button" id="ownerGateOkBtn" class="g-btn"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Sign in with Google</span></button>
+    <label class="keep-row"><input type="checkbox" id="ownerGateKeep"><span>Keep me signed in on this device</span></label>
+    <p id="ownerGateError" role="alert" style="display:none; color:var(--coral); font-size:13.5px; margin-bottom:8px;"></p>
+    <button id="ownerGateGuestBtn" class="toggle-btn" style="width:100%; margin-top:8px;">Enter as guest</button>
   </div>
 </div>
 
@@ -1206,55 +1208,8 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-
-  // Owner link detection: visit with ?owner=1 to get the owner view.
-  const EDIT_PASSWORD = "Mancingcangdaging";
-  const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
-  let IS_OWNER = false;
-
-  function askOwnerPassword() {
-    return new Promise((resolve) => {
-      const overlay = document.getElementById("ownerGate");
-      const input = document.getElementById("ownerGateInput");
-      const errorMsg = document.getElementById("ownerGateError");
-      overlay.classList.add("open");
-      setTimeout(() => input.focus(), 50);
-
-      function finish(result) {
-        overlay.classList.remove("open");
-        okBtn.removeEventListener("click", onOk);
-        guestBtn.removeEventListener("click", onGuest);
-        input.removeEventListener("keydown", onKeydown);
-        resolve(result);
-      }
-      function onOk() {
-        if (input.value === EDIT_PASSWORD) {
-          finish(true);
-        } else {
-          errorMsg.style.display = "block";
-          input.value = "";
-          input.focus();
-        }
-      }
-      function onGuest() { finish(false); }
-      function onKeydown(e) { if (e.key === "Enter") onOk(); }
-
-      const okBtn = document.getElementById("ownerGateOkBtn");
-      const guestBtn = document.getElementById("ownerGateGuestBtn");
-      okBtn.addEventListener("click", onOk);
-      guestBtn.addEventListener("click", onGuest);
-      input.addEventListener("keydown", onKeydown);
-    });
-  }
-
-  if (OWNER_REQUESTED) {
-    IS_OWNER = await askOwnerPassword();
-    if (IS_OWNER) {
-      document.body.classList.add("is-owner");
-      document.getElementById("nameGate").classList.remove("open");
-    }
-  }
+  import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDdcnK_u3w9qKXj4IWoXSDzFkl9YBFVQzI",
@@ -1264,6 +1219,69 @@
     messagingSenderId: "359707023049",
     appId: "1:359707023049:web:e3ed201094de3bc7e35f18"
   };
+
+  // ---- Owner sign-in with Google (Firebase Authentication) ----
+  // Visit ?owner=1 to sign in. The browser only decides what to SHOW: the real protection is the
+  // Firestore rules in firestore.rules, which let only the owner's Google account change the logbook.
+  const OWNER_REQUESTED = new URLSearchParams(window.location.search).get("owner") === "1";
+  let IS_OWNER = false;
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: "select_account" });
+  const restoredUser = await new Promise((resolve) => {
+    let done = false;
+    onAuthStateChanged(auth, (u) => { if (!done) { done = true; resolve(u); } });
+    setTimeout(() => { if (!done) { done = true; resolve(null); } }, 6000); // slow network: carry on as a guest
+  });
+  const AUTH_MESSAGES = {
+    "auth/popup-closed-by-user": "The Google window was closed before signing in.",
+    "auth/cancelled-popup-request": "The Google window was closed before signing in.",
+    "auth/popup-blocked": "Your browser blocked the Google window. Allow pop-ups for this site and try again.",
+    "auth/unauthorized-domain": "This site's address isn't allowed in Firebase yet (Authentication, Settings, Authorized domains).",
+    "auth/operation-not-allowed": "Google sign-in isn't switched on in Firebase yet.",
+    "auth/network-request-failed": "No connection. Check your signal and try again.",
+    "auth/user-disabled": "This account is disabled.",
+    "auth/too-many-requests": "Too many tries. Wait a few minutes and try again.",
+  };
+  function askOwnerSignIn(firstGate) {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById("ownerGate"), keep = document.getElementById("ownerGateKeep"), err = document.getElementById("ownerGateError");
+      const go = document.getElementById("ownerGateOkBtn"), guest = document.getElementById("ownerGateGuestBtn");
+      guest.textContent = firstGate ? "Enter as guest" : "Cancel";
+      err.style.display = "none";
+      overlay.classList.add("open");
+      // The sign-in popup must start straight from the click, so the storage choice is applied beforehand.
+      const applyPersistence = () => setPersistence(auth, keep.checked ? browserLocalPersistence : browserSessionPersistence).catch(() => {});
+      go.disabled = true;
+      applyPersistence().then(() => { go.disabled = false; go.focus(); });
+      let busy = false;
+      const show = (msg) => { err.textContent = msg; err.style.display = "block"; };
+      function finish(result) {
+        overlay.classList.remove("open");
+        go.removeEventListener("click", onGo); guest.removeEventListener("click", onGuest);
+        keep.removeEventListener("change", applyPersistence); document.removeEventListener("keydown", onKey);
+        resolve(result);
+      }
+      function onGo() {
+        if (busy) return;
+        busy = true; go.disabled = true; err.style.display = "none";
+        signInWithPopup(auth, googleProvider)
+          .then(() => finish(true))
+          .catch((ex) => show(AUTH_MESSAGES[ex && ex.code] || "Couldn't sign in. Try again."))
+          .finally(() => { busy = false; go.disabled = false; });
+      }
+      function onGuest() { finish(false); }
+      function onKey(e) { if (e.key === "Escape" && !busy) onGuest(); }
+      go.addEventListener("click", onGo); guest.addEventListener("click", onGuest);
+      keep.addEventListener("change", applyPersistence); document.addEventListener("keydown", onKey);
+    });
+  }
+  IS_OWNER = restoredUser ? true : OWNER_REQUESTED ? await askOwnerSignIn(true) : false;
+  if (IS_OWNER) {
+    document.body.classList.add("is-owner");
+    document.getElementById("nameGate").classList.remove("open");
+  }
 
   const SEED_CATCHES = [
     { id: 1, date: "2026-05-03", time: "Siang", species: "Puyut", waterType: "Air Laut", fight: "Very Easy", location: "Laut Karimun, Depan Pulau Jaga", weather: "Cerah", weight: "", bait: "Cumi potong", method: "Bottom fishing", gear: "Set 1", notes: "my first catch, doesnt matter if its small, start the journey with the smallest one" },
@@ -1323,13 +1341,12 @@
         setStatus("Local mode (no cloud)");
         return;
       }
-      const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
       const ref = doc(db, DOC_PATH[0], DOC_PATH[1]);
       const snap = await getDoc(ref);
       if (snap.exists()) {
         state = snap.data();
-      } else {
+      } else if (auth.currentUser) {
         await setDoc(ref, state);
       }
       setStatus("Synced to cloud");
@@ -1361,7 +1378,7 @@
     return Array.from(seen.values());
   }
   function scheduleSave() {
-    if (!db) return;
+    if (!db || !auth.currentUser) return; // only the signed-in owner can save
     clearTimeout(saveTimer);
     setStatus("Saving...");
     saveTimer = setTimeout(async () => {
@@ -3710,10 +3727,9 @@
   let pendingVisits = [];
   let firebaseReady = false;
   function flushPendingVisits() {
-    if (pendingVisits.length === 0) return;
-    state.visitors = (state.visitors || []).concat(pendingVisits);
-    pendingVisits = [];
-    scheduleSave();
+    if (!db || pendingVisits.length === 0) return;
+    const items = pendingVisits.splice(0);
+    items.forEach(v => addDoc(collection(db, "visitors"), { name: String(v.name).slice(0, 60), date: v.date, time: v.time, at: serverTimestamp() }).catch(e => console.warn("Visit not logged", e)));
   }
   function recordVisit(name) {
     const now = new Date();
@@ -3775,8 +3791,7 @@
     if (e.target.id === "aboutModal") document.getElementById("aboutModal").classList.remove("open");
   });
 
-  // Edit mode gate — session-only, never persisted across visits.
-  // Accessing New Catch always requires the owner link + password, every time.
+  // Edit mode: on while the owner is signed in. Clicking it signs out; clicking again asks for the password.
   let editUnlocked = false;
   const editLinks = [document.getElementById("editModeLink"), document.getElementById("editModeLinkTop")];
   const ownerOnlyNavBtns = ["addNavBtn", "addNavBtnMobile", "newGearNavBtn", "newGearNavBtnMobile"];
@@ -3804,20 +3819,16 @@
     }
   }
   if (IS_OWNER) unlockEditMode();
-  function toggleEditMode(e) {
+  async function toggleEditMode(e) {
     e.preventDefault();
     if (editUnlocked) {
       lockEditMode();
+      try { await signOut(auth); } catch (err) { console.warn("Sign-out failed", err); }
       return;
     }
-    const input = prompt("Enter edit mode password:");
-    if (input === null) return;
-    if (input === EDIT_PASSWORD) {
-      unlockEditMode();
-    } else {
-      alert("Incorrect password.");
-    }
+    if (await askOwnerSignIn(false)) unlockEditMode();
   }
+  onAuthStateChanged(auth, (u) => { if (!u && editUnlocked) lockEditMode(); });
   editLinks.forEach(el => el.addEventListener("click", toggleEditMode));
 
   // Form

@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// Del's Catch Log: Firestore security rules.
+// Paste this into Firebase console > Firestore Database > Rules > Publish,
+// after replacing OWNER_EMAIL_HERE with the Google account you sign in with (see FIREBASE_SETUP.md).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Only the owner's Google account may change anything.
+    function isOwner() {
+      return request.auth != null
+          && request.auth.token.email_verified == true
+          && request.auth.token.email == "OWNER_EMAIL_HERE";
+    }
+
+    // The logbook (catches, species, gear): everyone can read it, only the owner can write.
+    match /fishing_logbook/{docId} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Visitor names: anyone can leave one entry, only the owner can read or remove them.
+    match /visitors/{visitId} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'date', 'time', 'at'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 60
+                    && request.resource.data.date is string
+                    && request.resource.data.date.size() == 10
+                    && request.resource.data.time is string
+                    && request.resource.data.time.size() <= 5
+                    && request.resource.data.at == request.time;
+      allow read, update, delete: if isOwner();
+    }
+
+    // Everything else stays closed.
+  }
+}
