@@ -659,9 +659,9 @@
   .bottom-nav { display: none; }
 
   @media (max-width: 1100px) {
-    .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cells { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .cell-water { grid-column: 1 / -1; order: -1; border-left: none; }
-    .cell:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .cell:not(.cell-water) { border-top: 1px solid var(--rule); }
     .span-8, .span-7, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
     .dp-verdict { grid-template-columns: 1fr; }
     .dp-v-cells { border-left: none; border-top: 1px solid var(--rule); }
@@ -1233,11 +1233,15 @@
   const auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence] });
   const googleProvider = new GoogleAuthProvider();
   googleProvider.setCustomParameters({ prompt: "select_account" });
-  const restoredUser = await new Promise((resolve) => {
+  // Must match the email in firestore.rules. The rules are the real lock; this only decides what to show.
+  const OWNER_EMAILS = ["mrdelvirio@gmail.com"];
+  const isOwnerUser = (u) => !!u && u.emailVerified !== false && OWNER_EMAILS.includes(String(u.email || "").toLowerCase());
+  let restoredUser = await new Promise((resolve) => {
     let done = false;
     onAuthStateChanged(auth, (u) => { if (!done) { done = true; resolve(u); } });
     setTimeout(() => { if (!done) { done = true; resolve(null); } }, 6000); // slow network: carry on as a guest
   });
+  if (restoredUser && !isOwnerUser(restoredUser)) { try { await signOut(auth); } catch (e) { /* ignore */ } restoredUser = null; }
   const AUTH_MESSAGES = {
     "auth/popup-closed-by-user": "The Google window was closed before signing in.",
     "auth/cancelled-popup-request": "The Google window was closed before signing in.",
@@ -1271,7 +1275,11 @@
         if (busy) return;
         busy = true; go.disabled = true; err.style.display = "none";
         signInWithPopup(auth, googleProvider, browserPopupRedirectResolver)
-          .then(() => finish(true))
+          .then(async (cred) => {
+            if (isOwnerUser(cred && cred.user)) { finish(true); return; }
+            try { await signOut(auth); } catch (e) { /* ignore */ }
+            show("That Google account isn't the owner of this catch log. Try the owner account, or continue as a guest.");
+          })
           .catch((ex) => show(AUTH_MESSAGES[ex && ex.code] || "Couldn't sign in. Try again."))
           .finally(() => { busy = false; go.disabled = false; });
       }

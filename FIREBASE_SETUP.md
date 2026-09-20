@@ -18,8 +18,9 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
    jadi tes login sebaiknya dilakukan di alamat utama.
    Kalau kamu membuka situs dari komputermu sendiri lewat `localhost`, domain itu sudah ada.
 3. **Publikasikan aturan Firestore**
-   Firestore Database > Rules > tempel isi file `firestore.rules`, ganti `OWNER_EMAIL_HERE` dengan
-   **alamat Gmail yang akan kamu pakai untuk login** (huruf kecil semua), lalu **Publish**.
+   Firestore Database > Rules > tempel seluruh isi file `firestore.rules`, lalu **Publish**.
+   Emailmu (`mrdelvirio@gmail.com`) sudah tertulis di dalamnya. Kalau nanti mau memakai email lain, tambahkan di daftar itu
+   dan di `OWNER_EMAILS` pada `index.html`, semuanya dengan huruf kecil.
 
 ## Cara memakainya
 
@@ -29,7 +30,7 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
   **Keep me signed in on this device**, login tersimpan di perangkat itu. Jangan dicentang di perangkat bersama.
 - Klik **Edit mode: on** untuk keluar (sign out).
 - Pengunjung biasa hanya bisa melihat. Nama yang mereka isi tersimpan di koleksi `visitors` (bisa dilihat di Firebase console).
-- Orang lain yang login dengan akun Google mereka sendiri tidak bisa mengubah apa pun, karena aturan hanya mengizinkan emailmu.
+- Orang lain yang mencoba login dengan akun Google mereka sendiri akan langsung ditolak dengan pesan "That Google account isn't the owner…", dan aturan Firestore juga menolak semua penyimpanan dari akun selain emailmu.
 
 ## Kalau ada masalah
 
@@ -38,7 +39,8 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
 | "Google sign-in isn't switched on in Firebase yet." | Langkah 1 belum dilakukan. |
 | "This site's address isn't allowed in Firebase yet…" | Langkah 2 belum dilakukan atau alamatnya salah ketik. |
 | "Your browser blocked the Google window…" | Izinkan pop-up untuk situs ini, lalu coba lagi. |
-| Bisa login tapi simpan gagal ("Save failed") | Email di aturan Firestore tidak sama dengan email Google yang kamu pakai login (langkah 3). |
+| Bisa login tapi simpan gagal ("Save failed") | Aturan Firestore belum dipublikasikan atau emailnya tidak sama dengan akun Google yang kamu pakai (langkah 3). |
+| "That Google account isn't the owner…" | Kamu memilih akun Google yang bukan `mrdelvirio@gmail.com`. Pilih akun yang benar. |
 
 Catatan: password lama masih ada di riwayat git repo publikmu. Karena gerbang lamanya sudah dihapus dan aturan Firestore
 melindungi data, password itu tidak berguna lagi, tetapi jangan dipakai untuk akun lain.

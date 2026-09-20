@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Del's Catch Log: Firestore security rules.
 // Paste this into Firebase console > Firestore Database > Rules > Publish,
-// after replacing OWNER_EMAIL_HERE with the Google account you sign in with (see FIREBASE_SETUP.md).
+// The owner email is already filled in below. To allow another account, add it to the list (and to OWNER_EMAILS in index.html).
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -11,7 +11,7 @@ service cloud.firestore {
     function isOwner() {
       return request.auth != null
           && request.auth.token.email_verified == true
-          && request.auth.token.email == "OWNER_EMAIL_HERE";
+          && request.auth.token.email in ["mrdelvirio@gmail.com"];
     }
 
     // The logbook (catches, species, gear): everyone can read it, only the owner can write.
