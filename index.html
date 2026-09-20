@@ -210,7 +210,7 @@
 
   /* Arrivals rows: fixed slots, hairline rules */
   .arr-head, .arr-row, .catch-head {
-    display: grid; grid-template-columns: 56px 96px 26px minmax(0, 340px) minmax(0, 1fr);
+    display: grid; grid-template-columns: 82px 96px 26px minmax(0, 340px) minmax(0, 1fr);
     gap: 0 18px; align-items: center;
   }
   .arr-head { padding: 0 4px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); border-bottom: 1px solid var(--rule-strong); }
@@ -220,10 +220,10 @@
   .arr-no { font-family: var(--led); font-weight: 800; font-size: 20px; letter-spacing: 0.06em; color: var(--amber); line-height: 1; }
   .arr-date { font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; }
   .arr-name { min-width: 0; }
-  .arr-qty { display: inline-block; margin-left: 8px; padding: 2px 6px 1px; border: 1px solid var(--amber); border-radius: 3px; color: var(--amber); font-family: var(--led); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.1; vertical-align: 2px; }
+  .arr-no.is-range { font-size: 16px; letter-spacing: 0.03em; white-space: nowrap; }
   .fish-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
   .fish-chip { padding: 3px 5px 2px; border: 1px solid rgba(255,178,62,0.3); border-radius: 3px; background: rgba(255,178,62,0.08); color: var(--amber); font-family: var(--led); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; line-height: 1; }
-  .fish-more { color: var(--ink-3); font-size: 12px; padding: 0 2px; }
+  .data-value .fish-chips { margin-top: 2px; }
   .arr-name b { display: block; font-size: 16px; font-weight: 700; font-stretch: 92%; overflow-wrap: anywhere; }
   .arr-name i { display: block; font-style: normal; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
   .arr-loc { font-size: 13.5px; color: var(--ink-2); min-width: 0; overflow-wrap: anywhere; }
@@ -296,7 +296,7 @@
   #logList { background: var(--panel); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
   .catch-card { border-bottom: 1px solid var(--rule); }
   .catch-card:last-child { border-bottom: none; }
-  .catch-head { width: 100%; background: none; border: none; padding: 14px 16px; cursor: pointer; text-align: left; grid-template-columns: 56px 96px 26px minmax(0, 340px) minmax(0, 1fr) 20px; transition: background 140ms var(--ease-out); }
+  .catch-head { width: 100%; background: none; border: none; padding: 14px 16px; cursor: pointer; text-align: left; grid-template-columns: 82px 96px 26px minmax(0, 340px) minmax(0, 1fr) 20px; transition: background 140ms var(--ease-out); }
   .catch-head:hover { background: var(--hover); }
   .catch-card.is-open { background: var(--hover); }
   .chev { width: 10px; height: 10px; border-right: 2px solid var(--ink-2); border-bottom: 2px solid var(--ink-2); transform: rotate(45deg) translate(-2px, -2px); transition: transform 220ms var(--ease-out); justify-self: end; }
@@ -723,14 +723,14 @@
     .slicer-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
     .slicer-sidebar .slicer-field { flex: 1 1 45%; }
     .box { padding: 16px; }
-    .arr-head, .arr-row { grid-template-columns: 44px minmax(0, 1fr) 24px; gap: 2px 12px; }
+    .arr-head, .arr-row { grid-template-columns: 74px minmax(0, 1fr) 24px; gap: 2px 12px; }
     .arr-head { display: none; }
     .arr-row .arr-no { grid-row: 1 / span 2; align-self: start; padding-top: 3px; }
     .arr-row .arr-name { grid-column: 2; grid-row: 1; }
     .arr-row .arr-water { grid-column: 3; grid-row: 1; justify-self: end; }
     .arr-row .arr-date { grid-column: 2; grid-row: 2; font-size: 13px; color: var(--ink-2); font-weight: 500; }
     .arr-row .arr-loc { display: none; }
-    .catch-head { grid-template-columns: 44px minmax(0, 1fr) 24px 20px; padding: 14px 12px; gap: 2px 12px; }
+    .catch-head { grid-template-columns: 74px minmax(0, 1fr) 24px 20px; padding: 14px 12px; gap: 2px 12px; }
     .catch-head .arr-no { grid-row: 1 / span 2; align-self: start; padding-top: 3px; }
     .catch-head .arr-name { grid-column: 2; grid-row: 1; }
     .catch-head .arr-water { grid-column: 3; grid-row: 1; }
@@ -2196,13 +2196,14 @@ A backup file is downloaded first.`)) return;
   }
   const noOf = (c, nos) => c._no || nos.get(c.id) || 0;
   const unitKey = (c) => (c._k ? c.id + "-" + c._k : String(c.id));
-  const qtyPill = (c) => (qtyOf(c) > 1 ? `<span class="arr-qty">×${qtyOf(c)}</span>` : "");
+  // "021–027" for an entry that holds several fish, "021" for a single one
+  const noRange = (c, start) => (qtyOf(c) > 1 ? pad3(start) + "–" + pad3(start + qtyOf(c) - 1) : pad3(start));
   // Small numbered cells, one per fish, so a grouped entry still shows every fish separately.
   function fishChips(c, start) {
     const n = qtyOf(c);
     if (n < 2) return "";
     const chip = (i) => `<span class="fish-chip">${pad3(start + i)}</span>`;
-    const cells = n <= 6 ? Array.from({ length: n }, (_, i) => chip(i)).join("") : chip(0) + chip(1) + chip(2) + `<span class="fish-more">…</span>` + chip(n - 1);
+    const cells = Array.from({ length: n }, (_, i) => chip(i)).join("");
     return `<span class="fish-chips" aria-label="${n} fish, numbers ${pad3(start)} to ${pad3(start + n - 1)}">${cells}</span>`;
   }
   const xQty = (c) => (qtyOf(c) > 1 ? " ×" + qtyOf(c) : "");
@@ -2327,10 +2328,10 @@ A backup file is downloaded first.`)) return;
     const recent = sorted.filter(c => !seenRecent.has(c.id) && seenRecent.add(c.id)).slice(0, 7);
     document.getElementById("recentCatches").innerHTML = recent.map(c => `
       <div class="arr-row recent-row recent-clickable" data-date="${c.date}" style="cursor:pointer;">
-        <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
+        <span class="arr-no${qtyOf(c) > 1 ? " is-range" : ""}">${noRange(c, nos.get(c.id) || 0)}</span>
         <span class="arr-date">${shortDate(c.date)}</span>
         ${waterMark(c.waterType)}
-        <span class="arr-name"><b>${escapeHtml(c.species)}${qtyPill(c)}</b><i>${escapeHtml(state.species[c.species] || "—")}</i></span>
+        <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "—")}</i></span>
         <span class="arr-loc">${escapeHtml(c.location)}</span>
       </div>
     `).join("") || `<p class="empty-state">No catches yet.</p>`;
@@ -2497,17 +2498,17 @@ A backup file is downloaded first.`)) return;
       return `
         <article class="catch-card${isOpen ? " is-open" : ""}">
           <button class="catch-head" data-key="${key}" aria-expanded="${isOpen}">
-            <span class="arr-no">${pad3(noOf(c, nos))}</span>
+            <span class="arr-no${qtyOf(c) > 1 ? " is-range" : ""}">${noRange(c, noOf(c, nos))}</span>
             <span class="arr-date">${shortDate(c.date)}</span>
             ${waterMark(c.waterType)}
-            <span class="arr-name"><b>${escapeHtml(c.species)}${qtyPill(c)}</b><i>${escapeHtml(en)}</i>${fishChips(c, noOf(c, nos))}</span>
+            <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(en)}</i></span>
             <span class="arr-loc">${escapeHtml(c.location)}</span>
             <span class="chev" aria-hidden="true"></span>
           </button>
           <div class="catch-body ${isOpen ? "open" : ""}">
             ${c.photo ? `<button type="button" class="photo-open" data-photo-id="${c.id}" aria-label="Enlarge photo of ${escapeHtml(c.species)}"><img src="${c.photo}" alt="${escapeHtml(c.species)}" class="catch-photo" /></button>` : ""}
             <div class="catch-data">
-              ${qtyOf(c) > 1 ? row("Logged together", `${qtyOf(c)} fish, No. ${pad3(noOf(c, nos))} to ${pad3(noOf(c, nos) + qtyOf(c) - 1)}`) : ""}
+              ${qtyOf(c) > 1 ? row(`${qtyOf(c)} fish in this entry`, fishChips(c, noOf(c, nos))) : ""}
               ${row("Time of day", escapeHtml(c.time) + (c.clock ? " · " + escapeHtml(c.clock) : ""))}
               ${row("Water type", escapeHtml(c.waterType))}
               ${c.fight ? row("Fight level", escapeHtml(c.fight)) : ""}
