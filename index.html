@@ -1033,7 +1033,7 @@
             <option>Subuh (Dawn)</option><option selected>Pagi (Morning)</option><option>Siang (Midday)</option><option>Sore (Afternoon)</option><option>Malam (Night)</option>
           </select></label>
         <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span>
-          <input class="input" type="text" id="f-species" placeholder="e.g. Kakap"></label>
+          <input class="input" type="text" id="f-species" placeholder="e.g. Kakap" list="dl-species" autocomplete="off" autocapitalize="sentences"><datalist id="dl-species"></datalist></label>
         <div class="field-wrap">
           <span class="field-label">English / Latin name</span>
           <div class="toggle-row">
@@ -1052,7 +1052,7 @@
         <label class="field-wrap"><span class="field-label">How many fish?</span>
           <input class="input" type="number" id="f-qty" min="1" max="999" step="1" inputmode="numeric" value="1"></label>
         <label class="field-wrap"><span class="field-label">Location</span>
-          <input class="input" type="text" id="f-location" placeholder="e.g. Laut Karimun, Pulau Assan"></label>
+          <input class="input" type="text" id="f-location" placeholder="e.g. Laut Karimun, Pulau Assan" list="dl-location" autocomplete="off" autocapitalize="sentences"><datalist id="dl-location"></datalist></label>
         <div class="field-wrap">
           <span class="field-label">Pin on map (optional)</span>
           <div class="toggle-row">
@@ -1068,13 +1068,13 @@
           </div>
         </div>
         <label class="field-wrap"><span class="field-label">Weather</span>
-          <input class="input" type="text" id="f-weather" placeholder="e.g. Cerah"></label>
+          <input class="input" type="text" id="f-weather" placeholder="e.g. Cerah" list="dl-weather" autocomplete="off" autocapitalize="sentences"><datalist id="dl-weather"></datalist></label>
         <label class="field-wrap"><span class="field-label">Weight (kg, per fish)</span>
           <input class="input" type="text" id="f-weight" placeholder="e.g. 1.8"></label>
         <label class="field-wrap"><span class="field-label">Bait / Lure</span>
-          <input class="input" type="text" id="f-bait" placeholder="e.g. Udang"></label>
+          <input class="input" type="text" id="f-bait" placeholder="e.g. Udang" list="dl-bait" autocomplete="off" autocapitalize="sentences"><datalist id="dl-bait"></datalist></label>
         <label class="field-wrap"><span class="field-label">Method</span>
-          <input class="input" type="text" id="f-method" placeholder="e.g. Bottom fishing"></label>
+          <input class="input" type="text" id="f-method" placeholder="e.g. Bottom fishing" list="dl-method" autocomplete="off" autocapitalize="sentences"><datalist id="dl-method"></datalist></label>
         <label class="field-wrap"><span class="field-label">Fight level</span>
           <select class="input" id="f-fight">
             <option value="">—</option>
@@ -1648,6 +1648,7 @@
   function render() {
     if (typeof dp !== "undefined" && dp.inited) { dpRenderSpotSelect(); if (dp.view === "patterns") dpRenderPatterns(); }
     populateGearOptions();
+    refreshSuggestions();
     updateOwnerTools();
     renderDashboard();
     renderLog();
@@ -2105,6 +2106,43 @@
       for (let k = 0; k < q; k++) out.push({ ...c, _k: k, _no: start + k });
     });
     return out;
+  }
+  // ---- Suggestions from earlier entries: the same fish, place, weather, bait or method is always spelled the same way.
+  const SUGGEST = {
+    "f-species": { list: "dl-species", get: c => c.species },
+    "f-location": { list: "dl-location", get: c => c.location },
+    "f-weather": { list: "dl-weather", get: c => c.weather },
+    "f-bait": { list: "dl-bait", get: c => c.bait },
+    "f-method": { list: "dl-method", get: c => c.method },
+  };
+  const suggestIndex = {};
+  const cleanText = (v) => String(v || "").trim().replace(/\s+/g, " ");
+  const normText = (v) => cleanText(v).replace(/\s*,\s*/g, ", ").toLowerCase();
+  function refreshSuggestions() {
+    Object.entries(SUGGEST).forEach(([id, cfg]) => {
+      const tally = new Map(); // normalized text -> Map(spelling -> weight)
+      const add = (raw, w) => {
+        const t = cleanText(raw); if (!t) return;
+        const k = normText(t);
+        if (!tally.has(k)) tally.set(k, new Map());
+        const m = tally.get(k); m.set(t, (m.get(t) || 0) + w);
+      };
+      state.catches.forEach(c => add(cfg.get(c), 1));
+      if (id === "f-species") Object.keys(state.species || {}).forEach(n => add(n, 0.01)); // known names with no catch yet still show up
+      const rows = [...tally.entries()].map(([k, m]) => ({
+        k, best: [...m.entries()].sort((a, b) => b[1] - a[1])[0][0], total: [...m.values()].reduce((x, y) => x + y, 0),
+      })).sort((a, b) => b.total - a.total || a.best.localeCompare(b.best));
+      suggestIndex[id] = new Map(rows.map(r => [r.k, r.best]));
+      const dl = document.getElementById(cfg.list);
+      if (dl) dl.innerHTML = rows.map(r => `<option value="${escapeHtml(r.best)}"></option>`).join("");
+    });
+  }
+  // If what was typed matches something used before (ignoring capitals and extra spaces), use the earlier spelling.
+  function canonText(id, raw) {
+    const t = cleanText(raw);
+    if (!t) return "";
+    const idx = suggestIndex[id];
+    return (idx && idx.get(normText(t))) || t;
   }
   const noOf = (c, nos) => c._no || nos.get(c.id) || 0;
   const unitKey = (c) => (c._k ? c.id + "-" + c._k : String(c.id));
@@ -4437,6 +4475,10 @@
     document.getElementById("submitBtn").disabled = !(date && species);
   }
   formIds.forEach(id => document.getElementById(id).addEventListener("input", checkFormValid));
+  Object.keys(SUGGEST).forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("change", () => { el.value = canonText(id, el.value); checkFormValid(); });
+  });
 
   // Automatic / Manual name toggle
   let nameMode = "automatic";
@@ -4509,7 +4551,7 @@
 
   document.getElementById("submitBtn").addEventListener("click", () => {
     const date = document.getElementById("f-date").value;
-    const species = document.getElementById("f-species").value.trim();
+    const species = canonText("f-species", document.getElementById("f-species").value);
     if (!date || !species) return;
 
     const fields = {
@@ -4517,12 +4559,12 @@
       time: document.getElementById("f-time").value,
       species,
       waterType: document.getElementById("f-water").value,
-      location: document.getElementById("f-location").value,
-      weather: document.getElementById("f-weather").value,
+      location: canonText("f-location", document.getElementById("f-location").value),
+      weather: canonText("f-weather", document.getElementById("f-weather").value),
       weight: document.getElementById("f-weight").value,
       qty: Math.max(1, Math.min(999, Math.floor(Number(document.getElementById("f-qty").value)) || 1)),
-      bait: document.getElementById("f-bait").value,
-      method: document.getElementById("f-method").value,
+      bait: canonText("f-bait", document.getElementById("f-bait").value),
+      method: canonText("f-method", document.getElementById("f-method").value),
       fight: document.getElementById("f-fight").value,
       gear: document.getElementById("f-gear").value,
       notes: document.getElementById("f-notes").value,
