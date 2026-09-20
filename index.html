@@ -220,6 +220,10 @@
   .arr-no { font-family: var(--led); font-weight: 800; font-size: 20px; letter-spacing: 0.06em; color: var(--amber); line-height: 1; }
   .arr-date { font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; }
   .arr-name { min-width: 0; }
+  .arr-qty { display: inline-block; margin-left: 8px; padding: 2px 6px 1px; border: 1px solid var(--amber); border-radius: 3px; color: var(--amber); font-family: var(--led); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; line-height: 1.1; vertical-align: 2px; }
+  .fish-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+  .fish-chip { padding: 3px 5px 2px; border: 1px solid rgba(255,178,62,0.3); border-radius: 3px; background: rgba(255,178,62,0.08); color: var(--amber); font-family: var(--led); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; line-height: 1; }
+  .fish-more { color: var(--ink-3); font-size: 12px; padding: 0 2px; }
   .arr-name b { display: block; font-size: 16px; font-weight: 700; font-stretch: 92%; overflow-wrap: anywhere; }
   .arr-name i { display: block; font-style: normal; font-size: 13px; color: var(--ink-2); overflow-wrap: anywhere; }
   .arr-loc { font-size: 13.5px; color: var(--ink-2); min-width: 0; overflow-wrap: anywhere; }
@@ -1013,6 +1017,7 @@
         <div class="dp-cta" style="margin-top:0;">
           <button type="button" class="toggle-btn" id="backupBtn" style="flex:none;">Download backup</button>
           <button type="button" class="toggle-btn" id="moveBtn" style="flex:none;">Move photos</button>
+          <button type="button" class="toggle-btn" id="tidyBtn" style="flex:none;">Tidy spellings</button>
           <span class="dp-dim" id="ownerToolsMsg"></span>
         </div>
         <p class="dp-note" id="ownerToolsInfo"></p>
@@ -1028,6 +1033,8 @@
         </div>
         <label class="field-wrap"><span class="field-label">Date</span>
           <input class="input" type="date" id="f-date"></label>
+        <div class="field-wrap"><span class="field-label">Time</span>
+          <div class="toggle-row"><input class="input" type="time" id="f-clock" style="flex:1; min-width:0;"><button type="button" class="toggle-btn" id="clockNowBtn" style="flex:none;">Now</button></div></div>
         <label class="field-wrap"><span class="field-label">Time of day</span>
           <select class="input" id="f-time">
             <option>Subuh (Dawn)</option><option selected>Pagi (Morning)</option><option>Siang (Midday)</option><option>Sore (Afternoon)</option><option>Malam (Night)</option>
@@ -1511,6 +1518,45 @@
     btn.disabled = false;
     render();
   }
+  // Old entries written before suggestions existed can spell the same thing two ways ("Bottom fishing" / "Bottom Fishing").
+  const TIDY_PROPS = { "f-species": "species", "f-location": "location", "f-weather": "weather", "f-bait": "bait", "f-method": "method" };
+  function tidyPlan() {
+    refreshSuggestions();
+    const changes = [];
+    state.catches.forEach(c => {
+      Object.entries(TIDY_PROPS).forEach(([id, prop]) => {
+        const cur = c[prop];
+        if (typeof cur !== "string" || !cur.trim()) return;
+        const want = canonText(id, cur);
+        if (want !== cur) changes.push({ c, prop, from: cur, to: want });
+      });
+    });
+    return changes;
+  }
+  async function tidySpellings() {
+    const msg = document.getElementById("ownerToolsMsg");
+    const plan = tidyPlan();
+    if (!plan.length || !auth.currentUser) return;
+    const pairs = [...new Set(plan.map(p => p.from === p.to ? "" : `"${p.from}" → "${p.to}"`))].filter(Boolean);
+    const shown = pairs.slice(0, 10).join("\n") + (pairs.length > 10 ? `\n…and ${pairs.length - 10} more` : "");
+    if (!confirm(`Make ${plan.length} spellings match the ones you use most?
+
+${shown}
+
+A backup file is downloaded first.`)) return;
+    msg.textContent = "Saving a backup file first…";
+    try { await downloadBackup(); } catch (e) { console.error(e); msg.textContent = "Couldn't make the backup, so nothing was changed."; return; }
+    plan.forEach(p => { p.c[p.prop] = p.to; });
+    // a species name that no entry uses any more is dropped from the Species list when its tidy twin is already there
+    const used = new Set(state.catches.map(c => c.species));
+    plan.filter(p => p.prop === "species").forEach(p => {
+      if (p.to && !state.species[p.to] && state.species[p.from]) state.species[p.to] = state.species[p.from];
+      if (!used.has(p.from) && state.species[p.from] && state.species[p.to]) { delete state.species[p.from]; deletedSpeciesNames.add(p.from); }
+    });
+    msg.textContent = `${plan.length} spellings tidied.`;
+    render();
+    scheduleSave();
+  }
   async function waitForSave() {
     for (let i = 0; i < 40 && saving; i++) await new Promise(r => setTimeout(r, 250));
     await doSave();
@@ -1523,6 +1569,10 @@
     const waiting = (readPending() ? 1 : 0) + Object.keys(photoQueue.sets).length;
     const mv = document.getElementById("moveBtn");
     mv.style.display = legacy ? "" : "none";
+    const tidyN = tidyPlan().length;
+    const tb = document.getElementById("tidyBtn");
+    tb.style.display = tidyN ? "" : "none";
+    tb.textContent = `Tidy ${tidyN} ${tidyN === 1 ? "spelling" : "spellings"}`;
     mv.textContent = `Move ${legacy} ${legacy === 1 ? "photo" : "photos"} to their own space`;
     document.getElementById("ownerToolsInfo").textContent =
       `Main logbook: ${kb} KB of 1024 KB used${legacy ? ", mostly photos that should move out" : ""}. ${state.catches.filter(c => c.photoId).length} photos are stored separately.${waiting ? ` ${waiting} ${waiting === 1 ? "change is" : "changes are"} waiting to be sent.` : ""}`;
@@ -2128,7 +2178,7 @@
         const m = tally.get(k); m.set(t, (m.get(t) || 0) + w);
       };
       state.catches.forEach(c => add(cfg.get(c), 1));
-      if (id === "f-species") Object.keys(state.species || {}).forEach(n => add(n, 0.01)); // known names with no catch yet still show up
+      if (id === "f-species") Object.keys(state.species || {}).forEach(n => add(n, 1.5)); // known names with no catch yet still show up; a listed name beats a one-off variant
       const rows = [...tally.entries()].map(([k, m]) => ({
         k, best: [...m.entries()].sort((a, b) => b[1] - a[1])[0][0], total: [...m.values()].reduce((x, y) => x + y, 0),
       })).sort((a, b) => b.total - a.total || a.best.localeCompare(b.best));
@@ -2146,6 +2196,15 @@
   }
   const noOf = (c, nos) => c._no || nos.get(c.id) || 0;
   const unitKey = (c) => (c._k ? c.id + "-" + c._k : String(c.id));
+  const qtyPill = (c) => (qtyOf(c) > 1 ? `<span class="arr-qty">×${qtyOf(c)}</span>` : "");
+  // Small numbered cells, one per fish, so a grouped entry still shows every fish separately.
+  function fishChips(c, start) {
+    const n = qtyOf(c);
+    if (n < 2) return "";
+    const chip = (i) => `<span class="fish-chip">${pad3(start + i)}</span>`;
+    const cells = n <= 6 ? Array.from({ length: n }, (_, i) => chip(i)).join("") : chip(0) + chip(1) + chip(2) + `<span class="fish-more">…</span>` + chip(n - 1);
+    return `<span class="fish-chips" aria-label="${n} fish, numbers ${pad3(start)} to ${pad3(start + n - 1)}">${cells}</span>`;
+  }
   const xQty = (c) => (qtyOf(c) > 1 ? " ×" + qtyOf(c) : "");
   const pad3 = (n) => String(n).padStart(3, "0");
   function shortDate(iso) {
@@ -2264,13 +2323,14 @@
     // clicking a row jumps the date filter to that exact day
     const nos = catchNumbers();
     const sorted = [...catches].sort((a,b) => a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos));
-    const recent = sorted.slice(0, 7);
+    const seenRecent = new Set();
+    const recent = sorted.filter(c => !seenRecent.has(c.id) && seenRecent.add(c.id)).slice(0, 7);
     document.getElementById("recentCatches").innerHTML = recent.map(c => `
       <div class="arr-row recent-row recent-clickable" data-date="${c.date}" style="cursor:pointer;">
-        <span class="arr-no">${pad3(noOf(c, nos))}</span>
+        <span class="arr-no">${pad3(nos.get(c.id) || 0)}</span>
         <span class="arr-date">${shortDate(c.date)}</span>
         ${waterMark(c.waterType)}
-        <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(state.species[c.species] || "—")}</i></span>
+        <span class="arr-name"><b>${escapeHtml(c.species)}${qtyPill(c)}</b><i>${escapeHtml(state.species[c.species] || "—")}</i></span>
         <span class="arr-loc">${escapeHtml(c.location)}</span>
       </div>
     `).join("") || `<p class="empty-state">No catches yet.</p>`;
@@ -2424,7 +2484,7 @@
   function renderLog() {
     const list = document.getElementById("logList");
     const nos = catchNumbers();
-    const sorted = fishUnits(state.catches).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos)));
+    const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos)));
     if (sorted.length === 0) {
       list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "Log Entry".</p>`;
       return;
@@ -2440,15 +2500,15 @@
             <span class="arr-no">${pad3(noOf(c, nos))}</span>
             <span class="arr-date">${shortDate(c.date)}</span>
             ${waterMark(c.waterType)}
-            <span class="arr-name"><b>${escapeHtml(c.species)}</b><i>${escapeHtml(en)}</i></span>
+            <span class="arr-name"><b>${escapeHtml(c.species)}${qtyPill(c)}</b><i>${escapeHtml(en)}</i>${fishChips(c, noOf(c, nos))}</span>
             <span class="arr-loc">${escapeHtml(c.location)}</span>
             <span class="chev" aria-hidden="true"></span>
           </button>
           <div class="catch-body ${isOpen ? "open" : ""}">
             ${c.photo ? `<button type="button" class="photo-open" data-photo-id="${c.id}" aria-label="Enlarge photo of ${escapeHtml(c.species)}"><img src="${c.photo}" alt="${escapeHtml(c.species)}" class="catch-photo" /></button>` : ""}
             <div class="catch-data">
-              ${qtyOf(c) > 1 ? row("Logged together", `${qtyOf(c)} fish in this entry`) : ""}
-              ${row("Time of day", escapeHtml(c.time))}
+              ${qtyOf(c) > 1 ? row("Logged together", `${qtyOf(c)} fish, No. ${pad3(noOf(c, nos))} to ${pad3(noOf(c, nos) + qtyOf(c) - 1)}`) : ""}
+              ${row("Time of day", escapeHtml(c.time) + (c.clock ? " · " + escapeHtml(c.clock) : ""))}
               ${row("Water type", escapeHtml(c.waterType))}
               ${c.fight ? row("Fight level", escapeHtml(c.fight)) : ""}
               ${row("Location", escapeHtml(c.location))}
@@ -3702,7 +3762,32 @@
 
   // ---- conditions saved with each catch (patterns) ----
   const dayCache = new Map();
-  function hourOfCatch(timeStr) {
+  // ---- Clock time of a catch (HH:MM). Time of day (Subuh, Pagi, ...) follows it automatically.
+  const TOD_OPTIONS = { Subuh: "Subuh (Dawn)", Pagi: "Pagi (Morning)", Siang: "Siang (Midday)", Sore: "Sore (Afternoon)", Malam: "Malam (Night)" };
+  const CLOCK_RE = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
+  function todFromClock(hhmm) {
+    const h = parseInt(String(hhmm).slice(0, 2), 10);
+    return h >= 3 && h < 7 ? "Subuh" : h >= 7 && h < 11 ? "Pagi" : h >= 11 && h < 15 ? "Siang" : h >= 15 && h < 18 ? "Sore" : "Malam";
+  }
+  function nowClock() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  // the saved time, or the one written inside older entries like "Malam (22.00)"
+  function clockOfCatch(c) {
+    if (CLOCK_RE.test(c.clock || "")) return c.clock;
+    const m = String(c.time || "").match(/[(]([0-9]{1,2})[.:]([0-9]{2})[)]/);
+    const t = m ? m[1].padStart(2, "0") + ":" + m[2] : "";
+    return CLOCK_RE.test(t) ? t : "";
+  }
+  let clockAuto = true; // while true, opening the form fills in the current time
+  function setClockField(hhmm) {
+    document.getElementById("f-clock").value = hhmm;
+    if (hhmm) document.getElementById("f-time").value = TOD_OPTIONS[todFromClock(hhmm)];
+  }
+  function refreshClockNow() { if (editingCatchId === null && clockAuto) setClockField(nowClock()); }
+  function hourOfCatch(timeStr, clock) {
+    if (CLOCK_RE.test(clock || "")) return parseInt(clock.slice(0, 2), 10);
     const s = String(timeStr || ""), m = s.match(/\((\d{1,2})[.:](\d{2})\)/);
     if (m) return clamp(parseInt(m[1], 10), 0, 23);
     const k = s.trim().split(" ")[0];
@@ -3742,7 +3827,7 @@
   async function dpAttach(c) {
     const pos = has(c.lat) && has(c.lng);
     const day = await dpDayData(pos ? c.lat : DP_HOME.lat, pos ? c.lng : DP_HOME.lng, c.date, c.waterType);
-    const cond = condFromDay(day, hourOfCatch(c.time));
+    const cond = condFromDay(day, hourOfCatch(c.time, c.clock));
     if (!pos) cond.est = 1;
     c.cond = cond;
   }
@@ -4002,6 +4087,7 @@
     const titleEl = document.getElementById("pageTitle");
     if (titleIsHtml) titleEl.innerHTML = title; else titleEl.textContent = title;
     document.getElementById("pageSub").textContent = sub;
+    if (tab === "add") refreshClockNow();
     if (tab === "add" && pickMapInstance) setTimeout(() => pickMapInstance.invalidateSize(), 0);
     if (tab === "dashboard") setTimeout(() => renderDashboardHeatMap(getFilteredCatchesExcluding("coord")), 0);
     if (tab === "departures") dpOpen();
@@ -4082,6 +4168,7 @@
     try { const n = await downloadBackup(); msg.textContent = `Backup downloaded: ${n} catches with their photos.`; } catch (e) { console.error(e); msg.textContent = "Couldn't make the backup. Try again."; }
   });
   document.getElementById("moveBtn").addEventListener("click", migratePhotos);
+  document.getElementById("tidyBtn").addEventListener("click", tidySpellings);
   document.getElementById("closeModal").addEventListener("click", () => {
     document.getElementById("aboutModal").classList.remove("open");
   });
@@ -4130,7 +4217,7 @@
   editLinks.forEach(el => el.addEventListener("click", toggleEditMode));
 
   // Form
-  const formIds = ["f-date","f-time","f-species","f-water","f-location","f-weather","f-weight","f-qty","f-bait","f-method","f-fight","f-gear","f-notes"];
+  const formIds = ["f-date","f-clock","f-time","f-species","f-water","f-location","f-weather","f-weight","f-qty","f-bait","f-method","f-fight","f-gear","f-notes"];
   let pendingPhotoData = "";
   let editPhotoPending = false; // editing a catch whose photo is still being fetched: leave its photo alone
 
@@ -4475,6 +4562,14 @@
     document.getElementById("submitBtn").disabled = !(date && species);
   }
   formIds.forEach(id => document.getElementById(id).addEventListener("input", checkFormValid));
+  document.getElementById("f-clock").addEventListener("input", (e) => { clockAuto = false; setClockField(e.target.value); });
+  document.getElementById("clockNowBtn").addEventListener("click", () => { clockAuto = true; setClockField(nowClock()); checkFormValid(); });
+  document.getElementById("f-time").addEventListener("change", () => {
+    // picking a time of day by hand means the exact time is unknown or different: clear it if they disagree
+    const clock = document.getElementById("f-clock");
+    if (clock.value && TOD_OPTIONS[todFromClock(clock.value)] !== document.getElementById("f-time").value) clock.value = "";
+    clockAuto = false;
+  });
   Object.keys(SUGGEST).forEach(id => {
     const el = document.getElementById(id);
     el.addEventListener("change", () => { el.value = canonText(id, el.value); checkFormValid(); });
@@ -4502,6 +4597,8 @@
     document.getElementById("f-latin").value = "";
     document.getElementById("f-qty").value = "1";
     document.getElementById("f-time").value = "Pagi (Morning)";
+    clockAuto = true;
+    setClockField(nowClock());
     document.getElementById("f-water").value = "Air Laut";
     document.getElementById("f-gear").value = "Set 1";
     document.getElementById("f-photo").value = "";
@@ -4520,7 +4617,10 @@
     if (!c) return;
     editingCatchId = id;
     document.getElementById("f-date").value = c.date;
-    document.getElementById("f-time").value = c.time;
+    const todKey = classifyTimeOfDay(c.time);
+    document.getElementById("f-time").value = (todKey && TOD_OPTIONS[todKey]) || c.time;
+    document.getElementById("f-clock").value = clockOfCatch(c);
+    clockAuto = false;
     document.getElementById("f-species").value = c.species;
     document.getElementById("f-water").value = c.waterType;
     document.getElementById("f-location").value = c.location;
@@ -4557,6 +4657,7 @@
     const fields = {
       date,
       time: document.getElementById("f-time").value,
+      clock: CLOCK_RE.test(document.getElementById("f-clock").value) ? document.getElementById("f-clock").value : "",
       species,
       waterType: document.getElementById("f-water").value,
       location: canonText("f-location", document.getElementById("f-location").value),
@@ -4587,6 +4688,10 @@
       state.catches.push({ id: targetId, ...fields });
     }
 
+    const savedCatch = state.catches.find(x => x.id === targetId);
+    // a changed day or time means the saved sea/weather conditions no longer fit: read them again
+    const timeChanged = !!prevCatch && !!prevCatch.cond && (prevCatch.date !== fields.date || clockOfCatch(prevCatch) !== fields.clock || classifyTimeOfDay(prevCatch.time) !== classifyTimeOfDay(fields.time));
+    if (timeChanged && savedCatch) delete savedCatch.cond;
     if (!editPhotoPending) syncCatchPhoto(state.catches.find(x => x.id === targetId), oldPhotoId);
 
     if (nameMode === "manual") {
@@ -4606,7 +4711,7 @@
     switchTab("log");
     render();
     scheduleSave();
-    if (isNewCatch) attachConditions(targetId);
+    if (isNewCatch || timeChanged) attachConditions(targetId);
   });
 
 
