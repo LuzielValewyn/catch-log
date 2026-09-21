@@ -1204,6 +1204,15 @@
 
   /* room after the last group, so even the final letter can be scrolled up to the top of the screen */
   .az-groups::after { content: ""; display: block; height: max(0px, calc(100vh - 380px)); }
+
+  /* Add species form */
+  .entry-box.narrow { max-width: 520px; }
+  .add-sp .detail-title { text-align: left; }
+  .add-sp .detail-sub { text-align: left; margin: 4px 0 18px; }
+  .add-sp .toggle-row .toggle-btn { flex: none; padding: 10px 22px; }
+  .add-err { min-height: 18px; margin: 0 0 10px; font-size: 13px; color: var(--coral); }
+  .sp-tools { display: flex; justify-content: center; margin: 14px 0 2px; }
+  .sp-tools .toggle-btn { flex: none; padding: 9px 20px; }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
   .leaflet-tile-pane { filter: none; }
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
@@ -3481,11 +3490,12 @@ A backup file is downloaded first.`)) return;
   // ---- One dialog shared by the Catch Log and Species albums: the grids show icons only, a tap opens the entry
   const FISH_GLYPH = `<svg class="ph-fish" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.6-4.2 6.2-5.6 10-4.6 2.2.6 3.6 2.4 4 4.6-.4 2.2-1.8 4-4 4.6-3.8 1-7.4-.4-10-4.6zM16.5 12L21.5 8v8z"/></svg>`;
   let entryOpener = null, logScrolledKey = null;
-  function openEntry(html, opener) {
+  function openEntry(html, opener, cls) {
     const m = document.getElementById("entryModal");
     document.getElementById("entryBody").innerHTML = html;
     entryOpener = opener || null;
     m.classList.add("open");
+    m.querySelector(".entry-box").classList.toggle("narrow", cls === "narrow");
     document.body.classList.add("no-scroll");
     m.querySelector(".entry-box").scrollTop = 0;
     document.getElementById("entryClose").focus({ preventScroll: true });
@@ -3495,6 +3505,7 @@ A backup file is downloaded first.`)) return;
     const m = document.getElementById("entryModal");
     if (!m.classList.contains("open")) return;
     m.classList.remove("open");
+    m.querySelector(".entry-box").classList.remove("narrow");
     document.body.classList.remove("no-scroll");
     document.getElementById("entryBody").innerHTML = "";
     if (typeof infoSeq !== "undefined") infoSeq++;   // an unfinished species lookup should not paint into a closed dialog
@@ -3804,7 +3815,9 @@ A backup file is downloaded first.`)) return;
     const names = Object.keys(state.species);
     const found = names.filter(n => firstBySpecies.has(n)).length;
     const pct = names.length ? Math.round(found / names.length * 100) : 0;
-    if (names.length === 0) { list.innerHTML = `<p class="empty-state">No species yet. They appear here as you log catches.</p>`; return; }
+    const tools = editUnlocked ? `<div class="sp-tools"><button type="button" class="toggle-btn" id="addSpecies">+ Add species</button></div>` : "";
+    const wireAdd = (prefill) => { const b = list.querySelector("#addSpecies"); if (b) b.addEventListener("click", () => showAddSpecies(b, prefill)); };
+    if (names.length === 0) { list.innerHTML = `${tools}<p class="empty-state">No species yet. They appear here as you log catches.</p>`; wireAdd(""); return; }
     const head = `<div class="tome-progress"><span class="tome-lab">Collection</span><i class="tome-bar" aria-hidden="true"><em style="width:${pct}%"></em></i><span class="tome-of"><b>${found}</b> of ${names.length} species caught</span></div>`;
     const tileOf = ([id, en]) => {
       const fc = firstBySpecies.get(id);
@@ -3822,13 +3835,50 @@ A backup file is downloaded first.`)) return;
       const g = groups.get(L);
       return `<section class="az-group" id="${gid(L)}" data-letter="${L}"><header class="az-head"><span class="az-letter">${L}</span><i class="az-rule" aria-hidden="true"></i><span class="az-count">${g.length} ${g.length === 1 ? "species" : "species"}</span></header><div class="tomes">${g.map(tileOf).join("")}</div></section>`;
     }).join("");
-    list.innerHTML = `${head}${entries.length ? `<div class="az-groups">${body}</div>` : `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`}`;
+    list.innerHTML = `${head}${tools}${entries.length ? `<div class="az-groups">${body}</div>` : `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`}`;
     drawAzIndex(letters, gid);
+    wireAdd(entries.length ? "" : query);
     list.querySelectorAll(".tome").forEach(t => t.addEventListener("click", () => {
       speciesSel = t.dataset.name;
       list.querySelectorAll(".tome").forEach(x => x.classList.toggle("is-sel", x === t));
       showSpecies(speciesSel, t);
     }));
+  }
+
+  // Owner: add a species by hand. It shows in the list at once (greyed out until a catch uses it) and is kept with the logbook.
+  function showAddSpecies(opener, prefill) {
+    const body = openEntry(`
+      <div class="add-sp">
+        <h3 class="detail-title" style="margin-top:0">Add a species</h3>
+        <p class="detail-sub">It joins the list right away and stays greyed out until you catch one.</p>
+        <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span><input class="input" type="text" id="asName" maxlength="60" placeholder="e.g. Kerapu Karang" autocomplete="off" autocapitalize="words" value="${escapeHtml(prefill || "")}"></label>
+        <label class="field-wrap"><span class="field-label">English name (optional)</span><input class="input" type="text" id="asEn" maxlength="80" placeholder="e.g. Coral trout" autocomplete="off"></label>
+        <label class="field-wrap"><span class="field-label">Latin name (optional)</span><input class="input" type="text" id="asLat" maxlength="80" placeholder="e.g. Plectropomus leopardus" autocomplete="off"></label>
+        <p class="add-err" id="asErr" role="alert"></p>
+        <div class="toggle-row"><button type="button" class="toggle-btn active" id="asSave">Add species</button><button type="button" class="toggle-btn" id="asCancel">Cancel</button></div>
+      </div>`, opener, "narrow");
+    const nameEl = body.querySelector("#asName"), enEl = body.querySelector("#asEn"), latEl = body.querySelector("#asLat"), err = body.querySelector("#asErr");
+    const words = (v) => v.replace(/\s+/g, " ").trim();
+    const save = () => {
+      const name = words(nameEl.value).split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      const e = words(enEl.value);
+      const l = words(latEl.value).split(" ").map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join(" ");
+      if (!name) { err.textContent = "Type the fish name first."; nameEl.focus(); return; }
+      const dup = Object.keys(state.species).find(k => k.toLowerCase() === name.toLowerCase());
+      if (dup) { err.textContent = `"${dup}" is already in the list.`; nameEl.focus(); return; }
+      state.species[name] = e && l ? `${e} (${l})` : (e || l || name);
+      closeEntry();
+      speciesSel = name;
+      const q = document.getElementById("speciesSearch"); if (q) q.value = "";
+      renderSpecies();
+      scheduleSave();
+      const tile = [...document.querySelectorAll(".tome")].find(t => t.dataset.name === name);
+      if (tile) { tile.scrollIntoView({ block: "center", behavior: reduceMotion() ? "auto" : "smooth" }); showSpecies(name, tile); }
+    };
+    body.querySelector("#asSave").addEventListener("click", save);
+    body.querySelector("#asCancel").addEventListener("click", closeEntry);
+    body.querySelectorAll("input").forEach(i => i.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); save(); } else err.textContent = ""; }));
+    nameEl.focus({ preventScroll: true });
   }
 
   // A-Z index on the right edge: only the letters that have species, kept in step with the search
