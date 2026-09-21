@@ -63,7 +63,7 @@
     --serif: 'Cormorant Garamond', 'Cinzel', Georgia, serif;
     --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    --bx: 22px;
+    --bx: 26px;
     /* theme tokens: the dark values live here, the light ones in the Ivory Codex block */
     --fg: 239, 231, 222; --shade: 0, 0, 0; --bgt: 3, 2, 5; --scrim: 2, 1, 4; --chip: 24, 8, 12;
     --halo: #000; --halo-rgb: 0, 0, 0; --rulec: 234, 221, 190;
@@ -253,35 +253,28 @@
   #clearDashFilterLink { color: var(--amber); font-weight: 700; flex-shrink: 0; }
 
   /* Boxes */
-  /* ===== Panels with a thin red section bar ===== */
+  /* ===== Panels: rounded glass cards with a plain serif title, no coloured bar ===== */
   .box {
-    position: relative; min-width: 0; padding: 22px var(--bx) 24px;
+    position: relative; min-width: 0; padding: 24px var(--bx) 26px;
     background: var(--panel); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass);
-    border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 30px 60px -40px #000;
+    border: 1px solid var(--line); border-radius: 24px;
+    box-shadow: inset 0 1px 0 rgba(var(--fg), 0.07), 0 30px 60px -40px #000;
   }
   .box-title-row, .bar {
-    position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
-    min-height: 30px; margin: 0 calc(-1 * var(--bx)) 20px; padding: 3px var(--bx);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap;
+    margin: 0 0 18px; padding: 0;
   }
-  .box-title-row::before, .bar::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(90deg, rgba(172, 78, 26, 0.97) 0%, rgba(152, 65, 22, 0.93) 70%, rgba(140, 58, 20, 0.88) 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 214, 170, 0.16);
-    -webkit-mask: var(--dither) 0 0 / 100% 100% no-repeat; mask: var(--dither) 0 0 / 100% 100% no-repeat;
+  .card-title {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: 0.01em; line-height: 1.15; color: var(--title);
   }
-  @media (max-width: 760px) {
-    .box-title-row::before, .bar::before { -webkit-mask: linear-gradient(90deg, #000 80%, transparent 100%); mask: linear-gradient(90deg, #000 80%, transparent 100%); }
-  }
-  .box-title-row > *, .bar > * { position: relative; z-index: 1; }
-  .box-title-row:first-child { margin-top: -22px; }
-  .card-title { display: inline-flex; align-items: center; gap: 10px; font-family: var(--sans); font-size: 13.5px; font-weight: 600; letter-spacing: 0.03em; color: #FBEBD8; }
-  .box-title-row > div { display: flex; align-items: baseline; gap: 16px; min-width: 0; flex-wrap: wrap; }
-  .box-title-row .jn-sub { margin: 0; max-width: none; color: rgba(251, 235, 216, 0.8); font-size: 12.5px; }
-  .box-title-row .icon-btn, .bar .icon-btn { width: 26px; height: 26px; }
-  .box-title-row .icon-btn svg { width: 14px; height: 14px; }
-  .bar-count { font-family: var(--logo); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: #FBEBD8; }
-  .card-link { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: #FFE7A3; text-decoration: none; border-bottom: 1px solid rgba(255, 231, 163, 0.45); }
-  .card-link:hover { border-color: #FFE7A3; }
+  /* a small gold diamond in front of every title */
+  .card-title::before { content: ""; width: 8px; height: 8px; flex-shrink: 0; border-radius: 2px; transform: rotate(45deg); background: var(--gold); box-shadow: 0 0 10px rgba(240, 166, 74, 0.45); }
+  .box-title-row > div { min-width: 0; }
+  .box-title-row .jn-sub { display: block; margin: 6px 0 0; max-width: 62ch; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+  .bar-count { font-family: var(--logo); font-size: 14px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-2); }
+  .card-link { font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold-text); text-decoration: none; border-bottom: 1px solid rgba(var(--fg), 0.3); }
+  .card-link:hover { border-color: var(--gold-text); }
   .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
   .span-8 { grid-column: span 8; } .span-7 { grid-column: span 7; } .span-5 { grid-column: span 5; }
   .span-4 { grid-column: span 4; } .span-6 { grid-column: span 6; } .span-3 { grid-column: span 3; } .span-12 { grid-column: span 12; }
@@ -940,10 +933,10 @@
   #dashboardMapContainer { border-radius: 4px; border-color: var(--line); }
 
   /* tabs and toggles */
-  .level-tabs { background: none; border: none; padding: 0; gap: 2px; }
-  .level-tabs button { color: rgba(255, 243, 240, 0.78); border-radius: 0; padding: 4px 12px; font-weight: 500; }
-  .level-tabs button:hover { color: #fff; }
-  .level-tabs button.active { background: none; color: #fff; font-weight: 600; box-shadow: inset 0 -2px 0 #fff; }
+  .level-tabs { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(var(--shade), 0.4); }
+  .level-tabs button { color: var(--ink-2); border-radius: 999px; padding: 6px 14px; font-weight: 500; }
+  .level-tabs button:hover { color: var(--ink); }
+  .level-tabs button.active { background: rgba(var(--fg), 0.1); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--line-strong); }
   .toggle-btn { border-radius: 8px; background: rgba(var(--shade), 0.42); border-color: rgba(var(--fg), 0.3); }
   .toggle-btn.active { background: linear-gradient(180deg, #C9171F, #8C0F17); border-color: rgba(255, 190, 190, 0.6); color: #fff; font-weight: 600; }
   .icon-btn { border-radius: 8px; background: rgba(var(--shade), 0.45); border-color: rgba(var(--fg), 0.35); }
@@ -983,7 +976,7 @@
      Album: Catch Log and Species are walls of icons; the entry opens in a dialog.
      ===================================================================== */
   #logList { background: none; border: none; border-radius: 0; overflow: visible; box-shadow: none; }
-  .album .bar { margin: 0 0 4px; }
+  .album .bar { margin: 0 0 2px; }
   .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 14px; padding: 18px 4px 6px; }
   .tomes { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; padding: 18px 4px 6px; }
   .tile, .tome {
@@ -1148,6 +1141,29 @@
   #clearDashFilterLink { flex-shrink: 0; padding: 5px 12px; border-radius: 999px; background: rgba(238, 59, 69, 0.22); color: #FFD9DC; font-size: 12px; font-weight: 600; text-decoration: none; }
   #clearDashFilterLink:hover { background: rgba(238, 59, 69, 0.4); }
   #dashFilterBanner[style*="flex"] { animation: fadeIn 260ms ease both; }
+
+  /* Rounded surfaces: cards, dialogs, fields, rows and photos share one soft geometry */
+  .form-wrap, .species-scroll, .gear-card, .dp-verdict { border-radius: 24px; }
+  .modal-box { border-radius: 28px; }
+  .modal-close { border-radius: 50%; }
+  .arr-row, .top-loc-row, .gear-list-row, .tod-slot, .catch-card { border-radius: 14px; }
+  .tile, .tome { border-radius: 16px; }
+  .tile-photo, .tome-photo { border-radius: 11px; }
+  .detail-frame { border-radius: 14px; }
+  .detail-frame .catch-photo, .detail-nophoto { border-radius: 9px; }
+  .catch-photo, .jn-photo, .shot, .notes-block, .my-notes { border-radius: 14px; }
+  .jn-photo img, .shot img { border-radius: inherit; }
+  .stat, .name-lookup, .name-edit, .pid-card { border-radius: 12px; }
+  .input, .toggle-btn, .icon-btn, .edit-catch-btn, .delete-catch-btn, .banner, .error-note, .photo-remove, .g-btn, input[type="file"].input::file-selector-button { border-radius: 12px; }
+  .submit-btn { border-radius: 14px; }
+  .about-btn { border-radius: 999px; }
+  #dashboardMapContainer, #dpRadarMap, #pickMapWrap { border-radius: 16px; }
+  .dp-chip, .jn-chip, .fish-chip, .dp-cell, .dp-dcell { border-radius: 999px; }
+  .dp-cell, .dp-dcell { border-radius: 0; }
+  .tod-track, .tod-fill, .dp-meter, .dp-daybar, .dp-bar-fill { border-radius: 999px; }
+  .lg-bars i:first-child { border-radius: 999px 0 0 999px; }
+  .lg-bars i:last-child { border-radius: 0 999px 999px 0; }
+  #dashFilterBanner { border-radius: 999px; }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
   .leaflet-tile-pane { filter: none; }
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
@@ -1202,7 +1218,7 @@
     /* phones: the second photo is cut off on purpose, with a fade on the far edge and a hint next to the count */
     .gallery-strip .shot { width: 44vw; max-width: 200px; }
     .gallery-strip.has-more { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 44px); mask-image: linear-gradient(90deg, transparent 0, #000 44px); }
-    .gallery-count::after { content: " · swipe ←"; color: #FFE7A3; }
+    .gallery-count::after { content: " · swipe ←"; color: var(--gold-text); }
     .gallery-progress { margin: 4px 2px 0; height: 4px; }
     .album-grid, .tomes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-left: 0; padding-right: 0; }
     .tile-cap b, .tome-cap b { font-size: 15.5px; }
@@ -1214,7 +1230,8 @@
     .entry-overlay { padding: 0; }
     .entry-box { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; padding: 56px 16px 28px; }
     .detail-no { font-size: 32px; }
-    .box-title-row .jn-sub { display: none; }
+    .card-title { font-size: 19px; }
+    .box-title-row .jn-sub { font-size: 12.5px; }
     .bottom-nav {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; justify-content: space-around;
       padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
@@ -1229,8 +1246,7 @@
 
   /* =====================================================================
      IVORY CODEX: the light theme.
-     Parchment paper, walnut ink, ember-orange accents. The section ribbons, the red tab
-     underline and the photo cards stay as they are: they are the same object in daylight.
+     Parchment paper, walnut ink, ember-orange accents. The red tab underline and the photo cards stay as they are: they are the same object in daylight.
      ===================================================================== */
   :root[data-theme="light"] {
     color-scheme: light;
@@ -1293,7 +1309,8 @@
   :root[data-theme="light"] .about-btn svg { stroke: var(--amber); }
 
   /* surfaces */
-  :root[data-theme="light"] .box, :root[data-theme="light"] .form-wrap { box-shadow: 0 22px 44px -30px rgba(90, 56, 20, 0.5); }
+  :root[data-theme="light"] .box, :root[data-theme="light"] .form-wrap { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 22px 44px -30px rgba(90, 56, 20, 0.5); }
+  :root[data-theme="light"] .card-title::before { box-shadow: none; }
   :root[data-theme="light"] .modal-box { box-shadow: 0 40px 80px -30px rgba(70, 40, 12, 0.55); }
   :root[data-theme="light"] .modal-box::before { background: radial-gradient(ellipse 50% 100% at 50% 50%, #D8323B, rgba(200, 40, 50, 0) 74%); box-shadow: 0 0 18px 2px rgba(200, 40, 50, 0.3); }
   :root[data-theme="light"] .deck { -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1318,12 +1335,6 @@
   :root[data-theme="light"] .bottom-nav { background: linear-gradient(0deg, rgba(244, 236, 221, 0.98), rgba(244, 236, 221, 0.9)); }
   :root[data-theme="light"] .lightbox .lb-bar, :root[data-theme="light"] .lightbox .lb-info { color: #EFE7DE; }
 
-  /* on paper the ribbon runs solid to the end: a fading ribbon would leave the cream labels on its right unreadable */
-  :root[data-theme="light"] .box-title-row::before, :root[data-theme="light"] .bar::before {
-    -webkit-mask: none; mask: none; box-shadow: inset 0 1px 0 rgba(255, 214, 170, 0.22), inset 0 -1px 0 rgba(60, 24, 6, 0.25);
-    background: linear-gradient(90deg, #B85A1F 0%, #AA4C18 55%, #9C4215 100%);
-  }
-  :root[data-theme="light"] .box-title-row { border-radius: 3px 3px 0 0; }
   :root[data-theme="light"] svg [fill="#F0A64A"] { fill: var(--amber); }
   :root[data-theme="light"] svg [stroke="#F0A64A"] { stroke: var(--amber); }
 
