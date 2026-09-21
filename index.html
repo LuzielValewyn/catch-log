@@ -1002,6 +1002,8 @@
   .tome-cap { right: 46px; }
   .tile-cap b, .tome-cap b { font-family: var(--serif); font-size: 18px; font-weight: 600; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 8px #000; }
   .tile-cap i, .tome-cap i { font-style: normal; font-size: 11.5px; letter-spacing: 0.06em; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tome-cap i { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+  .tome .fish-art { top: 11%; height: 46%; }
   .tome-count { position: absolute; right: 12px; bottom: 11px; z-index: 2; font-family: var(--logo); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold); text-shadow: 0 1px 6px #000; }
   .tile:hover, .tome:hover { border-color: rgba(239, 231, 222, 0.85); transform: translateY(-2px); }
   .tile:hover img { transform: scale(1.06); }
@@ -1064,7 +1066,10 @@
   .info-block h4 { display: flex; align-items: center; gap: 8px; font: 600 11.5px/1 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
   .info-block h4::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; transform: rotate(45deg); border: 1px solid var(--gold); }
   .info-block p { margin-top: 8px; font-size: 14.5px; line-height: 1.62; color: var(--ink); }
-  .info-block p + p { margin-top: 8px; color: var(--ink-2); }
+  .info-block p + p { margin-top: 10px; }
+  .info-block .more { margin-top: 10px; }
+  .info-block .more p { margin-top: 0; color: var(--ink-2); }
+  .info-block .more p + p { margin-top: 10px; }
   .fact-list { list-style: none; display: grid; gap: 10px; margin-top: 10px; }
   .fact-list li { position: relative; padding-left: 16px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
   .fact-list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 5px; height: 5px; transform: rotate(45deg); background: var(--gold); }
@@ -3347,7 +3352,7 @@ A backup file is downloaded first.`)) return;
   }
   // ---- Species entry: what Del has caught, plus an automatic write-up from public sources (iNaturalist, Wikipedia)
   let speciesSel = null, infoSeq = 0;
-  const INFO_LS = "catchlog_fishinfo_v2";   // v2: the v1 cache held wrong matches such as a shark for patin
+  const INFO_LS = "catchlog_fishinfo_v4";   // v3: write-ups are kept whole now; older cached ones were shortened
   const INFO_TTL = 30 * 864e5, INFO_MISS_TTL = 864e5;
   function infoCacheGet(k) {
     try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); const h = all[k]; if (h && Date.now() - h.t < (h.data && h.data.found ? INFO_TTL : INFO_MISS_TTL)) return h.data; } catch (e) { /* no storage */ }
@@ -3357,9 +3362,8 @@ A backup file is downloaded first.`)) return;
     try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); all[k] = { t: Date.now(), data }; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (e) { /* storage full or blocked */ }
   }
   const stripHtml = (h) => { const d = document.createElement("div"); d.innerHTML = h || ""; return (d.textContent || "").replace(/\s+/g, " ").trim(); };
-  const clipText = (s, n) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, "") + "…");
+  const paras = (arr, n) => arr.slice(0, n).map(cleanWiki).filter(Boolean).join("\n\n");
   const cleanWiki = (s) => s.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
-  const firstSentences = (s, n) => { const m = cleanWiki(s).match(/[^.!?]+[.!?]+(\s|$)/g); return m ? m.slice(0, n).join("").trim() : cleanWiki(s); };
   // The Latin name is the part in brackets. Without brackets, a part written like a scientific name
   // ("Pangasius" or "Pangasius hypophthalmus") is accepted, e.g. "Pangasius / Silver Catfish".
   function latinOf(en) {
@@ -3374,7 +3378,12 @@ A backup file is downloaded first.`)) return;
     String(txt || "").split("\n").forEach(line => {
       const m = /^(={2,})\s*(.+?)\s*\1\s*$/.exec(line);
       if (m) secs.push({ title: m[2], text: [] });
-      else if (line.trim()) secs[secs.length - 1].text.push(line.trim());
+      else if (line.trim()) {
+        const cur = secs[secs.length - 1].text, t = line.trim(), prev = cur[cur.length - 1];
+        // Wikipedia's plain text sometimes breaks a sentence in two lines: glue a lowercase continuation back on
+        if (prev && !/[.!?:;)"'”’]$/.test(prev) && /^[a-z(]/.test(t)) cur[cur.length - 1] = prev + " " + t;
+        else cur.push(t);
+      }
     });
     return secs.filter(s => !/^(references|external links|see also|further reading|notes|gallery|bibliography|sources)$/i.test(s.title));
   }
@@ -3434,16 +3443,16 @@ A backup file is downloaded first.`)) return;
       if (hitAnc) info.scope = `${hitAnc.rank} ${hitAnc.name}`;
       const secs = parseWikiText(wiki);
       const intro = secs[0].text;
-      info.about = clipText(cleanWiki(intro.slice(0, 2).join(" ")), 640);
+      info.about = paras(intro, 4);
       const look = secs.find(s => /^(description|appearance|morphology|characteristics|anatomy|deskripsi|ciri|morfologi|penampakan)/i.test(s.title));
-      if (look && look.text[0]) info.description = clipText(cleanWiki(look.text[0]), 440);
+      if (look && look.text[0]) info.description = paras(look.text, 3);
       const hist = secs.filter(s => /taxonom|history|etymolog|naming|nomenclature|discover|systematic|classification|taksonomi|sejarah|etimologi|penamaan|klasifikasi|sistematika/i.test(s.title));
-      if (hist.length) info.history = clipText(cleanWiki(hist.map(s => s.text.slice(0, 2).join(" ")).join(" ")), 720);
+      if (hist.length) info.history = hist.map(s => paras(s.text, 3)).filter(Boolean).join("\n\n");
       secs.filter(s => s.title && s.text[0] && !hist.includes(s) && s !== look && /biolog|behaviou?r|ecolog|diet|feeding|reproduc|life|habitat|distribution|fisher|aquaculture|human|cultur|\buse|food|conserv|status|threat|distribusi|persebaran|perilaku|makanan|pakan|pemijahan|perikanan|budidaya|manfaat|kuliner|ancaman|kegunaan|ekologi|penyebaran|kebiasaan|olahan/i.test(s.title))
-        .slice(0, 5).forEach(s => info.facts.push({ title: s.title, text: clipText(firstSentences(s.text[0], 2), 260) }));
+        .slice(0, 6).forEach(s => info.facts.push({ title: s.title, text: paras(s.text, 3) }));
       info.sources.push({ label: wikiHost === "id" ? "Wikipedia (Indonesia)" : "Wikipedia", url: `https://${wikiHost}.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/ /g, "_"))}` });
     } else if (detail && detail.wikipedia_summary) {
-      info.about = clipText(stripHtml(detail.wikipedia_summary), 640);
+      info.about = stripHtml(detail.wikipedia_summary);
     }
     info.found = !!(info.about || info.history || info.facts.length);
 
@@ -3464,6 +3473,7 @@ A backup file is downloaded first.`)) return;
     };
   }
 
+  const ps = (t) => String(t).split("\n\n").map(p => `<p>${escapeHtml(p)}</p>`).join("");
   function infoHtml(info, name) {
     if (!info || !info.found) {
       return `<div class="info-block"><p class="info-none">No write-up found online for this one yet.</p><button type="button" class="toggle-btn info-retry" data-retry="1">Search again</button></div>`;
@@ -3472,9 +3482,9 @@ A backup file is downloaded first.`)) return;
     return `
       ${chips.length ? `<div class="info-chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>` : ""}
       ${info.scope ? `<p class="info-scope">There is no page for this exact species, so the notes below describe the ${escapeHtml(info.scope)}.</p>` : ""}
-      ${info.about ? `<div class="info-block"><h4>About</h4><p>${escapeHtml(info.about)}</p>${info.description ? `<p>${escapeHtml(info.description)}</p>` : ""}</div>` : ""}
-      ${info.history ? `<div class="info-block"><h4>History &amp; naming</h4><p>${escapeHtml(info.history)}</p></div>` : ""}
-      ${info.facts.length ? `<div class="info-block"><h4>Good to know</h4><ul class="fact-list">${info.facts.map(f => `<li><b>${escapeHtml(f.title)}</b> ${escapeHtml(f.text)}</li>`).join("")}</ul></div>` : ""}
+      ${info.about ? `<div class="info-block"><h4>About</h4>${ps(info.about)}${info.description ? `<div class="more">${ps(info.description)}</div>` : ""}</div>` : ""}
+      ${info.history ? `<div class="info-block"><h4>History &amp; naming</h4>${ps(info.history)}</div>` : ""}
+      ${info.facts.length ? `<div class="info-block"><h4>Good to know</h4><ul class="fact-list">${info.facts.map(f => `<li><b>${escapeHtml(f.title)}</b> ${escapeHtml(f.text).split("\n\n").join("<br><br>")}</li>`).join("")}</ul></div>` : ""}
       <p class="info-src">Sources: ${info.sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(", ") || "public references"}</p>`;
   }
 
