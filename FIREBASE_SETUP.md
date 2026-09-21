@@ -13,9 +13,13 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
    Authentication > Sign-in method > **Google** > Enable. Pilih *Project support email* (emailmu), lalu **Save**.
 2. **Izinkan domain situsmu**
    Authentication > Settings > **Authorized domains** > Add domain, isi alamat situsmu
-   (tanpa `https://`). Situs ini tayang di Vercel, jadi domainnya `del-catch-log-weld.vercel.app`.
+   (tanpa `https://`). Alamat utama situs ini adalah **`luzielure.com`** (tayang di Vercel), jadi tambahkan `luzielure.com`.
+   Alamat lama `del-catch-log-weld.vercel.app` boleh tetap ada sebagai cadangan.
+   Kalau nanti `www.luzielure.com` juga diaktifkan di Vercel, tambahkan juga `www.luzielure.com`.
    Alamat pratinjau Vercel untuk branch lain (`...-git-namabranch-....vercel.app`) tidak otomatis diizinkan,
    jadi tes login sebaiknya dilakukan di alamat utama.
+   Jangan hapus domain bawaan Firebase (`localhost`, `<proyek>.firebaseapp.com`, `<proyek>.web.app`).
+   Alamat `.firebaseapp.com` dipakai proses login Google, jadi menghapusnya bisa merusak login.
    Kalau kamu membuka situs dari komputermu sendiri lewat `localhost`, domain itu sudah ada.
 3. **Publikasikan aturan Firestore**
    Firestore Database > Rules > tempel seluruh isi file `firestore.rules`, lalu **Publish**.
@@ -33,9 +37,22 @@ databasemu masih bisa mengubah datanya. Jadi langkah 3 di bawah tidak boleh dile
 - Kalau tidak ada sinyal, catatan yang kamu simpan ditahan di HP dan dikirim otomatis saat sinyal kembali.
   Situs juga bisa dibuka tanpa sinyal setelah pernah dibuka sekali dengan sinyal.
 
+## Domain sendiri (luzielure.com)
+
+Domain dibeli di Rumahweb, sedangkan situsnya tetap di Vercel. Pengaturannya:
+
+1. **Vercel:** proyek > Settings > Domains > Add Existing > `luzielure.com`, tersambung ke *Production*.
+2. **Rumahweb:** Domain > Pengaturan > Manajemen DNS (aktifkan dulu kalau diminta), lalu tambah satu record
+   **A** dengan nama kosong (atau `@`) dan nilai yang ditampilkan Vercel (saat ini `216.198.79.1`).
+   Nameserver jangan diubah.
+3. **Firebase:** tambahkan `luzielure.com` di Authorized domains (langkah 2 di atas).
+4. Perpanjangan otomatis domain sebaiknya aktif di Rumahweb. Domain berlaku sampai 21 September 2027.
+5. Data yang tersimpan di browser (nama pengunjung, pilihan *Keep me signed in*) terikat per alamat,
+   jadi di alamat baru login owner perlu dilakukan sekali lagi.
+
 ## Cara memakainya
 
-- Buka alamat situsmu dengan `?owner=1` di belakangnya, yaitu `https://del-catch-log-weld.vercel.app/?owner=1`,
+- Buka alamat situsmu dengan `?owner=1` di belakangnya, yaitu `https://luzielure.com/?owner=1`,
   lalu klik **Sign in with Google** dan pilih akun yang emailnya kamu tulis di aturan.
 - Secara bawaan kamu harus login lagi di sesi browser berikutnya. Kalau kamu mencentang
   **Keep me signed in on this device**, login tersimpan di perangkat itu. Jangan dicentang di perangkat bersama.
