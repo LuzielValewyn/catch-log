@@ -1213,6 +1213,18 @@
   .add-err { min-height: 18px; margin: 0 0 10px; font-size: 13px; color: var(--coral); }
   .sp-tools { display: flex; justify-content: center; margin: 14px 0 2px; }
   .sp-tools .toggle-btn { flex: none; padding: 9px 20px; }
+
+  /* Possible-duplicate warning */
+  .add-warn { margin: 0 0 12px; padding: 12px 14px; border: 1px solid rgba(242, 195, 107, 0.5); border-left-width: 3px; border-radius: 12px; background: rgba(242, 195, 107, 0.08); }
+  .add-warn p { margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .add-warn ul { list-style: none; display: grid; gap: 6px; margin: 0; padding: 0; }
+  .sim-open, .sim-name { display: block; width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: rgba(var(--shade), 0.35); font: inherit; font-size: 13.5px; color: var(--ink); text-align: left; }
+  .sim-open { cursor: pointer; transition: border-color 160ms var(--ease-out), background 200ms var(--ease-out); }
+  .sim-open:hover { border-color: var(--gold); background: rgba(242, 195, 107, 0.12); }
+  .add-warn b { font-weight: 600; }
+  .add-warn i { font-style: italic; color: var(--ink-2); }
+  .add-warn small { display: block; margin-top: 2px; font-size: 11.5px; letter-spacing: 0.02em; color: var(--gold-text); }
+  :root[data-theme="light"] .add-warn { background: rgba(238, 123, 58, 0.09); border-color: rgba(184, 87, 31, 0.5); }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
   .leaflet-tile-pane { filter: none; }
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
@@ -1711,6 +1723,7 @@
           </select></label>
         <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span>
           <input class="input" type="text" id="f-species" placeholder="e.g. Kakap" list="dl-species" autocomplete="off" autocapitalize="sentences"><datalist id="dl-species"></datalist></label>
+        <div id="dupHint"></div>
         <div class="field-wrap">
           <span class="field-label">English / Latin name</span>
           <div class="toggle-row">
@@ -3845,6 +3858,50 @@ A backup file is downloaded first.`)) return;
     }));
   }
 
+  // Possible duplicates. A species is flagged when its name is the same apart from case, spacing, hyphens or an "Ikan" prefix,
+  // a typo or two away, or a doubled form (kaci / kaci-kaci); or when its Latin or English name is the one another species already has.
+  // This only warns: different fish can have similar names.
+  const dupKey = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/^ikan\s+/, "").replace(/[^a-z0-9]/g, "");
+  function editDist(a, b) {
+    if (a === b) return 0;
+    let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+  function similarSpecies(name, en, lat, except) {
+    const nk = dupKey(name), lk = String(lat || "").toLowerCase().trim(), ek = String(en || "").toLowerCase().trim();
+    const out = [];
+    Object.keys(state.species).forEach(k => {
+      if (k === except) return;
+      const label = state.species[k] || "";
+      const reasons = [];
+      const kk = dupKey(k);
+      if (nk && kk) {
+        if (String(name || "").replace(/s+/g, " ").trim().toLowerCase() === k.toLowerCase()) reasons.push("already in the list");
+        else if (nk === kk) reasons.push("same name apart from spacing, hyphens or an “Ikan” prefix");
+        else if (nk.length >= 4 && kk.length >= 4 && (editDist(nk, kk) <= (Math.max(nk.length, kk.length) >= 8 ? 2 : 1) || nk === kk + kk || kk === nk + nk)) reasons.push("a very similar name");
+      }
+      const own = label && label !== k;
+      const kl = own ? latinOf(label) : "";
+      if (lk && kl && kl.toLowerCase() === lk) reasons.push("same Latin name");
+      const ke = own ? engOf(label, kl) : "";
+      if (ek.length > 2 && ke && ke.toLowerCase() === ek) reasons.push("same English name");
+      if (reasons.length) out.push({ name: k, label: own ? label : "", reasons });
+    });
+    return out;
+  }
+  function similarHtml(list, lead, clickable) {
+    if (!list.length) return "";
+    return "<div class=\"add-warn\" role=\"status\"><p>" + lead + "</p><ul>" + list.map(x =>
+      "<li>" + (clickable ? "<button type=\"button\" class=\"sim-open\" data-n=\"" + escapeHtml(x.name) + "\">" : "<span class=\"sim-name\">") +
+      "<b>" + escapeHtml(x.name) + "</b>" + (x.label ? " <i>" + escapeHtml(x.label) + "</i>" : "") +
+      " <small>" + escapeHtml(x.reasons.join(", ")) + "</small>" + (clickable ? "</button>" : "</span>") + "</li>").join("") + "</ul></div>";
+  }
+
   // Owner: add a species by hand. It shows in the list at once (greyed out until a catch uses it) and is kept with the logbook.
   function showAddSpecies(opener, prefill) {
     const body = openEntry(`
@@ -3854,11 +3911,28 @@ A backup file is downloaded first.`)) return;
         <label class="field-wrap"><span class="field-label">Fish name (Indonesian)</span><input class="input" type="text" id="asName" maxlength="60" placeholder="e.g. Kerapu Karang" autocomplete="off" autocapitalize="words" value="${escapeHtml(prefill || "")}"></label>
         <label class="field-wrap"><span class="field-label">English name (optional)</span><input class="input" type="text" id="asEn" maxlength="80" placeholder="e.g. Coral trout" autocomplete="off"></label>
         <label class="field-wrap"><span class="field-label">Latin name (optional)</span><input class="input" type="text" id="asLat" maxlength="80" placeholder="e.g. Plectropomus leopardus" autocomplete="off"></label>
+        <div id="asWarn"></div>
         <p class="add-err" id="asErr" role="alert"></p>
         <div class="toggle-row"><button type="button" class="toggle-btn active" id="asSave">Add species</button><button type="button" class="toggle-btn" id="asCancel">Cancel</button></div>
       </div>`, opener, "narrow");
     const nameEl = body.querySelector("#asName"), enEl = body.querySelector("#asEn"), latEl = body.querySelector("#asLat"), err = body.querySelector("#asErr");
     const words = (v) => v.replace(/\s+/g, " ").trim();
+    const warn = body.querySelector("#asWarn"), saveBtn = body.querySelector("#asSave");
+    const fixL = (v) => words(v).split(" ").map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w.toLowerCase())).join(" ");
+    const refresh = () => {
+      const nm = words(nameEl.value);
+      const list = similarSpecies(nm, words(enEl.value), fixL(latEl.value), "");
+      const exact = nm && Object.keys(state.species).some(k => k.toLowerCase() === nm.toLowerCase());
+      warn.innerHTML = similarHtml(list, "This may already be in your list. Fish with similar names can still be different, so check first:", true);
+      saveBtn.textContent = !exact && list.length ? "Add anyway" : "Add species";
+    };
+    warn.addEventListener("click", (ev) => {
+      const b = ev.target.closest(".sim-open"); if (!b) return;
+      const n = b.dataset.n; closeEntry();
+      const t = [...document.querySelectorAll(".tome")].find(x => x.dataset.name === n);
+      if (t) t.scrollIntoView({ block: "center", behavior: reduceMotion() ? "auto" : "smooth" });
+      showSpecies(n, t || null);
+    });
     const save = () => {
       const name = words(nameEl.value).split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
       const e = words(enEl.value);
@@ -3877,7 +3951,8 @@ A backup file is downloaded first.`)) return;
     };
     body.querySelector("#asSave").addEventListener("click", save);
     body.querySelector("#asCancel").addEventListener("click", closeEntry);
-    body.querySelectorAll("input").forEach(i => i.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); save(); } else err.textContent = ""; }));
+    body.querySelectorAll("input").forEach(i => { i.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); save(); } else err.textContent = ""; }); i.addEventListener("input", refresh); });
+    refresh();
     nameEl.focus({ preventScroll: true });
   }
 
@@ -4020,8 +4095,17 @@ A backup file is downloaded first.`)) return;
       box.innerHTML = `<div class="name-edit">${auto ? `<p class="info-none">Not sure which fish this is, so nothing was guessed. If you know it, add its English name (the Latin name too if you have it): the write-up is looked up from either.</p>` : ""}
         <label class="field-wrap"><span class="field-label">English name</span><input class="input" type="text" id="spEn" placeholder="e.g. Snubnose dart" value="${escapeHtml(cur.eng)}"></label>
         <label class="field-wrap"><span class="field-label">Latin name (optional)</span><input class="input" type="text" id="spLat" placeholder="e.g. Trachinotus blochii" value="${escapeHtml(cur.lat)}"></label>
+        <div id="spWarn"></div>
         <div class="toggle-row"><button type="button" class="toggle-btn active" id="spSave">Save names</button><button type="button" class="toggle-btn" id="spCancel">Cancel</button></div></div>`;
       const en = box.querySelector("#spEn"), lat = box.querySelector("#spLat");
+      const spWarn = box.querySelector("#spWarn"), spBtn = box.querySelector("#spSave");
+      const spCheck = () => {
+        const l0 = lat.value.replace(/\s+/g, " ").trim().split(" ").map((w, i) => (i === 0 ? capFirst(w.toLowerCase()) : w.toLowerCase())).join(" ");
+        const list = similarSpecies("", en.value.replace(/\s+/g, " ").trim(), l0, name);
+        spWarn.innerHTML = similarHtml(list, "Another species already has this name. If it is the same fish, delete or merge one of them:", false);
+        spBtn.textContent = list.length ? "Save anyway" : "Save names";
+      };
+      en.addEventListener("input", spCheck); lat.addEventListener("input", spCheck); spCheck();
       box.querySelector("#spCancel").addEventListener("click", () => { box.innerHTML = ""; });
       box.querySelector("#spSave").addEventListener("click", () => {
         const fixLat = (v) => v.replace(/\s+/g, " ").trim().split(" ").map((w, i) => (i === 0 ? capFirst(w.toLowerCase()) : w.toLowerCase())).join(" ");
@@ -5603,8 +5687,11 @@ A backup file is downloaded first.`)) return;
   };
   let editingCatchId = null;
   function switchTab(tab) {
+    // scrolltop: a different tab starts at the top, not wherever the previous tab was scrolled to
+    const tabChanged = !document.querySelector(".panel.active") || document.querySelector(".panel.active").id !== "panel-" + tab;
     document.querySelectorAll(".nav-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
     document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "panel-" + tab));
+    if (tabChanged) window.scrollTo(0, 0);
     let title = pageMeta[tab][0];
     let sub = pageMeta[tab][1];
     let titleIsHtml = false;
@@ -6115,6 +6202,30 @@ A backup file is downloaded first.`)) return;
   const NAME_LS = "catchlog_name_lookup_v1";
   let autoPick = null, lookupOptions = [], lookupSeq = 0, lookupTimer = 0;
   const nlBox = document.getElementById("nameLookup"), nlStatus = document.getElementById("nlStatus"), nlList = document.getElementById("nlList");
+  const dupBox = document.getElementById("dupHint");
+
+  // Looks like a species you already have? A typo, a hyphen or "Ikan" prefix, or an English / Latin name another species already uses.
+  // It only points it out: tap a name to use it, or ignore it and log the new one. Also covers editing a catch, which uses this form.
+  function refreshDupHint() {
+    if (!dupBox) return;
+    const v = document.getElementById("f-species").value.replace(/\s+/g, " ").trim();
+    if (v.length < 3 || Object.keys(state.species).some(k => k.toLowerCase() === v.toLowerCase())) { dupBox.innerHTML = ""; return; }
+    let en = "", lat = "";
+    if (nameMode === "manual") {
+      en = document.getElementById("f-english").value.replace(/\s+/g, " ").trim();
+      lat = document.getElementById("f-latin").value.replace(/\s+/g, " ").trim().split(" ").map((w, i) => (i === 0 ? capFirst(w.toLowerCase()) : w.toLowerCase())).join(" ");
+    } else if (autoPick) { en = autoPick.english || ""; lat = autoPick.latin || ""; }
+    const list = similarSpecies(v, en, lat, "").filter(x => !x.reasons.includes("already in the list"));
+    dupBox.innerHTML = similarHtml(list, `\u201c${escapeHtml(v)}\u201d is not in your species list yet, but it looks like ${list.length === 1 ? "one that is" : "ones that are"}. Tap a name to use it instead:`, true);
+  }
+  if (dupBox) dupBox.addEventListener("click", (e) => {
+    const b = e.target.closest(".sim-open"); if (!b) return;
+    const f = document.getElementById("f-species");
+    f.value = b.dataset.n;
+    f.dispatchEvent(new Event("input", { bubbles: true }));
+    f.dispatchEvent(new Event("change", { bubbles: true }));
+    dupBox.innerHTML = "";
+  });
 
   const fishLatin = (t) => (t.rank === "genus" ? `${t.name} sp.` : t.name);
   const fishLabel = (english, latin) => (english && latin && english.toLowerCase() !== latin.toLowerCase() ? `${english} (${latin})` : (latin || english));
@@ -6144,6 +6255,7 @@ A backup file is downloaded first.`)) return;
     const list = opts || [];
     nlList.innerHTML = list.map((o, i) => `<button type="button" class="nl-chip${autoPick && autoPick.label === o.label ? " is-on" : ""}" data-i="${i}">${escapeHtml(o.label)}${o.local ? ` <small>· ${escapeHtml(o.local)}</small>` : ""}</button>`).join("")
       + (list.length ? `<button type="button" class="nl-chip nl-none${autoPick ? "" : " is-on"}" data-i="-1">None of these</button>` : "");
+    refreshDupHint();
   }
   const pickStatus = () => (autoPick ? `Will be saved as <b>${escapeHtml(autoPick.label)}</b>` : "Will be saved with just the Indonesian name");
   nlList.addEventListener("click", (e) => {
@@ -6180,9 +6292,11 @@ A backup file is downloaded first.`)) return;
   function clearNameLookup() {
     clearTimeout(lookupTimer); lookupSeq++; autoPick = null; lookupOptions = [];
     nlBox.hidden = true; nlList.innerHTML = ""; nlStatus.innerHTML = "";
+    if (dupBox) dupBox.innerHTML = "";
   }
   document.getElementById("f-species").addEventListener("input", scheduleLookup);
-  ["nameModeAuto", "nameModeManual"].forEach(id => document.getElementById(id).addEventListener("click", () => setTimeout(scheduleLookup, 0)));
+  ["f-species", "f-english", "f-latin"].forEach(id => document.getElementById(id).addEventListener("input", refreshDupHint));
+  ["nameModeAuto", "nameModeManual"].forEach(id => document.getElementById(id).addEventListener("click", () => setTimeout(() => { scheduleLookup(); refreshDupHint(); }, 0)));
 
   // an AI key pasted during an earlier version is no longer used: clear it
   try { localStorage.removeItem("catchlog_ai_key"); } catch (e) { /* no storage */ }
