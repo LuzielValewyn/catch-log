@@ -1114,6 +1114,20 @@
   /* Speed: no live blur over the drifting embers, the map filter runs per tile image */
   *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 
+
+  /* Radar legend */
+  .dp-legend { margin-top: 12px; }
+  .lg-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 7px; font-size: 12px; color: var(--ink-2); }
+  .lg-head b { font-size: 11.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink); }
+  .lg-bars { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; }
+  .lg-bars i { display: block; height: 12px; }
+  .lg-bars i:first-child { border-radius: 6px 0 0 6px; }
+  .lg-bars i:last-child { border-radius: 0 6px 6px 0; }
+  .lg-labels { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; margin-top: 6px; }
+  .lg-labels span { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 0 2px; text-align: center; }
+  .lg-labels b { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .lg-labels small { font-size: 11px; line-height: 1.3; color: var(--ink-3); }
+  .lg-note { margin-top: 8px; font-size: 11.5px; line-height: 1.45; color: var(--ink-3); max-width: 78ch; }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
   .leaflet-tile-pane { filter: none; }
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
@@ -1161,6 +1175,9 @@
     .cell-num { font-size: 30px; }
     .box { padding: 18px var(--bx) 20px; }
     .tome-progress { flex-wrap: wrap; gap: 8px 14px; }
+    .lg-labels b { font-size: 11.5px; }
+    .lg-labels small { font-size: 10px; }
+    .lg-head { flex-direction: column; gap: 2px; }
     /* phones: the second photo is cut off on purpose, with a fade on the far edge and a hint next to the count */
     .gallery-strip .shot { width: 44vw; max-width: 200px; }
     .gallery-strip.has-more { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 44px); mask-image: linear-gradient(90deg, transparent 0, #000 44px); }
@@ -1543,6 +1560,7 @@
             <div class="level-tabs" id="dpRadarKind"><button type="button" data-kind="rain" class="active">Rain radar</button><button type="button" data-kind="ir">Cloud tops</button></div>
           </div>
           <div id="dpRadarMap"></div>
+          <div class="dp-legend" id="dpRadarLegend" aria-live="polite"></div>
           <div class="dp-radarbar">
             <button type="button" class="toggle-btn nowrap" id="dpRadarPlay" style="flex:none;">Play</button>
             <input type="range" id="dpRadarSlider" min="0" max="0" value="0" aria-label="Radar frame">
@@ -4766,9 +4784,32 @@ A backup file is downloaded first.`)) return;
     document.getElementById("dpRadarPlay").textContent = on ? "Pause" : "Play";
     if (on) radar.timer = setInterval(() => radarShow((radar.idx + 1) % radar.frames.length), 650);
   }
+  // Radar legend: how hard it rains (RainViewer "Universal Blue" scale) and how cold the cloud top is (NASA GIBS infrared scale)
+  const RADAR_LEGENDS = {
+    rain: { title: "Rain intensity", hint: "approximate rate", note: "Rates are estimated from radar reflectivity, so treat them as a guide. Tropical downpours can be heavier than the scale suggests.", segs: [
+      { name: "Light", sub: "under 5 mm/h", bg: "linear-gradient(90deg,#88ddee,#00a3e0,#0077aa,#005588)" },
+      { name: "Moderate", sub: "5 to 10 mm/h", bg: "linear-gradient(90deg,#ffee00,#ffaa00)" },
+      { name: "Heavy", sub: "10 to 50 mm/h", bg: "linear-gradient(90deg,#ffaa00,#ff4400,#c10000)" },
+      { name: "Very heavy", sub: "50+ mm/h, hail possible", bg: "linear-gradient(90deg,#c10000,#ffaaff,#ff77ff,#ffffff)" }] },
+    ir: { title: "Cloud-top temperature", hint: "colder means taller", note: "Brightness temperature from Himawari band 13. Colours show up only on the tallest clouds, which is where storms build.", segs: [
+      { name: "Clear or warm", sub: "30 to 10 °C", bg: "linear-gradient(90deg,#464646,#7d7d7d)" },
+      { name: "Cloud", sub: "10 to −19 °C", bg: "linear-gradient(90deg,#7d7d7d,#c5c5c5)" },
+      { name: "Tall cloud", sub: "−20 to −35 °C", bg: "linear-gradient(90deg,#00f2f8,#0066ab,#000073,#00803a)" },
+      { name: "Storm tops", sub: "−40 to −54 °C", bg: "linear-gradient(90deg,#00ff00,#80ff00,#ffff00,#ffcc00)" },
+      { name: "Intense", sub: "colder than −55 °C", bg: "linear-gradient(90deg,#ff8000,#ff0000,#990000)" }] }
+  };
+  function radarLegend(kind) {
+    const box = document.getElementById("dpRadarLegend"), L = RADAR_LEGENDS[kind];
+    if (!box || !L) return;
+    box.innerHTML = `<div class="lg-head"><b>${L.title}</b><span>${L.hint}</span></div>` +
+      `<div class="lg-bars" style="--n:${L.segs.length}">${L.segs.map(s => `<i style="background:${s.bg}"></i>`).join("")}</div>` +
+      `<div class="lg-labels" style="--n:${L.segs.length}">${L.segs.map(s => `<span><b>${s.name}</b><small>${s.sub}</small></span>`).join("")}</div>` +
+      `<p class="lg-note">${L.note}</p>`;
+  }
   async function radarLoad(kind) {
     const token = ++radar.token;
     radar.kind = kind;
+    radarLegend(kind);
     document.querySelectorAll("#dpRadarKind button").forEach(b => b.classList.toggle("active", b.dataset.kind === kind));
     const msg = document.getElementById("dpRadarMsg");
     msg.textContent = "Loading frames…";
@@ -4782,7 +4823,7 @@ A backup file is downloaded first.`)) return;
       const slider = document.getElementById("dpRadarSlider");
       slider.max = frames.length - 1;
       radarShow(frames.length - 1);
-      msg.textContent = kind === "rain" ? "Rain radar, last two hours. Cooler colours are light rain, warmer are heavy." : "Himawari infrared: bright white cloud tops are tall storm clouds.";
+      msg.textContent = kind === "rain" ? "Rain radar: the last two hours, plus a short forecast when available. The scale above shows how hard it rains." : "Himawari infrared, about the last two hours. The colder the cloud top, the taller the cloud.";
     } catch (e) {
       if (token !== radar.token) return;
       msg.textContent = "This layer isn't available right now. Try the other one, or check back in a few minutes.";
