@@ -8,11 +8,11 @@
 <script>(function(){try{var t=localStorage.getItem("catchlog_theme");if(t!=="light")t="dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#FFFFFF":"#08050A");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion-ok");</script>
 <title>Del's Catch Log</title>
-<link rel="icon" href="favicon.ico?v=5" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=5">
-<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=5">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=5">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=5">
+<link rel="icon" href="favicon.ico?v=7" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=7">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=7">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=7">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300..700&family=Cinzel:wght@400..800&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
@@ -1165,6 +1165,45 @@
   .lg-bars i:first-child { border-radius: 999px 0 0 999px; }
   .lg-bars i:last-child { border-radius: 0 999px 999px 0; }
   #dashFilterBanner { border-radius: 999px; }
+
+  /* Species: grouped by first letter, with a right-edge A-Z index */
+  .az-groups { display: block; }
+  .az-group { scroll-margin-top: 84px; padding-top: 10px; }
+  .az-group + .az-group { margin-top: 14px; }
+  .az-head { display: flex; align-items: center; gap: 16px; margin: 14px 4px 0; }
+  .az-letter { font-family: var(--logo); font-size: 30px; font-weight: 600; line-height: 1; color: var(--gold); text-shadow: 0 0 22px rgba(240, 166, 74, 0.28); }
+  .az-rule { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--rulec), 0.55), rgba(var(--rulec), 0)); }
+  .az-count { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+  .az-group .tomes { padding-top: 14px; }
+  .az-index {
+    display: none; position: fixed; right: 8px; top: 50%; transform: translateY(-50%); z-index: 34;
+    flex-direction: column; align-items: center; justify-content: space-between; gap: 1px; padding: 8px 3px;
+    max-height: calc(100vh - 190px); border-radius: 999px; background: var(--panel-strong); border: 1px solid var(--line);
+    box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.6); touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  body.az-on .az-index { display: flex; }
+  .az-index button {
+    width: 22px; min-height: 18px; flex: 1 1 0; max-height: 26px; padding: 0; border: none; border-radius: 50%; background: none; cursor: pointer;
+    font: 600 11.5px/1 var(--sans); letter-spacing: 0; color: var(--ink-3); transition: color 160ms var(--ease-out), transform 200ms var(--ease-out), background 200ms var(--ease-out);
+  }
+  .az-index button:hover { color: var(--ink); transform: scale(1.25); }
+  .az-index button.is-cur { color: #1A0B08; background: var(--gold); transform: scale(1.08); }
+  :root[data-theme="light"] .az-index button.is-cur { color: #fff; }
+  .az-index button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  /* the big letter that follows a drag along the index */
+  .az-bubble {
+    position: fixed; right: 46px; z-index: 35; width: 58px; height: 58px; margin-top: -29px; display: grid; place-items: center; pointer-events: none;
+    border-radius: 50%; background: var(--gold); color: #1A0B08; font: 600 30px/1 var(--logo);
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.6); opacity: 0; transform: scale(0.6); transition: opacity 140ms var(--ease-out), transform 200ms var(--ease-out);
+  }
+  body.az-drag .az-bubble { opacity: 1; transform: none; }
+  .az-index { cursor: ns-resize; }
+  .az-index button { cursor: pointer; }
+  :root[data-theme="light"] .az-bubble { color: #fff; }
+
+  /* room after the last group, so even the final letter can be scrolled up to the top of the screen */
+  .az-groups::after { content: ""; display: block; height: max(0px, calc(100vh - 380px)); }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
   .leaflet-tile-pane { filter: none; }
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
@@ -1186,6 +1225,7 @@
   @media (max-width: 900px) {
   }
   @media (max-width: 900px) and (min-width: 761px) {
+    #speciesList { padding-right: 26px; }
     .deck { padding: 0 14px; }
     .nav-group { gap: 0; }
     .nav-item { padding: 0 11px; font-size: 14px; }
@@ -1212,6 +1252,12 @@
     .cell-num { font-size: 30px; }
     .box { padding: 18px var(--bx) 20px; }
     .tome-progress { flex-wrap: wrap; gap: 8px 14px; }
+    #speciesList { padding-right: 24px; }
+    .az-index { right: 2px; padding: 6px 2px; max-height: calc(100vh - 230px); }
+    .az-index button { width: 20px; font-size: 11px; }
+    .az-bubble { right: 40px; width: 54px; height: 54px; margin-top: -27px; font-size: 28px; }
+    .az-letter { font-size: 26px; }
+    .az-group { scroll-margin-top: 66px; }
     #dashFilterBanner { top: auto; right: auto; left: 50%; transform: translateX(-50%); bottom: calc(74px + env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); }
     .lg-labels b { font-size: 11.5px; }
     .lg-labels small { font-size: 10px; }
@@ -1385,22 +1431,22 @@
 
   /* The logo: brand mark in the corner (theme switch moves to the right end), welcome dialog, About badge, hero */
   .brand-mark {
-    position: fixed; top: 11px; left: 24px; z-index: 37; width: 42px; height: 42px; display: block; border-radius: 10px; overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(var(--fg), 0.3), 0 8px 20px -8px rgba(0, 0, 0, 0.7);
+    position: fixed; top: 11px; left: 24px; z-index: 37; width: 42px; height: 42px; display: block; border-radius: 50%; overflow: hidden;
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.7);
     transition: transform 260ms var(--ease-out), box-shadow 200ms var(--ease-out);
   }
   .brand-mark img { display: block; width: 100%; height: 100%; }
-  .brand-mark:hover { transform: scale(1.07) rotate(-6deg); box-shadow: 0 0 0 1px rgba(var(--fg), 0.6), 0 10px 24px -8px rgba(0, 0, 0, 0.8); }
+  .brand-mark:hover { transform: scale(1.07) rotate(-6deg); box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.8); }
   .brand-mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
   .theme-toggle { left: auto; right: 26px; }
   #dashFilterBanner { right: 76px; }
-  .modal-logo { display: block; width: 72px; height: 72px; margin: 2px auto 14px; border-radius: 16px; box-shadow: 0 0 0 1px rgba(var(--fg), 0.3), 0 14px 30px -12px rgba(0, 0, 0, 0.8); }
+  .modal-logo { display: block; width: 72px; height: 72px; margin: 2px auto 14px; border-radius: 50%; box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.8); }
   #nameGate .modal-box { text-align: center; }
   #nameGate .modal-title { margin-bottom: 8px; }
   .about-photo { position: relative; display: inline-block; margin-bottom: 16px; }
   .about-photo .modal-photo { display: block; margin-bottom: 0; }
-  .about-logo { position: absolute; right: -8px; bottom: -4px; width: 50px; height: 50px; border-radius: 12px; border: 3px solid var(--panel-strong); box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7); background: #000; }
-  :root[data-theme="light"] .brand-mark, :root[data-theme="light"] .modal-logo { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 20px -8px rgba(20, 20, 40, 0.4); }
+  .about-logo { position: absolute; right: -8px; bottom: -4px; width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7); background: #000; }
+  :root[data-theme="light"] .brand-mark, :root[data-theme="light"] .modal-logo { box-shadow: 0 8px 20px -8px rgba(20, 20, 40, 0.4); }
   @media (max-width: 760px) {
     .brand-mark { top: calc(7px + env(safe-area-inset-top)); left: 10px; width: 40px; height: 40px; }
   }
@@ -1408,7 +1454,7 @@
 </head>
 <body class="is-loading">
 
-<a href="#" class="brand-mark" id="brandMark" aria-label="Go to the dashboard" title="Del's Catch Log"><img src="logo-192.png?v=5" alt="" width="36" height="36" decoding="async"></a>
+<a href="#" class="brand-mark" id="brandMark" aria-label="Go to the dashboard" title="Del's Catch Log"><img src="logo-192.png?v=6" alt="" width="36" height="36" decoding="async"></a>
 <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light mode" title="Switch to light mode"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 1 1 9.4 4a6.6 6.6 0 0 0 10.6 10.6z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"/></svg></button>
 <div class="app">
   <header class="deck">
@@ -1824,7 +1870,7 @@
 
 <div id="nameGate" class="modal-overlay open">
   <div class="modal-box">
-    <img class="modal-logo" src="logo-192.png?v=5" alt="" width="72" height="72" decoding="async">
+    <img class="modal-logo" src="logo-192.png?v=6" alt="" width="72" height="72" decoding="async">
     <div class="modal-title">Welcome</div>
     <p class="modal-text" style="margin-bottom:16px;">What's your name? It'll be shown when you visit, and logged so Del knows who's been checking out the catch log.</p>
     <input type="text" id="nameGateInput" class="input" placeholder="Your name" aria-label="Your name" style="margin-bottom:12px;" />
@@ -1835,7 +1881,7 @@
 <div id="aboutModal" class="modal-overlay">
   <div class="modal-box">
     <button id="closeModal" class="modal-close" aria-label="Close"></button>
-    <span class="about-photo"><img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" /><img class="about-logo" src="logo-192.png?v=5" alt="" width="46" height="46" decoding="async"></span>
+    <span class="about-photo"><img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" /><img class="about-logo" src="logo-192.png?v=6" alt="" width="46" height="46" decoding="async"></span>
     <h2 class="modal-title">Del</h2>
     <p class="modal-text">
       My name is Del, and this is the journal of my life, written in ripples and tight lines. Every species in this log represents a story of patience, of quiet dawns out on the open sea, and magical sunsets hidden along winding rivers. From the unpredictable currents of the saltwater to the serene depths of freshwater, each fish holds the memory of the exact day nature and I crossed paths. This isn't just a catch log — it is a map of my lifetime adventures.
@@ -3572,7 +3618,7 @@ A backup file is downloaded first.`)) return;
   }
   // ---- Species entry: what Del has caught, plus an automatic write-up from public sources (iNaturalist, Wikipedia)
   let speciesSel = null, infoSeq = 0;
-  const INFO_LS = "catchlog_fishinfo_v4";   // v3: write-ups are kept whole now; older cached ones were shortened
+  const INFO_LS = "catchlog_fishinfo_v5";   // v3: write-ups are kept whole now; older cached ones were shortened
   const INFO_TTL = 30 * 864e5, INFO_MISS_TTL = 864e5;
   function infoCacheGet(k) {
     try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); const h = all[k]; if (h && Date.now() - h.t < (h.data && h.data.found ? INFO_TTL : INFO_MISS_TTL)) return h.data; } catch (e) { /* no storage */ }
@@ -3590,9 +3636,24 @@ A backup file is downloaded first.`)) return;
     const clean = (t) => t.replace(/\b(sp|spp|cf|aff)\b\.?/gi, "").replace(/\s+/g, " ").trim();
     const m = /\(([^)]+)\)\s*$/.exec(en || "");
     if (m) return clean(m[1]);
-    for (const part of String(en || "").split(/\s*[\/,;]\s*/)) if (/^[A-Z][a-z]{3,}( [a-z]{3,})?$/.test(part.trim())) return part.trim();
+    const parts = String(en || "").split(/\s*[\/,;]\s*/).map(x => x.trim()).filter(Boolean);
+    if (parts.length > 1) for (const part of parts) if (/^[A-Z][a-z]{3,}( [a-z]{3,})?$/.test(part)) return part;
     return "";
   }
+  // The English name: what stands before the brackets, or the parts of a slash list that are not the Latin name.
+  function engOf(en, latin) {
+    const s = String(en || "").trim();
+    if (/\([^)]+\)\s*$/.test(s)) return s.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    return s.split(/\s*[\/,;]\s*/).filter(p => p.trim() && p.trim() !== latin).join(", ").trim();
+  }
+  // one key for every lookup of this species, so an edit of its names clears the right cached answer
+  function infoKeyOf(name) {
+    const en = state.species[name] || "", own = !!en && en !== name;
+    const lat = own ? latinOf(en) : "", eng = own ? engOf(en, lat) : "";
+    return (lat || eng || name).toLowerCase();
+  }
+  const capFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const titleCase = (s) => s.split(" ").map(capFirst).join(" ");
   function parseWikiText(txt) {
     const secs = [{ title: "", text: [] }];
     String(txt || "").split("\n").forEach(line => {
@@ -3610,22 +3671,39 @@ A backup file is downloaded first.`)) return;
 
   async function fetchFishInfo(name) {
     const en = state.species[name] || "";
-    const latin = en && en !== name ? latinOf(en) : "";   // an entry that only repeats the local name has no Latin name
-    const cacheKey = (latin || name).toLowerCase();
+    const own = !!en && en !== name;           // an entry that only repeats the local name has neither a Latin nor an English name
+    let latin = own ? latinOf(en) : "";
+    const english = own ? engOf(en, latin) : "";
+    let viaEnglish = "";
+    const cacheKey = infoKeyOf(name);
     const cached = infoCacheGet(cacheKey);
     if (cached) return cached;
     const J = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
 
     // 1. the taxon on iNaturalist: rank, family, conservation status, a fallback photo
     let taxon = null, detail = null;
+    const same = (v, q) => (v || "").toLowerCase() === q;
+    const cn = english || latin;
     try {
-      const q = latin;
-      if (!q) throw new Error("no Latin name");
-      const s = await J(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(q)}&locale=en&per_page=8&taxon_id=47178,47273&is_active=true`);
-      const list = s.results || [];
-      // only an exact match on the scientific name (or a name it used to have); a fuzzy hit is how a shark once turned up for patin
-      const ql = q.toLowerCase();
-      taxon = list.find(t => t.name.toLowerCase() === ql) || list.find(t => (t.matched_term || "").toLowerCase() === ql) || null;
+      // a Latin name has to match the accepted scientific name exactly; a fuzzy hit is how a shark once turned up for patin
+      if (latin) {
+        const ql = latin.toLowerCase();
+        const s = await J(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(latin)}&locale=en&per_page=8&taxon_id=47178,47273&is_active=true`);
+        const list = s.results || [];
+        // a Latin name written as "Genus species" may also be an older name (a synonym) of the accepted one
+        const binomial = /^[A-Z][a-z]+ [a-z]+/.test(latin);
+        taxon = list.find(t => t.name.toLowerCase() === ql) || (binomial ? list.find(t => same(t.matched_term, ql)) : null) || null;
+      }
+      // otherwise the name is looked up as written: the accepted scientific name, or the taxon's own English name (not an alias).
+      // It has to point at exactly one species: "silver catfish" names two different fish, so it is refused rather than guessed.
+      if (!taxon && cn) {
+        const ql = cn.toLowerCase();
+        const s = await J(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(cn)}&locale=en&per_page=15&taxon_id=47178,47273&is_active=true`);
+        const hits = (s.results || []).filter(t => same(t.name, ql) || same(t.english_common_name, ql) || same(t.preferred_common_name, ql));
+        const species = hits.filter(t => t.rank === "species");
+        taxon = species.length === 1 ? species[0] : (!species.length && hits.length === 1 ? hits[0] : null);
+        if (taxon) { if (!same(taxon.name, ql)) viaEnglish = cn; latin = taxon.name; }
+      }
       if (taxon) detail = ((await J(`https://api.inaturalist.org/v1/taxa/${taxon.id}?locale=en`)).results || [])[0] || null;
     } catch (e) { /* offline or blocked: carry on with what we have */ }
 
@@ -3633,6 +3711,7 @@ A backup file is downloaded first.`)) return;
     const titles = [];
     if (detail && detail.wikipedia_url) titles.push(decodeURIComponent(detail.wikipedia_url.split("/wiki/")[1] || ""));
     if (latin) titles.push(latin.replace(/ /g, "_"));
+    if (!latin && cn) titles.push(capFirst(cn.toLowerCase()), titleCase(cn.toLowerCase()));   // only an English name to go on: a page with exactly that title
     (detail && detail.ancestors ? detail.ancestors.slice().reverse() : []).forEach(a => { if (a.rank === "genus" || a.rank === "family") titles.push(a.name); });
     let wiki = "", wikiTitle = "", wikiHost = "en";
     const genus = latin.split(" ")[0].toLowerCase();
@@ -3642,12 +3721,14 @@ A backup file is downloaded first.`)) return;
           const w = await J(`https://${host}.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&titles=${encodeURIComponent(t)}&format=json&origin=*`);
           const p = Object.values(w.query.pages)[0];
           // the page has to talk about this genus, so a redirect to something unrelated is ignored
-          if (p && !p.missing && p.extract && p.extract.length > 200 && (!genus || p.extract.toLowerCase().includes(genus))) { wiki = p.extract; wikiTitle = p.title; wikiHost = host; break find; }
+          const intro = ((p && p.extract) || "").slice(0, 500);   // the opening has to be about a fish, so "Emperor" cannot land on the ruler
+          const fishy = /\b(fish|fishes)\b/i.test(intro) && !/(may|can) (also )?refer to/i.test(intro);
+          if (p && !p.missing && p.extract && p.extract.length > 200 && (genus ? p.extract.toLowerCase().includes(genus) : fishy)) { wiki = p.extract; wikiTitle = p.title; wikiHost = host; if (!genus) viaEnglish = viaEnglish || cn; break find; }
         } catch (e) { /* try the next title */ }
       }
     }
 
-    const info = { found: false, latin: latin || (taxon ? taxon.name : ""), rank: taxon ? taxon.rank : "", about: "", history: "", facts: [], sources: [] };
+    const info = { found: false, latin: latin || (taxon ? taxon.name : ""), viaEnglish, rank: taxon ? taxon.rank : "", about: "", history: "", facts: [], sources: [] };
     if (detail) {
       const anc = detail.ancestors || [];
       const fam = anc.find(a => a.rank === "family"), ord = anc.find(a => a.rank === "order");
@@ -3701,6 +3782,7 @@ A backup file is downloaded first.`)) return;
     const chips = [info.family && `Family · ${escapeHtml(info.family)}`, info.order && `Order · ${escapeHtml(info.order)}`, info.status && `Status · ${escapeHtml(info.status)}`].filter(Boolean);
     return `
       ${chips.length ? `<div class="info-chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>` : ""}
+      ${info.viaEnglish ? `<p class="info-scope">Matched by the English name “${escapeHtml(info.viaEnglish)}”, not by a Latin name. If this is not the fish you caught, correct the names with Edit names.</p>` : ""}
       ${info.scope ? `<p class="info-scope">There is no page for this exact species, so the notes below describe the ${escapeHtml(info.scope)}.</p>` : ""}
       ${info.about ? `<div class="info-block"><h4>About</h4>${ps(info.about)}${info.description ? `<div class="more">${ps(info.description)}</div>` : ""}</div>` : ""}
       ${info.history ? `<div class="info-block"><h4>History &amp; naming</h4>${ps(info.history)}</div>` : ""}
@@ -3724,18 +3806,105 @@ A backup file is downloaded first.`)) return;
     const pct = names.length ? Math.round(found / names.length * 100) : 0;
     if (names.length === 0) { list.innerHTML = `<p class="empty-state">No species yet. They appear here as you log catches.</p>`; return; }
     const head = `<div class="tome-progress"><span class="tome-lab">Collection</span><i class="tome-bar" aria-hidden="true"><em style="width:${pct}%"></em></i><span class="tome-of"><b>${found}</b> of ${names.length} species caught</span></div>`;
-    const tiles = entries.map(([id, en]) => {
+    const tileOf = ([id, en]) => {
       const fc = firstBySpecies.get(id);
       const n = countBy.get(id) || 0;
       const label = fc ? `${pad3(nos.get(fc.id) || 0)}, ${id}` : `Not caught yet, ${id}`;
       return `<button type="button" class="tome${fc ? "" : " is-locked"}${id === speciesSel ? " is-sel" : ""}" data-name="${escapeHtml(id)}" aria-label="${escapeHtml(label)}"><span class="tome-photo">${fishIcon(id, en)}</span><span class="tome-no">${fc ? pad3(nos.get(fc.id) || 0) : "???"}</span>${fc ? waterMark(fc.waterType) : ""}<span class="tome-cap"><b>${escapeHtml(id)}</b><i>${escapeHtml(en)}</i></span>${n > 0 ? `<span class="tome-count">×${n}</span>` : ""}</button>`;
+    };
+    // group by first letter (accents ignored); anything that is not A-Z goes under #
+    const letterOf = (id) => { const c = String(id).normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase(); return /[A-Z]/.test(c) ? c : "#"; };
+    const groups = new Map();
+    entries.forEach(e => { const L = letterOf(e[0]); if (!groups.has(L)) groups.set(L, []); groups.get(L).push(e); });
+    const letters = [...groups.keys()].sort((a, b) => (a === "#") - (b === "#") || a.localeCompare(b));
+    const gid = (L) => "az-" + (L === "#" ? "num" : L);
+    const body = letters.map(L => {
+      const g = groups.get(L);
+      return `<section class="az-group" id="${gid(L)}" data-letter="${L}"><header class="az-head"><span class="az-letter">${L}</span><i class="az-rule" aria-hidden="true"></i><span class="az-count">${g.length} ${g.length === 1 ? "species" : "species"}</span></header><div class="tomes">${g.map(tileOf).join("")}</div></section>`;
     }).join("");
-    list.innerHTML = `${head}${entries.length ? `<div class="tomes">${tiles}</div>` : `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`}`;
+    list.innerHTML = `${head}${entries.length ? `<div class="az-groups">${body}</div>` : `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`}`;
+    drawAzIndex(letters, gid);
     list.querySelectorAll(".tome").forEach(t => t.addEventListener("click", () => {
       speciesSel = t.dataset.name;
       list.querySelectorAll(".tome").forEach(x => x.classList.toggle("is-sel", x === t));
       showSpecies(speciesSel, t);
     }));
+  }
+
+  // A-Z index on the right edge: only the letters that have species, kept in step with the search
+  let azTicking = false;
+  function azIndexEl() {
+    let el = document.getElementById("azIndex");
+    if (el) return el;
+    el = document.createElement("nav");
+    el.id = "azIndex"; el.className = "az-index"; el.setAttribute("aria-label", "Jump to a letter");
+    document.body.appendChild(el);
+    const jump = (L, smooth) => {
+      const target = document.getElementById("az-" + (L === "#" ? "num" : L));
+      if (target) target.scrollIntoView({ block: "start", behavior: smooth && !reduceMotion() ? "smooth" : "auto" });
+    };
+    // tap or click a letter: smooth jump. (Right after a drag the click that follows is ignored.)
+    let ignoreClick = false;
+    el.addEventListener("click", (e) => { if (ignoreClick) { ignoreClick = false; return; } const b = e.target.closest("button[data-l]"); if (b) jump(b.dataset.l, true); });
+    // press and drag along the strip, with a finger or the mouse: the page follows, and the letter shows large beside it
+    let down = false, scrubbing = false, sx = 0, sy = 0, lastL = "";
+    const bubble = document.createElement("div");
+    bubble.className = "az-bubble"; bubble.setAttribute("aria-hidden", "true");
+    document.body.appendChild(bubble);
+    const scrub = (e) => {
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      const btn = hit && hit.closest && hit.closest("#azIndex button[data-l]");
+      if (!btn || btn.dataset.l === lastL) return;
+      lastL = btn.dataset.l; jump(lastL, false); azSetCur(el, lastL);
+      bubble.textContent = lastL; bubble.style.top = (btn.getBoundingClientRect().top + btn.offsetHeight / 2) + "px";
+    };
+    el.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse" && e.button !== 0) return; down = true; scrubbing = false; sx = e.clientX; sy = e.clientY; lastL = ""; });
+    addEventListener("pointermove", (e) => {
+      if (!down) return;
+      if (!scrubbing && Math.hypot(e.clientX - sx, e.clientY - sy) < 5) return;
+      if (!scrubbing) { scrubbing = true; document.body.classList.add("az-drag"); }
+      scrub(e);
+    });
+    const endDrag = () => { if (scrubbing) { ignoreClick = true; setTimeout(() => { ignoreClick = false; }, 60); } down = false; scrubbing = false; document.body.classList.remove("az-drag"); };
+    addEventListener("pointerup", endDrag); addEventListener("pointercancel", endDrag);
+    // the mouse wheel over the strip steps from letter to letter instead of moving the page
+    let wheelAt = 0;
+    el.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const now = performance.now(); if (now - wheelAt < 140) return; wheelAt = now;
+      const ls = [...el.querySelectorAll("button")].map(b => b.dataset.l); if (!ls.length) return;
+      const i = Math.max(0, ls.indexOf(el.dataset.cur)), next = ls[Math.min(ls.length - 1, Math.max(0, i + (e.deltaY > 0 ? 1 : -1)))];
+      azSetCur(el, next); jump(next, true);
+    }, { passive: false });
+    addEventListener("scroll", () => { if (!azTicking) { azTicking = true; requestAnimationFrame(() => { azTicking = false; azSyncActive(); }); } }, { passive: true });
+    addEventListener("resize", azSyncActive);
+    const panel = document.getElementById("panel-species");
+    if (panel) new MutationObserver(azSyncVisible).observe(panel, { attributes: true, attributeFilter: ["class"] });
+    return el;
+  }
+  function drawAzIndex(letters, gid) {
+    const el = azIndexEl();
+    el.innerHTML = letters.map(L => `<button type="button" data-l="${L}" aria-label="Jump to ${L === "#" ? "other names" : L}">${L}</button>`).join("");
+    el.dataset.count = letters.length;
+    azSyncVisible();
+  }
+  function azSyncVisible() {
+    const el = document.getElementById("azIndex"), panel = document.getElementById("panel-species");
+    document.body.classList.toggle("az-on", !!(el && el.children.length > 1 && panel && panel.classList.contains("active")));
+    azSyncActive();
+  }
+  function azSetCur(el, cur) {
+    if (el.dataset.cur === cur) return;
+    el.dataset.cur = cur;
+    el.querySelectorAll("button").forEach(b => b.classList.toggle("is-cur", b.dataset.l === cur));
+  }
+  function azSyncActive() {
+    const el = document.getElementById("azIndex");
+    if (!el || !document.body.classList.contains("az-on")) return;
+    const heads = document.querySelectorAll("#speciesList .az-group");
+    let cur = heads.length ? heads[0].dataset.letter : "";
+    heads.forEach(h => { if (h.getBoundingClientRect().top <= 130) cur = h.dataset.letter; });
+    azSetCur(el, cur);
   }
 
   function showSpecies(name, opener) {
@@ -3792,23 +3961,25 @@ A backup file is downloaded first.`)) return;
       renderSpecies();
       scheduleSave();
     });
-    // owner only: type the English and Latin names yourself; the write-up is then looked up from the Latin name
+    // owner only: type the English name, the Latin name, or both; the write-up is looked up from whichever is there
     const splitNames = () => { const cur = state.species[name] || ""; const lat = latinOf(cur); const hasBr = /\([^)]+\)\s*$/.test(cur); const eng = lat ? (hasBr ? cur.replace(/\s*\([^)]*\)\s*$/, "") : cur.split(/\s*[\/,;]\s*/).filter(p => p.trim() !== lat).join(", ")).trim() : (cur && cur !== name ? cur : ""); return { eng, lat }; };
+    const hasOwnNames = () => { const v = state.species[name] || ""; return !!v && v !== name; };
     const showNameEdit = (auto) => {
       const box = body.querySelector("#nameEdit"); if (!box) return;
       const cur = splitNames();
-      box.innerHTML = `<div class="name-edit">${auto ? `<p class="info-none">Not sure which fish this is, so nothing was guessed. If you know it, add its names and the write-up will load.</p>` : ""}
+      box.innerHTML = `<div class="name-edit">${auto ? `<p class="info-none">Not sure which fish this is, so nothing was guessed. If you know it, add its English name (the Latin name too if you have it): the write-up is looked up from either.</p>` : ""}
         <label class="field-wrap"><span class="field-label">English name</span><input class="input" type="text" id="spEn" placeholder="e.g. Snubnose dart" value="${escapeHtml(cur.eng)}"></label>
-        <label class="field-wrap"><span class="field-label">Latin name</span><input class="input" type="text" id="spLat" placeholder="e.g. Trachinotus blochii" value="${escapeHtml(cur.lat)}"></label>
+        <label class="field-wrap"><span class="field-label">Latin name (optional)</span><input class="input" type="text" id="spLat" placeholder="e.g. Trachinotus blochii" value="${escapeHtml(cur.lat)}"></label>
         <div class="toggle-row"><button type="button" class="toggle-btn active" id="spSave">Save names</button><button type="button" class="toggle-btn" id="spCancel">Cancel</button></div></div>`;
       const en = box.querySelector("#spEn"), lat = box.querySelector("#spLat");
       box.querySelector("#spCancel").addEventListener("click", () => { box.innerHTML = ""; });
       box.querySelector("#spSave").addEventListener("click", () => {
-        const e = en.value.trim(), l = lat.value.trim();
+        const fixLat = (v) => v.replace(/\s+/g, " ").trim().split(" ").map((w, i) => (i === 0 ? capFirst(w.toLowerCase()) : w.toLowerCase())).join(" ");
+        const e = en.value.replace(/\s+/g, " ").trim(), l = fixLat(lat.value);
         const label = e && l ? `${e} (${l})` : (e || l || name);
         state.species[name] = label;
         const sub = body.querySelector(".detail-sub"); if (sub) sub.textContent = label;
-        try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[(l || name).toLowerCase()]; delete all[name.toLowerCase()]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (err) { /* no storage */ }
+        try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[(l || e || name).toLowerCase()]; delete all[name.toLowerCase()]; delete all[infoKeyOf(name)]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (err) { /* no storage */ }
         box.innerHTML = "";
         renderSpecies();
         scheduleSave();
@@ -3856,15 +4027,15 @@ A backup file is downloaded first.`)) return;
         const w = body.querySelector("#infoWrap"); if (!w) return;
         w.innerHTML = `<div class="info-block"><p class="info-none">${msg}</p><button type="button" class="toggle-btn info-retry" data-retry="1">Try again</button></div>`;
         const retry = w.querySelector("[data-retry]");
-        if (retry) retry.addEventListener("click", () => { try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[(latinOf(state.species[name]) || name).toLowerCase()]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (e) { /* ignore */ } load(); });
+        if (retry) retry.addEventListener("click", () => { try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[infoKeyOf(name)]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (e) { /* ignore */ } load(); });
       };
       fetchFishInfo(name).then(info => {
         if (seq !== infoSeq) return;
         const w = body.querySelector("#infoWrap"); if (!w) return;
         if (!info.found) {
-          failed("No write-up found online for this one yet.");
+          failed(hasOwnNames() ? `No write-up found online for “${escapeHtml(state.species[name])}”. Try another English name, or add the Latin name with Edit names.` : "No write-up found online for this one yet.");
           if (hasNotes()) { const w2 = body.querySelector("#infoWrap"); if (w2) w2.innerHTML = ""; return; }
-          if (editUnlocked && !latinOf(state.species[name])) showNameEdit(true);
+          if (editUnlocked && !hasOwnNames()) showNameEdit(true);
           return;
         }
         w.innerHTML = infoHtml(info, name);
