@@ -49,17 +49,17 @@
     --evening: #FF7A4A;
     --night: #7F90FF;
     --on-amber: #0A0610;
-    --panel: rgba(8, 5, 12, 0.66);
+    --panel: rgba(8, 5, 12, 0.8);
     --panel-strong: rgba(14, 10, 20, 0.95);
     --hover: rgba(239, 231, 222, 0.06);
-    --glass: blur(8px);
+    --glass: none;
     --logo: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
     --led: var(--logo);
     --serif: 'Cormorant Garamond', 'Cinzel', Georgia, serif;
     --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --bx: 22px;
-    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='40'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 11 -5.1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)' opacity='.6'/%3E%3C/svg%3E");
+    --dither: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='.85' stop-color='%23fff'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='1' seed='3' result='n'/%3E%3CfeColorMatrix in='n' type='matrix' values='3 0 0 0 -1 3 0 0 0 -1 3 0 0 0 -1 0 0 0 0 1' result='n2'/%3E%3CfeComposite in='SourceGraphic' in2='n2' operator='arithmetic' k1='0' k2='1' k3='.2' k4='-.1' result='s'/%3E%3CfeColorMatrix in='s' type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.35 0 0 0 -.175'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)' filter='url(%23f)'/%3E%3C/svg%3E");
     /* names used by script-rendered markup */
     --brass: var(--amber);
     --rust: var(--coral);
@@ -246,13 +246,12 @@
   .box-title-row, .bar {
     position: relative; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
     min-height: 30px; margin: 0 calc(-1 * var(--bx)) 20px; padding: 3px var(--bx);
-    background: linear-gradient(90deg, rgba(168, 76, 26, 0.96) 0%, rgba(146, 62, 22, 0.82) 50%, rgba(120, 48, 18, 0) 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 214, 170, 0.16);
   }
   .box-title-row::before, .bar::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: var(--grain);
-    opacity: 0.4; -webkit-mask-image: linear-gradient(90deg, transparent 10%, #000 55%, transparent 100%); mask-image: linear-gradient(90deg, transparent 10%, #000 55%, transparent 100%);
+    background: linear-gradient(90deg, rgba(172, 78, 26, 0.97) 0%, rgba(152, 65, 22, 0.93) 70%, rgba(140, 58, 20, 0.88) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 214, 170, 0.16);
+    -webkit-mask: var(--dither) 0 0 / 100% 100% no-repeat; mask: var(--dither) 0 0 / 100% 100% no-repeat;
   }
   .box-title-row > *, .bar > * { position: relative; z-index: 1; }
   .box-title-row:first-child { margin-top: -22px; }
@@ -920,7 +919,6 @@
   .notes-label { color: var(--gold-text); }
   .catch-photo, .jn-photo, .shot { border-radius: 6px; border-color: rgba(239, 231, 222, 0.32); }
   #dashboardMapContainer { border-radius: 4px; border-color: var(--line); }
-  .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
 
   /* tabs and toggles */
   .level-tabs { background: none; border: none; padding: 0; gap: 2px; }
@@ -963,70 +961,138 @@
   .dp-md-verdict { font-size: 17px; font-weight: 700; letter-spacing: 0.04em; }
 
   /* =====================================================================
-     Album: Catch Log as a hunt board, Species as a tome of entries.
+     Album: Catch Log and Species are walls of icons; the entry opens in a dialog.
      ===================================================================== */
-  #logList { background: none; border: none; border-radius: 0; overflow: visible; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
-  .album { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 30px; align-items: start; }
+  #logList { background: none; border: none; border-radius: 0; overflow: visible; box-shadow: none; }
   .album .bar { margin: 0 0 4px; }
-  .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 16px 14px; padding: 18px 8px 8px 2px; }
+  .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px 14px; padding: 18px 4px 6px; }
+  .tomes { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 16px; padding: 18px 4px 6px; }
   .tile, .tome {
     position: relative; display: block; padding: 0; color: inherit; text-align: left;
-    border: 1px solid rgba(239, 231, 222, 0.24); border-radius: 6px; background: #0B080E;
-    box-shadow: 0 14px 30px -18px #000; cursor: pointer;
-    transition: border-color 180ms var(--ease-out), transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
+    border: 1px solid rgba(239, 231, 222, 0.24); border-radius: 8px; background: #0B080E;
+    box-shadow: 0 12px 26px -16px #000; cursor: pointer;
+    transition: border-color 180ms var(--ease-out), transform 240ms var(--ease-out), box-shadow 240ms var(--ease-out);
   }
   .tile { aspect-ratio: 1 / 1; }
-  .tile-photo, .tome-photo { position: absolute; inset: 5px; overflow: hidden; border-radius: 3px; background: radial-gradient(circle at 50% 40%, #1B1319, #0A070C); }
-  .tome-photo { inset: 0; border-radius: 5px; }
-  .tile-photo img, .tome-photo img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 600ms var(--ease-out), filter 300ms; }
-  .tile-photo::after, .tome-photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, transparent 28%, transparent 50%, rgba(0, 0, 0, 0.88) 100%); }
-  .ph-fish { position: absolute; inset: 24%; width: 52%; height: 52%; fill: none; stroke: rgba(239, 231, 222, 0.16); stroke-width: 0.9; stroke-linecap: round; stroke-linejoin: round; }
+  .tome { aspect-ratio: 4 / 3; border-color: rgba(234, 221, 190, 0.3); }
+  .tile-photo, .tome-photo { position: absolute; inset: 5px; overflow: hidden; border-radius: 4px; background: radial-gradient(circle at 50% 40%, #1B1319, #0A070C); }
+  .tile-photo img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 500ms var(--ease-out); }
+  .tile-photo::after, .tome-photo::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, 0.42) 0%, transparent 28%, transparent 48%, rgba(0, 0, 0, 0.86) 100%); }
+  .fish-art { position: absolute; left: 6%; top: 15%; width: 88%; height: 52%; color: rgba(239, 231, 222, 0.82); overflow: visible; }
+  .fish-art * { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  .fish-art .b { stroke-width: 1.9; }
+  .fish-art .d { stroke-width: 1.25; stroke-opacity: 0.78; }
+  .fish-art .r { stroke-width: 0.95; stroke-opacity: 0.5; }
+  .fish-art .e { fill: currentColor; stroke: none; }
+  .detail-nophoto .fish-art { top: 12%; height: 76%; }
+  .tome.is-locked .fish-art { color: rgba(239, 231, 222, 0.34); }
   .tile-no, .tome-no { position: absolute; left: 12px; top: 10px; z-index: 2; font-family: var(--logo); font-size: 14px; font-weight: 600; letter-spacing: 0.05em; color: var(--gold); text-shadow: 0 1px 6px #000; }
   .tile .wmark, .tome .wmark { position: absolute; right: 11px; top: 9px; z-index: 2; filter: drop-shadow(0 1px 4px #000); }
   .tile-cap, .tome-cap { position: absolute; left: 12px; right: 12px; bottom: 9px; z-index: 2; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .tome-cap { right: 46px; }
   .tile-cap b, .tome-cap b { font-family: var(--serif); font-size: 18px; font-weight: 600; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-shadow: 0 1px 8px #000; }
   .tile-cap i, .tome-cap i { font-style: normal; font-size: 11.5px; letter-spacing: 0.06em; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tile:hover, .tome.has-photo:hover { border-color: rgba(239, 231, 222, 0.85); transform: translateY(-2px); }
-  .tile:hover img, .tome.has-photo:hover img { transform: scale(1.05); }
-  .tile.is-sel { border-color: #EE3B45; box-shadow: 0 0 0 1px #EE3B45, 0 0 28px -2px rgba(238, 59, 69, 0.6); background: #160A0D; }
+  .tome-count { position: absolute; right: 12px; bottom: 11px; z-index: 2; font-family: var(--logo); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold); text-shadow: 0 1px 6px #000; }
+  .tile:hover, .tome:hover { border-color: rgba(239, 231, 222, 0.85); transform: translateY(-2px); }
+  .tile:hover img { transform: scale(1.06); }
+  .tile.is-sel, .tome.is-sel { border-color: #EE3B45; box-shadow: 0 0 0 1px #EE3B45, 0 0 24px -2px rgba(238, 59, 69, 0.55); }
+  .tome.is-locked .tome-cap b { color: var(--ink-3); }
 
-  .album-detail { position: sticky; top: 76px; }
-  .detail { padding: 16px 18px 20px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); box-shadow: 0 30px 60px -40px #000; }
+  /* the dialog */
+  body.no-scroll { overflow: hidden; }
+  .entry-overlay { z-index: 55; }
+  .entry-box { max-width: 980px; max-height: min(92vh, 940px); padding: 28px; overflow-y: auto; }
+  .entry { display: grid; grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr); gap: 32px; align-items: start; }
+  .entry-l, .entry-r { min-width: 0; }
   .detail-frame { position: relative; padding: 6px; background: #0A070C; border: 1px solid rgba(239, 231, 222, 0.4); box-shadow: 0 22px 50px -26px #000; }
   .detail-frame .photo-open { display: block; width: 100%; cursor: zoom-in; }
   .detail-frame .catch-photo { display: block; width: 100%; max-height: none; aspect-ratio: 4 / 3; object-fit: cover; border: none; border-radius: 0; }
   .detail-nophoto { position: relative; aspect-ratio: 4 / 3; background: radial-gradient(circle at 50% 40%, #1B1319, #0A070C); }
+  .detail-nophoto .catch-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .detail-no { position: absolute; right: 16px; top: 10px; font-family: var(--logo); font-size: 40px; font-weight: 500; line-height: 1; letter-spacing: 0.02em; color: var(--gold); text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95), 0 0 26px rgba(242, 195, 107, 0.4); pointer-events: none; }
-  .detail-title { margin-top: 18px; font-family: var(--serif); font-size: 28px; font-weight: 600; line-height: 1.1; text-align: center; color: #EADDBE; }
+  .detail-title { margin-top: 18px; font-family: var(--serif); font-size: 30px; font-weight: 600; line-height: 1.1; text-align: center; color: #EADDBE; }
   .detail-sub { margin-top: 3px; font-family: var(--serif); font-style: italic; font-size: 16px; text-align: center; color: var(--ink-2); overflow-wrap: anywhere; }
-  .detail-rule { position: relative; height: 1px; margin: 16px 12% 6px; background: linear-gradient(90deg, transparent, rgba(234, 221, 190, 0.45) 30%, rgba(234, 221, 190, 0.45) 70%, transparent); }
-  .detail-rule::after { content: ""; position: absolute; left: 50%; top: -3px; width: 7px; height: 7px; transform: translateX(-50%) rotate(45deg); background: var(--void); border: 1px solid rgba(234, 221, 190, 0.7); }
-  .detail .catch-data { display: block; }
-  .detail .data-row { flex-direction: row; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); }
-  .detail .data-label { flex: 0 0 122px; display: flex; align-items: center; gap: 8px; color: var(--ink-3); }
-  .detail .data-label::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; transform: rotate(45deg); border: 1px solid var(--ink-3); }
-  .detail .data-value { flex: 1; min-width: 0; }
-  .detail .notes-block { margin-top: 14px; }
-  .detail .owner-action-row { margin-top: 14px; }
+  .entry-r .catch-data { display: block; }
+  .entry-r .data-row { flex-direction: row; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .entry-r .data-row:first-child { padding-top: 0; }
+  .entry-r .data-label { flex: 0 0 122px; display: flex; align-items: center; gap: 8px; color: var(--ink-3); }
+  .entry-r .data-label::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; transform: rotate(45deg); border: 1px solid var(--ink-3); }
+  .entry-r .data-value { flex: 1; min-width: 0; }
+  .entry-r .notes-block { margin-top: 14px; }
+  .entry-r .owner-action-row { margin-top: 14px; }
+  .entry-l .owner-action-row { margin-top: 12px; }
 
-  /* species: the tome */
+  /* species: collection bar, stats and the automatic write-up */
   .species-search { display: block; max-width: 460px; margin: 0 auto 22px; border-radius: 999px; text-align: center; padding-left: 20px; }
-  .species-scroll { padding: 0; overflow: visible; background: none; border: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .tome-progress { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 0 22px; font-family: var(--serif); color: var(--ink-2); }
+  .species-scroll { padding: 0; overflow: visible; background: none; border: none; box-shadow: none; }
+  .tome-progress { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 0 4px; font-family: var(--serif); color: var(--ink-2); }
   .tome-lab { font-style: italic; font-size: 17px; }
   .tome-bar { position: relative; width: min(280px, 40%); height: 8px; background: #06040A; box-shadow: 0 0 0 1px rgba(234, 221, 190, 0.25); overflow: hidden; }
   .tome-bar em { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #B79A55, #F1DFA6); box-shadow: 0 0 12px rgba(241, 223, 166, 0.4); }
   .tome-of { font-size: 15px; letter-spacing: 0.02em; white-space: nowrap; }
   .tome-of b { font-family: var(--logo); font-weight: 600; color: var(--ink); }
-  .tomes { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 18px; }
-  .tome { aspect-ratio: 16 / 10; border-color: rgba(234, 221, 190, 0.3); cursor: default; }
-  .tome.has-photo { cursor: pointer; }
-  .tome-cap { right: 46px; }
-  .tome-cap b { font-size: 20px; }
-  .tome-count { position: absolute; right: 12px; bottom: 11px; z-index: 2; font-family: var(--logo); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--gold); text-shadow: 0 1px 6px #000; }
-  .tome.is-locked .tome-photo img, .tome.is-locked .tome-photo { filter: grayscale(1) brightness(0.55); }
-  .tome.is-locked .tome-cap b { color: var(--ink-3); }
-  .tome .species-delete-link { position: absolute; left: 12px; top: 34px; z-index: 3; padding: 2px 9px; background: rgba(0, 0, 0, 0.72); border: 1px solid rgba(255, 92, 105, 0.6); border-radius: 4px; font-size: 11.5px; text-decoration: none; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .stat { min-width: 0; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: rgba(0, 0, 0, 0.35); }
+  .stat.wide { grid-column: 1 / -1; }
+  .stat span { display: block; margin-bottom: 3px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+  .stat b { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+  .stat .stat-big { font-family: var(--logo); font-size: 30px; line-height: 1; letter-spacing: 0.04em; color: var(--gold); }
+  .stat b { font-variant-numeric: lining-nums; }
+  .stat em { margin-left: 10px; font-family: var(--sans); font-style: normal; font-size: 16px; font-weight: 500; color: var(--ink); }
+  .detail-link { width: 100%; margin-top: 12px; text-align: center; }
+  .photo-credit { position: absolute; left: 8px; bottom: 6px; max-width: 92%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: rgba(255, 255, 255, 0.72); text-shadow: 0 1px 4px #000; }
+  .info-load { display: grid; gap: 9px; padding-top: 6px; }
+  .info-load i { display: block; height: 10px; border-radius: 5px; background: linear-gradient(90deg, rgba(239, 231, 222, 0.06), rgba(239, 231, 222, 0.17), rgba(239, 231, 222, 0.06)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .info-load i:nth-child(1) { width: 92%; } .info-load i:nth-child(2) { width: 78%; } .info-load i:nth-child(3) { width: 58%; }
+  .info-load span { margin-top: 4px; font-size: 12.5px; color: var(--ink-3); }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .info-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .info-chips span { padding: 4px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px; letter-spacing: 0.03em; color: var(--ink-2); }
+  .info-scope { margin-top: 14px; padding: 8px 12px; border-left: 2px solid var(--gold); background: rgba(0, 0, 0, 0.3); font-size: 12.5px; line-height: 1.5; color: var(--ink-2); }
+  .info-block { margin-top: 18px; }
+  .info-chips + .info-block, .info-scope + .info-block { margin-top: 16px; }
+  .info-block h4 { display: flex; align-items: center; gap: 8px; font: 600 11.5px/1 var(--sans); letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
+  .info-block h4::before { content: ""; width: 5px; height: 5px; flex-shrink: 0; transform: rotate(45deg); border: 1px solid var(--gold); }
+  .info-block p { margin-top: 8px; font-size: 14.5px; line-height: 1.62; color: var(--ink); }
+  .info-block p + p { margin-top: 8px; color: var(--ink-2); }
+  .fact-list { list-style: none; display: grid; gap: 10px; margin-top: 10px; }
+  .fact-list li { position: relative; padding-left: 16px; font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+  .fact-list li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 5px; height: 5px; transform: rotate(45deg); background: var(--gold); }
+  .fact-list li b { margin-right: 4px; font-weight: 600; color: var(--ink); }
+  .info-src { margin-top: 16px; font-size: 11.5px; color: var(--ink-3); }
+  .info-src a { text-decoration: underline; }
+  .info-none { font-size: 14px; color: var(--ink-2); margin-bottom: 10px; }
+  .info-block:first-child { margin-top: 0; }
+
+  /* Log Entry: automatic names and photo ID */
+  .name-lookup { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.3); }
+  .name-lookup[hidden] { display: none; }
+  .nl-status { font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+  .nl-status b { font-weight: 600; color: var(--gold); }
+  .nl-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .nl-list:empty { display: none; }
+  .nl-chip { padding: 6px 12px; border: 1px solid rgba(239, 231, 222, 0.3); border-radius: 999px; background: rgba(0, 0, 0, 0.4); font-size: 13px; color: var(--ink); cursor: pointer; transition: border-color 160ms var(--ease-out), background 200ms var(--ease-out); }
+  .nl-chip small { color: var(--ink-3); }
+  .nl-chip:hover { border-color: var(--ink); }
+  .nl-chip.is-on { border-color: #EE3B45; background: rgba(122, 16, 26, 0.5); }
+  .photo-id { margin: 0 0 18px; }
+  .pid-line { margin-top: 2px; font-size: 13px; color: var(--ink-2); }
+  .pid-line:empty { display: none; }
+  .pid-line a { color: var(--gold-text); text-decoration: underline; }
+  .pid-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 10px; padding: 12px 14px; border: 1px solid rgba(239, 231, 222, 0.3); border-radius: 8px; background: rgba(0, 0, 0, 0.4); font-size: 14px; }
+  .pid-card small { display: block; margin-top: 3px; font-size: 12px; color: var(--ink-3); }
+  .pid-card .toggle-btn { flex: none; }
+  .pid-setup { margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+  .pid-setup summary { cursor: pointer; }
+  .pid-setup p { margin: 10px 0; line-height: 1.5; }
+  .pid-note { color: var(--ink-3); }
+
+  /* Speed: no live blur over the drifting embers, the map filter runs per tile image */
+  *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+  /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
+  .leaflet-tile-pane { filter: none; }
+  .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
 
   /* motion that belongs to this look */
   @keyframes emberIn { from { opacity: 0; filter: blur(14px); transform: scale(1.06); } to { opacity: 1; transform: none; } }
@@ -1044,9 +1110,6 @@
     .hero-dates { position: static; margin-top: 24px; }
   }
   @media (max-width: 900px) {
-    .album { grid-template-columns: minmax(0, 1fr); gap: 22px; }
-    .album-detail { position: static; order: -1; }
-    .album-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; padding-right: 2px; }
   }
   @media (max-width: 900px) and (min-width: 761px) {
     .deck { padding: 0 14px; }
@@ -1072,17 +1135,17 @@
     .cell:last-child { grid-column: 1 / -1; }
     .cell-num { font-size: 30px; }
     .box { padding: 18px var(--bx) 20px; }
-    .tile-cap b { font-size: 13.5px; }
-    .tile-cap i { display: none; }
-    .tile-no { left: 8px; top: 7px; font-size: 12px; }
-    .tile .wmark { right: 7px; top: 6px; }
-    .tile-cap { left: 8px; right: 8px; bottom: 6px; }
-    .detail { padding: 14px 14px 18px; }
-    .detail-no { font-size: 32px; }
-    .tomes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .tome-cap b { font-size: 15.5px; }
-    .tome-cap i { font-size: 10.5px; }
     .tome-progress { flex-wrap: wrap; gap: 8px 14px; }
+    .album-grid, .tomes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-left: 0; padding-right: 0; }
+    .tile-cap b, .tome-cap b { font-size: 15.5px; }
+    .tile-cap i, .tome-cap i { font-size: 10.5px; }
+    .tile-no, .tome-no { left: 9px; top: 8px; font-size: 12.5px; }
+    .tile-cap, .tome-cap { left: 9px; bottom: 7px; }
+    .tile .wmark, .tome .wmark { right: 8px; top: 7px; }
+    .entry { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .entry-overlay { padding: 0; }
+    .entry-box { max-width: none; width: 100%; height: 100%; max-height: none; border-radius: 0; padding: 56px 16px 28px; }
+    .detail-no { font-size: 32px; }
     .box-title-row .jn-sub { display: none; }
     .bottom-nav {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; justify-content: space-around;
@@ -1349,6 +1412,10 @@
             <button type="button" class="toggle-btn active" id="nameModeAuto">Automatic</button>
             <button type="button" class="toggle-btn" id="nameModeManual">Manual</button>
           </div>
+          <div id="nameLookup" class="name-lookup" hidden>
+            <div class="nl-status" id="nlStatus" aria-live="polite"></div>
+            <div class="nl-list" id="nlList"></div>
+          </div>
           <div id="manualNameFields" style="display:none; margin-top:12px;">
             <label class="field-wrap"><span class="field-label">English name</span>
               <input class="input" type="text" id="f-english" placeholder="e.g. Red Snapper"></label>
@@ -1405,6 +1472,16 @@
             <img id="photoPreview" alt="Photo preview" style="width:100%; max-height:240px; object-fit:cover; border-radius:4px; display:block;" />
             <button type="button" id="removePhotoBtn" class="photo-remove">Remove</button>
           </div>
+        </div>
+        <div class="photo-id" id="photoId">
+          <div class="pid-line" id="pidLine" aria-live="polite"></div>
+          <div class="pid-result" id="pidResult"></div>
+          <details class="pid-setup" id="pidSetup">
+            <summary>Identify fish from photos (AI)</summary>
+            <p>Paste an Anthropic API key and every new photo is identified as you add it. The key stays in this browser only and is sent only to Anthropic.</p>
+            <div class="toggle-row"><input class="input" type="password" id="pidKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" style="flex:1; min-width:0;"><button type="button" class="toggle-btn" id="pidSave">Save</button><button type="button" class="toggle-btn" id="pidRemove">Remove</button></div>
+            <p class="pid-note" id="pidNote"></p>
+          </details>
         </div>
         <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
       </div>
@@ -1541,6 +1618,13 @@
     <button type="button" class="icon-btn lb-arrow lb-next" id="lbNext" aria-label="Next photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
   <div class="lb-info" id="lbInfo" aria-live="polite"></div>
+</div>
+
+<div id="entryModal" class="modal-overlay entry-overlay" role="dialog" aria-modal="true" aria-label="Details">
+  <div class="modal-box entry-box">
+    <button type="button" class="modal-close" id="entryClose" aria-label="Close"></button>
+    <div id="entryBody"></div>
+  </div>
 </div>
 
 <nav class="bottom-nav" aria-label="Sections">
@@ -2960,45 +3044,198 @@ A backup file is downloaded first.`)) return;
     }
   }
 
-  // Catch Log as an album: a grid of photo tiles on the left, the chosen catch on the right.
-  const FISH_GLYPH = `<svg class="ph-fish" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.6-4.2 6.2-5.6 10-4.6 2.2.6 3.6 2.4 4 4.6-.4 2.2-1.8 4-4 4.6-3.8 1-7.4-.4-10-4.6zM16.5 12L21.5 8v8z"/></svg>`;
-  function renderLog() {
-    const list = document.getElementById("logList");
-    const nos = catchNumbers();
-    const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos)));
-    if (sorted.length === 0) {
-      list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "Log Entry".</p>`;
-      return;
-    }
-    if (!sorted.some(c => unitKey(c) === expandedId)) expandedId = unitKey(sorted[0]);
-    const row = (label, value) => `<div class="data-row"><span class="data-label">${label}</span><span class="data-value">${value}</span></div>`;
+  // ---- Line illustrations of fish: one drawing per body type, picked from the fish's names
+  const FISH_BODIES = {
+    deep: { len: 118, tail: "fork", tl: 0.28, th: 0.2, eye: 0.028,
+      pts: [[0, 0, 0], [0.04, 0.06, 0.055], [0.16, 0.17, 0.15], [0.4, 0.245, 0.215], [0.64, 0.215, 0.185], [0.85, 0.115, 0.095], [1, 0.06, 0.06]],
+      fins: [{ on: "top", style: "spiny", a: 0.2, b: 0.55, h: 0.1, n: 6 }, { on: "top", style: "soft", a: 0.55, b: 0.9, h: 0.11 }, { on: "bot", style: "soft", a: 0.6, b: 0.88, h: 0.09 }] },
+    tilapia: { len: 116, tail: "round", tl: 0.24, th: 0.17, eye: 0.028,
+      pts: [[0, 0, 0], [0.045, 0.08, 0.07], [0.18, 0.17, 0.15], [0.42, 0.225, 0.2], [0.68, 0.18, 0.16], [0.88, 0.095, 0.085], [1, 0.065, 0.065]],
+      fins: [{ on: "top", style: "spiny", a: 0.2, b: 0.56, h: 0.085, n: 7 }, { on: "top", style: "soft", a: 0.56, b: 0.9, h: 0.13 }, { on: "bot", style: "soft", a: 0.62, b: 0.88, h: 0.1 }] },
+    grouper: { len: 118, tail: "round", tl: 0.26, th: 0.18, eye: 0.026, jaw: true,
+      pts: [[0, 0, 0], [0.04, 0.085, 0.07], [0.16, 0.17, 0.15], [0.4, 0.205, 0.185], [0.66, 0.18, 0.15], [0.86, 0.1, 0.09], [1, 0.078, 0.078]],
+      fins: [{ on: "top", style: "spiny", a: 0.2, b: 0.5, h: 0.075, n: 5 }, { on: "top", style: "soft", a: 0.5, b: 0.92, h: 0.11 }, { on: "bot", style: "soft", a: 0.6, b: 0.9, h: 0.09 }] },
+    fusiform: { len: 126, tail: "fork", tl: 0.3, th: 0.26, eye: 0.024,
+      pts: [[0, 0, 0], [0.05, 0.05, 0.045], [0.2, 0.115, 0.105], [0.45, 0.145, 0.135], [0.7, 0.105, 0.1], [0.88, 0.05, 0.05], [1, 0.028, 0.028]],
+      fins: [{ on: "top", style: "spiny", a: 0.3, b: 0.46, h: 0.08, n: 4 }, { on: "top", style: "soft", a: 0.56, b: 0.67, h: 0.07 }, { on: "bot", style: "soft", a: 0.58, b: 0.69, h: 0.06 }] },
+    elongate: { len: 134, tail: "fork", tl: 0.16, th: 0.11, eye: 0.02,
+      pts: [[0, 0, 0], [0.06, 0.028, 0.025], [0.3, 0.05, 0.048], [0.6, 0.055, 0.05], [0.85, 0.04, 0.038], [1, 0.02, 0.02]],
+      fins: [{ on: "top", style: "soft", a: 0.3, b: 0.4, h: 0.045 }, { on: "top", style: "soft", a: 0.62, b: 0.78, h: 0.06 }, { on: "bot", style: "soft", a: 0.6, b: 0.76, h: 0.05 }] },
+    eel: { len: 150, tail: "point", tl: 0.05, th: 0.03, eye: 0.016, wave: 7, waves: 1.6,
+      pts: [[0, 0, 0], [0.03, 0.035, 0.03], [0.2, 0.05, 0.045], [0.5, 0.05, 0.045], [0.8, 0.04, 0.036], [1, 0.016, 0.016]],
+      fins: [{ on: "top", style: "long", a: 0.2, b: 0.98, h: 0.035 }, { on: "bot", style: "long", a: 0.32, b: 0.98, h: 0.032 }] },
+    shark: { len: 122, tail: "shark", tl: 0.26, th: 0.15, eye: 0.02, big: true,
+      pts: [[0, 0, 0], [0.06, 0.06, 0.04], [0.26, 0.115, 0.08], [0.5, 0.135, 0.095], [0.75, 0.09, 0.065], [1, 0.04, 0.04]],
+      fins: [{ on: "top", style: "shark", a: 0.4, b: 0.6, h: 0.14 }, { on: "top", style: "shark", a: 0.68, b: 0.78, h: 0.06 }, { on: "bot", style: "shark", a: 0.7, b: 0.82, h: 0.05 }] },
+    catfish: { len: 118, tail: "fork", tl: 0.24, th: 0.16, eye: 0.02, barbels: true,
+      pts: [[0, 0, 0], [0.06, 0.06, 0.05], [0.2, 0.095, 0.075], [0.5, 0.105, 0.09], [0.78, 0.08, 0.07], [1, 0.05, 0.05]],
+      fins: [{ on: "top", style: "soft", a: 0.26, b: 0.38, h: 0.1 }, { on: "top", style: "long", a: 0.62, b: 0.78, h: 0.03 }, { on: "bot", style: "soft", a: 0.6, b: 0.88, h: 0.07 }] },
+    disc: { len: 86, tail: "fork", tl: 0.3, th: 0.2, eye: 0.03,
+      pts: [[0, 0, 0], [0.06, 0.14, 0.12], [0.24, 0.33, 0.3], [0.5, 0.42, 0.4], [0.74, 0.3, 0.28], [0.92, 0.1, 0.09], [1, 0.05, 0.05]],
+      fins: [{ on: "top", style: "falcate", a: 0.32, b: 0.6, h: 0.17 }, { on: "bot", style: "falcate", a: 0.36, b: 0.62, h: 0.16 }] },
+    puffer: { len: 84, tail: "round", tl: 0.2, th: 0.12, eye: 0.034, spines: true,
+      pts: [[0, 0, 0], [0.07, 0.16, 0.14], [0.26, 0.29, 0.26], [0.52, 0.31, 0.28], [0.76, 0.22, 0.2], [0.93, 0.09, 0.08], [1, 0.05, 0.05]],
+      fins: [{ on: "top", style: "soft", a: 0.68, b: 0.8, h: 0.07 }, { on: "bot", style: "soft", a: 0.68, b: 0.8, h: 0.06 }] },
+  };
 
-    const tileHtml = (c) => {
-      const key = unitKey(c);
-      const on = key === expandedId;
-      return `
-        <button type="button" class="tile${on ? " is-sel" : ""}" data-key="${key}" aria-pressed="${on}" aria-label="${noRange(c, noOf(c, nos))}, ${escapeHtml(c.species)}, ${shortDate(c.date)}">
-          <span class="tile-photo">${c.photo ? `<img src="${c.photo}" alt="" loading="lazy" decoding="async" />` : FISH_GLYPH}</span>
-          <span class="tile-no">${noRange(c, noOf(c, nos))}</span>
-          ${waterMark(c.waterType)}
-          <span class="tile-cap"><b>${escapeHtml(c.species)}${xQty(c)}</b><i>${shortDate(c.date)}</i></span>
-        </button>`;
+  function fishKind(name, english) {
+    const t = `${name} ${english || ""}`.toLowerCase();
+    const has = (re) => re.test(t);
+    if (has(/\b(ray|stingray|pari|skate|manta|guitarfish)\b/)) return "ray";
+    if (has(/\beel|belut|conger|moray|sidat/)) return "eel";
+    if (has(/shark|catshark|\bhiu\b|cucut|hammerhead/)) return "shark";
+    if (has(/puffer|buntal|porcupine|boxfish/)) return "puffer";
+    if (has(/catfish|patin|keting|\blele\b|baung|pangasi|bagrid|sembilang|tapah/)) return "catfish";
+    if (has(/sickle|sabit|spadefish|batfish|angelfish|butterflyfish|moonfish|monodact|scat\b|bawal|platax|drepane/)) return "disc";
+    if (has(/snakehead|gabus|toman|haruan|barracuda|alu-?alu|needle|garfish|cutlass|layur|halfbeak|sphyraena/)) return "elongate";
+    if (has(/grouper|kerapu|sunu|puyut|garupa|coral trout|epinephel|plectropom|cephalopholis/)) return "grouper";
+    if (has(/tilapia|nila\b|mujair|cichlid|oreochromis|betok|climbing perch|anabas|gourami|gurami/)) return "tilapia";
+    if (has(/mackerel|tenggiri|tuna|tongkol|\bjack\b|kuwe|trevally|selar|croaker|gulamah|barramundi|salmon|kembung|talang|queenfish|cobia|bonito|wahoo|scomber|caranx|mullet|belanak|senangin|threadfin/)) return "fusiform";
+    return "deep";
+  }
+
+  function fishArt(kind, name, english) {
+    const n1 = (v) => (Math.round(v * 10) / 10);
+    if (kind === "ray") {
+      return `<svg class="fish-art" viewBox="0 0 200 100" aria-hidden="true">
+        <path class="b" d="M18 50C36 38 52 20 84 14C118 8 142 26 150 44L153 50L150 56C142 74 118 92 84 86C52 80 36 62 18 50Z"/>
+        <path class="d" d="M153 50L196 50M178 50L184 46M166 50L172 53"/>
+        <path class="d" d="M58 40C64 38 70 39 73 42M58 60C64 62 70 61 73 58"/>
+        <circle class="d" cx="56" cy="40" r="2.4"/><circle class="d" cx="56" cy="60" r="2.4"/>
+        <path class="d" d="M86 34C104 40 122 46 140 50M86 66C104 60 122 54 140 50M52 50L150 50" stroke-dasharray="2 4"/>
+      </svg>`;
+    }
+    const B = FISH_BODIES[kind] || FISH_BODIES.deep;
+    const L = B.len, x0 = (200 - L * (1 + B.tl)) / 2 + 2, cy = 50;
+    const wave = (x) => (B.wave ? B.wave * Math.sin(((x - x0) / L) * Math.PI * 2 * (B.waves || 1)) : 0);
+    const P = B.pts.map(([x, t, b]) => [x0 + x * L, t * L, b * L]);
+    const Tp = P.map(([x, t]) => [x, cy - t + wave(x)]), Bp = P.map(([x, , b]) => [x, cy + b + wave(x)]);
+    const cr = (p) => {
+      let d = "";
+      for (let i = 0; i < p.length - 1; i++) {
+        const p0 = p[Math.max(0, i - 1)], p1 = p[i], p2 = p[i + 1], p3 = p[Math.min(p.length - 1, i + 2)];
+        d += `C${n1(p1[0] + (p2[0] - p0[0]) / 6)} ${n1(p1[1] + (p2[1] - p0[1]) / 6)} ${n1(p2[0] - (p3[0] - p1[0]) / 6)} ${n1(p2[1] - (p3[1] - p1[1]) / 6)} ${n1(p2[0])} ${n1(p2[1])}`;
+      }
+      return d;
+    };
+    const dense = (p) => { const out = [p[0]]; for (let i = 0; i < p.length - 1; i++) { const p0 = p[Math.max(0, i - 1)], p1 = p[i], p2 = p[i + 1], p3 = p[Math.min(p.length - 1, i + 2)]; for (let k = 1; k <= 12; k++) { const t = k / 12, t2 = t * t, t3 = t2 * t; const c1x = p1[0] + (p2[0] - p0[0]) / 6, c1y = p1[1] + (p2[1] - p0[1]) / 6, c2x = p2[0] - (p3[0] - p1[0]) / 6, c2y = p2[1] - (p3[1] - p1[1]) / 6, u = 1 - t; out.push([u * u * u * p1[0] + 3 * u * u * t * c1x + 3 * u * t2 * c2x + t3 * p2[0], u * u * u * p1[1] + 3 * u * u * t * c1y + 3 * u * t2 * c2y + t3 * p2[1]]); } } return out; };
+    const TpD = dense(Tp), BpD = dense(Bp);
+    const edge = (arr, x) => {
+      arr = arr === Tp ? TpD : arr === Bp ? BpD : arr;
+      for (let i = 0; i < arr.length - 1; i++) if (x >= arr[i][0] && x <= arr[i + 1][0]) { const t = (x - arr[i][0]) / (arr[i + 1][0] - arr[i][0] || 1); return arr[i][1] + t * (arr[i + 1][1] - arr[i][1]); }
+      return arr[arr.length - 1][1];
+    };
+    const last = P.length - 1, xe = x0 + L, tt = Tp[last], bb = Bp[last];
+    const tl = B.tl * L, th = B.th * L, mid = (tt[1] + bb[1]) / 2;
+    let tail;
+    if (B.tail === "round") tail = `C${n1(xe + tl * 0.3)} ${n1(tt[1] - th * 0.05)} ${n1(xe + tl * 0.85)} ${n1(mid - th)} ${n1(xe + tl)} ${n1(mid - th * 0.7)}Q${n1(xe + tl * 1.14)} ${n1(mid)} ${n1(xe + tl)} ${n1(mid + th * 0.7)}C${n1(xe + tl * 0.85)} ${n1(mid + th)} ${n1(xe + tl * 0.3)} ${n1(bb[1] + th * 0.05)} ${n1(bb[0])} ${n1(bb[1])}`;
+    else if (B.tail === "shark") tail = `L${n1(xe + tl * 1.05)} ${n1(mid - th * 1.6)}L${n1(xe + tl * 0.62)} ${n1(mid - th * 0.1)}L${n1(xe + tl * 0.8)} ${n1(mid + th * 0.6)}L${n1(bb[0])} ${n1(bb[1])}`;
+    else if (B.tail === "point") tail = `L${n1(xe + tl)} ${n1(mid)}L${n1(bb[0])} ${n1(bb[1])}`;
+    else tail = `L${n1(xe + tl)} ${n1(mid - th)}L${n1(xe + tl * 0.7)} ${n1(mid)}L${n1(xe + tl)} ${n1(mid + th)}L${n1(bb[0])} ${n1(bb[1])}`;
+    const body = `M${n1(Tp[0][0])} ${n1(Tp[0][1])}${cr(Tp)}L${n1(tt[0])} ${n1(tt[1])}${tail}${cr(Bp.slice().reverse())}Z`;
+
+    const fin = (f) => {
+      const arr = f.on === "top" ? Tp : Bp, s = f.on === "top" ? -1 : 1;
+      const xa = x0 + f.a * L, xb = x0 + f.b * L, ya = edge(arr, xa), yb = edge(arr, xb), h = f.h * L, dx = xb - xa;
+      let d;
+      if (f.style === "spiny") {
+        const n = f.n || 7; d = `M${n1(xa)} ${n1(ya)}`;
+        for (let i = 0; i < n; i++) {
+          const x1 = xa + (dx * (i + 0.55)) / n, x2 = xa + (dx * (i + 1)) / n, hh = h * (0.72 + 0.28 * Math.sin((Math.PI * (i + 0.5)) / n));
+          d += `L${n1(x1)} ${n1(edge(arr, x1) + s * hh)}L${n1(x2)} ${n1(edge(arr, x2))}`;
+        }
+        return `<path class="d" d="${d}"/>`;
+      }
+      if (f.style === "shark") d = `M${n1(xa)} ${n1(ya)}L${n1(xa + dx * 0.45)} ${n1(ya + s * h)}Q${n1(xa + dx * 0.75)} ${n1(ya + s * h * 0.3)} ${n1(xb)} ${n1(yb)}`;
+      else if (f.style === "falcate") d = `M${n1(xa)} ${n1(ya)}C${n1(xa + dx * 0.15)} ${n1(ya + s * h * 0.95)} ${n1(xa + dx * 0.45)} ${n1(ya + s * h)} ${n1(xb + dx * 0.35)} ${n1(yb + s * h * 0.9)}Q${n1(xb + dx * 0.05)} ${n1(yb + s * h * 0.3)} ${n1(xb)} ${n1(yb)}`;
+      else if (f.style === "long") d = `M${n1(xa)} ${n1(ya)}C${n1(xa + dx * 0.15)} ${n1(ya + s * h)} ${n1(xb - dx * 0.15)} ${n1(yb + s * h * 0.8)} ${n1(xb)} ${n1(yb)}`;
+      else d = `M${n1(xa)} ${n1(ya)}C${n1(xa + dx * 0.2)} ${n1(ya + s * h * 1.3)} ${n1(xa + dx * 0.7)} ${n1(ya + s * h * 1.1)} ${n1(xb)} ${n1(yb)}`;
+      let rays = "";
+      if (f.style === "soft" || f.style === "long") for (const t of [0.3, 0.55, 0.8]) { const rx = xa + dx * t; rays += `M${n1(rx)} ${n1(edge(arr, rx))}L${n1(rx + dx * 0.07)} ${n1(edge(arr, rx) + s * h * 0.72)}`; }
+      return `<path class="d" d="${d}"/>${rays ? `<path class="r" d="${rays}"/>` : ""}`;
     };
 
-    const detailHtml = (c) => {
-      const en = state.species[c.species] || "—";
-      const no = noRange(c, noOf(c, nos));
-      return `
-        <div class="detail">
+    const tAt = (fx) => cy - edge(Tp, x0 + fx * L), bAt = (fx) => edge(Bp, x0 + fx * L) - cy;
+    let out = `<path class="b" d="${body}"/>`;
+    out += B.fins.map(fin).join("");
+    // pectoral and pelvic fins
+    const px = x0 + 0.25 * L, py = cy + bAt(0.25) * 0.2, big = B.big ? 1.6 : 1;
+    out += `<path class="d" d="M${n1(px)} ${n1(py)}C${n1(px + 0.06 * L * big)} ${n1(py + 0.02 * L)} ${n1(px + 0.1 * L * big)} ${n1(py + 0.07 * L * big)} ${n1(px + 0.09 * L * big)} ${n1(py + 0.11 * L * big)}C${n1(px + 0.05 * L)} ${n1(py + 0.1 * L)} ${n1(px + 0.01 * L)} ${n1(py + 0.06 * L)} ${n1(px)} ${n1(py)}"/>`;
+    if (kind !== "eel") { const vx = x0 + 0.38 * L, vy = cy + bAt(0.38) - 1; out += `<path class="d" d="M${n1(vx)} ${n1(vy)}L${n1(vx - 0.02 * L)} ${n1(vy + 0.07 * L)}Q${n1(vx + 0.02 * L)} ${n1(vy + 0.05 * L)} ${n1(vx + 0.05 * L)} ${n1(vy)}"/>`; }
+    // eye, gill, mouth
+    const ex = x0 + 0.085 * L, ey = cy - tAt(0.085) * 0.38, er = Math.max(1.6, B.eye * L);
+    out += `<circle class="d" cx="${n1(ex)}" cy="${n1(ey)}" r="${n1(er)}"/><circle class="e" cx="${n1(ex)}" cy="${n1(ey)}" r="${n1(er * 0.4)}"/>`;
+    const gx = x0 + 0.21 * L;
+    out += `<path class="d" d="M${n1(gx)} ${n1(cy - tAt(0.21) * 0.78)}Q${n1(gx - 0.06 * L)} ${n1(cy)} ${n1(gx)} ${n1(cy + bAt(0.21) * 0.78)}"/>`;
+    const m = B.jaw ? 0.11 : 0.055;
+    out += `<path class="d" d="M${n1(x0)} ${n1(cy + wave(x0))}Q${n1(x0 + m * L * 0.5)} ${n1(cy + 0.03 * L)} ${n1(x0 + m * L)} ${n1(cy + 0.018 * L)}"/>`;
+    // lateral line
+    const ll = [0.26, 0.42, 0.58, 0.74, 0.92].map(fx => [x0 + fx * L, cy - tAt(fx) * 0.1 + wave(x0 + fx * L)]);
+    out += `<path class="r" stroke-dasharray="2 3" d="M${n1(ll[0][0])} ${n1(ll[0][1])}${cr(ll)}"/>`;
+    // markings, chosen from the names
+    const t = `${name} ${english || ""}`.toLowerCase();
+    const spots = kind === "grouper" || /spot|harlequin|sweetlips|kaci|leopard|tutul|bintik|puyut|catshark|hiu tokek/.test(t);
+    const bars = !spots && (kind === "tilapia" || /banded|stripe|lurik|loreng|tanda|sergeant/.test(t));
+    if (spots) {
+      for (let i = 0; i < 11; i++) {
+        const fx = 0.3 + 0.62 * ((i * 0.618034) % 1), fy = (i * 0.4142 + 0.13) % 1, x = x0 + fx * L, top = edge(Tp, x), bot = edge(Bp, x);
+        out += `<circle class="r" cx="${n1(x)}" cy="${n1(top + (0.22 + 0.56 * fy) * (bot - top))}" r="${n1(L * 0.011)}"/>`;
+      }
+    } else if (bars) {
+      for (const fx of [0.34, 0.48, 0.62, 0.76]) { const x = x0 + fx * L, top = edge(Tp, x), bot = edge(Bp, x); out += `<path class="r" d="M${n1(x)} ${n1(top + 3)}Q${n1(x + 3)} ${n1((top + bot) / 2)} ${n1(x)} ${n1(bot - 3)}"/>`; }
+    }
+    if (B.barbels) out += `<path class="d" d="M${n1(x0 + 2)} ${n1(cy + 1)}C${n1(x0 - 12)} ${n1(cy + 6)} ${n1(x0 - 20)} ${n1(cy + 16)} ${n1(x0 - 24)} ${n1(cy + 28)}M${n1(x0 + 3)} ${n1(cy - 1)}C${n1(x0 - 10)} ${n1(cy - 6)} ${n1(x0 - 20)} ${n1(cy - 4)} ${n1(x0 - 28)} ${n1(cy + 2)}"/>`;
+    if (B.spines) for (let i = 0; i < 14; i++) { const fx = 0.16 + 0.68 * (i / 13), x = x0 + fx * L, up = i % 2 === 0, y = up ? edge(Tp, x) : edge(Bp, x); out += `<path class="r" d="M${n1(x)} ${n1(y)}L${n1(x + 2)} ${n1(y + (up ? -4.5 : 4.5))}"/>`; }
+    return `<svg class="fish-art" viewBox="0 0 200 100" aria-hidden="true">${out}</svg>`;
+  }
+  const fishIcon = (name, english) => fishArt(fishKind(name, english), name, english);
+  // ---- One dialog shared by the Catch Log and Species albums: the grids show icons only, a tap opens the entry
+  const FISH_GLYPH = `<svg class="ph-fish" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12c2.6-4.2 6.2-5.6 10-4.6 2.2.6 3.6 2.4 4 4.6-.4 2.2-1.8 4-4 4.6-3.8 1-7.4-.4-10-4.6zM16.5 12L21.5 8v8z"/></svg>`;
+  let entryOpener = null, logScrolledKey = null;
+  function openEntry(html, opener) {
+    const m = document.getElementById("entryModal");
+    document.getElementById("entryBody").innerHTML = html;
+    entryOpener = opener || null;
+    m.classList.add("open");
+    document.body.classList.add("no-scroll");
+    m.querySelector(".entry-box").scrollTop = 0;
+    document.getElementById("entryClose").focus({ preventScroll: true });
+    return document.getElementById("entryBody");
+  }
+  function closeEntry() {
+    const m = document.getElementById("entryModal");
+    if (!m.classList.contains("open")) return;
+    m.classList.remove("open");
+    document.body.classList.remove("no-scroll");
+    document.getElementById("entryBody").innerHTML = "";
+    if (typeof infoSeq !== "undefined") infoSeq++;   // an unfinished species lookup should not paint into a closed dialog
+    if (entryOpener && document.contains(entryOpener)) entryOpener.focus({ preventScroll: true });
+    entryOpener = null;
+  }
+  document.getElementById("entryClose").addEventListener("click", closeEntry);
+  document.getElementById("entryModal").addEventListener("click", (e) => { if (e.target.id === "entryModal") closeEntry(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.getElementById("entryModal").classList.contains("open") && !document.querySelector(".lightbox.open")) { e.preventDefault(); closeEntry(); }
+  });
+
+  // Catch Log: a wall of photo tiles; the entry opens on tap
+  function catchDetailHtml(c, nos) {
+    const en = state.species[c.species] || "—";
+    const no = noRange(c, noOf(c, nos));
+    const row = (label, value) => `<div class="data-row"><span class="data-label">${label}</span><span class="data-value">${value}</span></div>`;
+    return `
+      <div class="entry">
+        <div class="entry-l">
           <div class="detail-frame">
             ${c.photo
               ? `<button type="button" class="photo-open" data-photo-id="${c.id}" aria-label="Enlarge photo of ${escapeHtml(c.species)}"><img src="${c.photo}" alt="${escapeHtml(c.species)}" class="catch-photo" /></button>`
-              : `<div class="detail-nophoto">${FISH_GLYPH}</div>`}
+              : `<div class="detail-nophoto">${fishIcon(c.species, state.species[c.species])}</div>`}
             <span class="detail-no">${no}</span>
           </div>
           <h3 class="detail-title">${escapeHtml(c.species)}</h3>
           <p class="detail-sub">${escapeHtml(en)}</p>
-          <div class="detail-rule" aria-hidden="true"></div>
+        </div>
+        <div class="entry-r">
           <div class="catch-data">
             ${row("Date", shortDate(c.date))}
             ${qtyOf(c) > 1 ? row(`${qtyOf(c)} fish`, fishChips(c, noOf(c, nos))) : ""}
@@ -3019,65 +3256,239 @@ A backup file is downloaded first.`)) return;
               <button class="edit-catch-btn" data-edit-id="${c.id}">Edit</button>
               <button class="delete-catch-btn" data-delete-id="${c.id}">Delete</button>
             </div>` : ""}
-        </div>`;
-    };
+        </div>
+      </div>`;
+  }
+  function showCatch(c, nos, opener) {
+    const body = openEntry(catchDetailHtml(c, nos), opener);
+    const ph = body.querySelector(".photo-open");
+    if (ph) ph.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const all = catchPhotos(state.catches);
+      openLightbox(all, all.findIndex(x => x.id === Number(ph.dataset.photoId)), ph);
+    });
+    const ed = body.querySelector(".edit-catch-btn");
+    if (ed) ed.addEventListener("click", (e) => { e.stopPropagation(); closeEntry(); startEditCatch(Number(ed.dataset.editId)); });
+    const del = body.querySelector(".delete-catch-btn");
+    if (del) del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = Number(del.dataset.deleteId);
+      const c2 = state.catches.find(x => x.id === id);
+      if (!c2) return;
+      const ok = confirm(`Delete this catch?\n\n${c2.species} — ${c2.date}${qtyOf(c2) > 1 ? `\n\nThis removes all ${qtyOf(c2)} fish logged in this entry.` : ""}\n\nThis can't be undone.`);
+      if (!ok) return;
+      closeEntry();
+      state.catches = state.catches.filter(x => x.id !== id);
+      deletedCatchIds.add(id);
+      if (c2.photoId) { photoQueue.dels.push(c2.photoId); savePhotoQueue(); }
+      // if no other catch still uses this species, offer to clean up its dictionary entry too
+      const stillUsed = state.catches.some(x => x.species === c2.species);
+      if (!stillUsed && state.species[c2.species]) {
+        const cleanup = confirm(`No other catches use "${c2.species}" anymore. Also remove it from the Species list?`);
+        if (cleanup) {
+          delete state.species[c2.species];
+          deletedSpeciesNames.add(c2.species);
+        }
+      }
+      if (String(expandedId).split("-")[0] === String(id)) expandedId = null;
+      if (editingCatchId === id) resetCatchForm();
+      render();
+      scheduleSave();
+    });
+  }
 
+  function renderLog() {
+    const list = document.getElementById("logList");
+    const nos = catchNumbers();
+    const sorted = [...state.catches].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : noOf(b, nos) - noOf(a, nos)));
+    if (sorted.length === 0) {
+      list.innerHTML = `<p class="empty-state">No catches logged yet. Start with your first one in "Log Entry".</p>`;
+      return;
+    }
+    const tiles = sorted.map(c => {
+      const key = unitKey(c);
+      const no = noRange(c, noOf(c, nos));
+      return `<button type="button" class="tile${key === expandedId ? " is-sel" : ""}" data-key="${key}" aria-label="${escapeHtml(`${no}, ${c.species}, ${shortDate(c.date)}`)}"><span class="tile-photo">${c.photo ? `<img src="${c.photo}" alt="" loading="lazy" decoding="async" />` : fishIcon(c.species, state.species[c.species])}</span><span class="tile-no">${no}</span>${waterMark(c.waterType)}<span class="tile-cap"><b>${escapeHtml(c.species)}${xQty(c)}</b><i>${shortDate(c.date)}</i></span></button>`;
+    }).join("");
     list.innerHTML = `
       <div class="album">
-        <div class="album-main">
-          <div class="bar"><span class="card-title">All catches</span><span class="bar-count">${sorted.length}</span></div>
-          <div class="album-grid">${sorted.map(tileHtml).join("")}</div>
-        </div>
-        <aside class="album-detail" id="albumDetail" aria-live="polite"></aside>
+        <div class="bar"><span class="card-title">All catches</span><span class="bar-count">${sorted.length}</span></div>
+        <div class="album-grid">${tiles}</div>
       </div>`;
-
-    const detail = list.querySelector("#albumDetail");
-    const show = (key) => {
-      const c = sorted.find(x => unitKey(x) === key) || sorted[0];
-      detail.innerHTML = detailHtml(c);
-      list.querySelectorAll(".tile").forEach(t => { const on = t.dataset.key === unitKey(c); t.classList.toggle("is-sel", on); t.setAttribute("aria-pressed", String(on)); });
-      const ph = detail.querySelector(".photo-open");
-      if (ph) ph.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const all = catchPhotos(state.catches);
-        openLightbox(all, all.findIndex(x => x.id === Number(ph.dataset.photoId)), ph);
-      });
-      const ed = detail.querySelector(".edit-catch-btn");
-      if (ed) ed.addEventListener("click", (e) => { e.stopPropagation(); startEditCatch(Number(ed.dataset.editId)); });
-      const del = detail.querySelector(".delete-catch-btn");
-      if (del) del.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const id = Number(del.dataset.deleteId);
-        const c2 = state.catches.find(x => x.id === id);
-        if (!c2) return;
-        const ok = confirm(`Delete this catch?\n\n${c2.species} — ${c2.date}${qtyOf(c2) > 1 ? `\n\nThis removes all ${qtyOf(c2)} fish logged in this entry.` : ""}\n\nThis can't be undone.`);
-        if (!ok) return;
-        state.catches = state.catches.filter(x => x.id !== id);
-        deletedCatchIds.add(id);
-        if (c2.photoId) { photoQueue.dels.push(c2.photoId); savePhotoQueue(); }
-        // if no other catch still uses this species, offer to clean up its dictionary entry too
-        const stillUsed = state.catches.some(x => x.species === c2.species);
-        if (!stillUsed && state.species[c2.species]) {
-          const cleanup = confirm(`No other catches use "${c2.species}" anymore. Also remove it from the Species list?`);
-          if (cleanup) {
-            delete state.species[c2.species];
-            deletedSpeciesNames.add(c2.species);
-          }
-        }
-        if (String(expandedId).split("-")[0] === String(id)) expandedId = null;
-        if (editingCatchId === id) resetCatchForm();
-        render();
-        scheduleSave();
-      });
-    };
-    show(expandedId);
     list.querySelectorAll(".tile").forEach(t => t.addEventListener("click", () => {
-      expandedId = t.dataset.key;
-      show(expandedId);
-      if (window.matchMedia("(max-width: 900px)").matches) detail.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      expandedId = t.dataset.key; logScrolledKey = expandedId;
+      list.querySelectorAll(".tile").forEach(x => x.classList.toggle("is-sel", x === t));
+      const c = sorted.find(x => unitKey(x) === expandedId);
+      if (c) showCatch(c, nos, t);
     }));
+    // an entry picked somewhere else (just saved, or "See in Catch Log"): bring its tile into view
+    if (expandedId && expandedId !== logScrolledKey && document.getElementById("panel-log").classList.contains("active")) {
+      const t = list.querySelector(".tile.is-sel");
+      if (t) { logScrolledKey = expandedId; t.scrollIntoView({ block: "center" }); }
+    }
   }
-  // Species as a tome of entries: one card per species, a photo where Del has caught it, a locked card where not yet.
+  // ---- Optional AI helper: only used when the owner has pasted a key (kept in this browser, never saved to the database)
+  function aiKey() { try { return localStorage.getItem("catchlog_ai_key") || ""; } catch (e) { return ""; } }
+  async function askClaude(content, maxTokens) {
+    const key = aiKey();
+    if (!key) throw new Error("no key");
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: maxTokens || 600, messages: [{ role: "user", content }] }),
+    });
+    if (!r.ok) {
+      let msg = "";
+      try { msg = (await r.json()).error.message; } catch (e) { /* not JSON */ }
+      throw new Error(msg || "HTTP " + r.status);
+    }
+    const j = await r.json();
+    return (j.content || []).map(b => b.text || "").join("");
+  }
+  function parseJsonLoose(text) {
+    const m = String(text || "").match(/\{[\s\S]*\}/);
+    if (!m) return null;
+    try { return JSON.parse(m[0]); } catch (e) { return null; }
+  }
+
+  // ---- Species entry: what Del has caught, plus an automatic write-up from public sources (iNaturalist, Wikipedia)
+  let speciesSel = null, infoSeq = 0;
+  const INFO_LS = "catchlog_fishinfo_v1";
+  const INFO_TTL = 30 * 864e5, INFO_MISS_TTL = 864e5;
+  function infoCacheGet(k) {
+    try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); const h = all[k]; if (h && Date.now() - h.t < (h.data && h.data.found ? INFO_TTL : INFO_MISS_TTL)) return h.data; } catch (e) { /* no storage */ }
+    return null;
+  }
+  function infoCachePut(k, data) {
+    try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); all[k] = { t: Date.now(), data }; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (e) { /* storage full or blocked */ }
+  }
+  const stripHtml = (h) => { const d = document.createElement("div"); d.innerHTML = h || ""; return (d.textContent || "").replace(/\s+/g, " ").trim(); };
+  const clipText = (s, n) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, "") + "…");
+  const cleanWiki = (s) => s.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
+  const firstSentences = (s, n) => { const m = cleanWiki(s).match(/[^.!?]+[.!?]+(\s|$)/g); return m ? m.slice(0, n).join("").trim() : cleanWiki(s); };
+  function latinOf(en) {
+    const m = /\(([^)]+)\)\s*$/.exec(en || "");
+    return m ? m[1].replace(/\b(sp|spp|cf|aff)\.?/gi, "").replace(/\s+/g, " ").trim() : "";
+  }
+  function parseWikiText(txt) {
+    const secs = [{ title: "", text: [] }];
+    String(txt || "").split("\n").forEach(line => {
+      const m = /^(={2,})\s*(.+?)\s*\1\s*$/.exec(line);
+      if (m) secs.push({ title: m[2], text: [] });
+      else if (line.trim()) secs[secs.length - 1].text.push(line.trim());
+    });
+    return secs.filter(s => !/^(references|external links|see also|further reading|notes|gallery|bibliography|sources)$/i.test(s.title));
+  }
+
+  async function fetchFishInfo(name) {
+    const en = state.species[name] || "";
+    const latin = latinOf(en);
+    const cacheKey = (latin || name).toLowerCase();
+    const cached = infoCacheGet(cacheKey);
+    if (cached) return cached;
+    const J = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); };
+
+    // 1. the taxon on iNaturalist: rank, family, conservation status, a fallback photo
+    let taxon = null, detail = null;
+    try {
+      const q = latin || name;
+      const s = await J(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(q)}&locale=en&per_page=8&taxon_id=47178,47273&is_active=true`);
+      const list = s.results || [];
+      taxon = list.find(t => t.name.toLowerCase() === q.toLowerCase()) || null;
+      // with only a local name to go on, accept a hit only when that name really is one of its common names
+      if (!taxon && !latin) taxon = list.find(t => (t.matched_term || "").toLowerCase().includes(q.toLowerCase())) || null;
+      if (!taxon && latin) taxon = list[0] || null;
+      if (taxon) detail = ((await J(`https://api.inaturalist.org/v1/taxa/${taxon.id}?locale=en`)).results || [])[0] || null;
+    } catch (e) { /* offline or blocked: carry on with what we have */ }
+
+    // 2. Wikipedia: the species page first, then its genus and family
+    const titles = [];
+    if (detail && detail.wikipedia_url) titles.push(decodeURIComponent(detail.wikipedia_url.split("/wiki/")[1] || ""));
+    if (latin) titles.push(latin.replace(/ /g, "_"));
+    (detail && detail.ancestors ? detail.ancestors.slice().reverse() : []).forEach(a => { if (a.rank === "genus" || a.rank === "family") titles.push(a.name); });
+    let wiki = "", wikiTitle = "";
+    for (const t of [...new Set(titles.filter(Boolean))]) {
+      try {
+        const w = await J(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&titles=${encodeURIComponent(t)}&format=json&origin=*`);
+        const p = Object.values(w.query.pages)[0];
+        if (p && !p.missing && p.extract && p.extract.length > 200) { wiki = p.extract; wikiTitle = p.title; break; }
+      } catch (e) { /* try the next title */ }
+    }
+
+    const info = { found: false, latin: latin || (taxon ? taxon.name : ""), rank: taxon ? taxon.rank : "", about: "", history: "", facts: [], sources: [] };
+    if (detail) {
+      const anc = detail.ancestors || [];
+      const fam = anc.find(a => a.rank === "family"), ord = anc.find(a => a.rank === "order");
+      if (fam) info.family = fam.name + (fam.preferred_common_name ? ` (${fam.preferred_common_name})` : "");
+      if (ord) info.order = ord.name;
+      const cs = detail.conservation_status || (detail.conservation_statuses || []).find(x => !x.place);
+      if (cs && (cs.status_name || cs.status)) info.status = String(cs.status_name || cs.status);
+      if (detail.default_photo && detail.default_photo.medium_url) info.photo = { url: detail.default_photo.medium_url, credit: detail.default_photo.attribution || "" };
+      info.sources.push({ label: "iNaturalist", url: `https://www.inaturalist.org/taxa/${detail.id}` });
+    }
+    if (wiki) {
+      const hitAnc = ((detail && detail.ancestors) || []).find(a => a.name.toLowerCase() === wikiTitle.toLowerCase());
+      if (hitAnc) info.scope = `${hitAnc.rank} ${hitAnc.name}`;
+      const secs = parseWikiText(wiki);
+      const intro = secs[0].text;
+      info.about = clipText(cleanWiki(intro.slice(0, 2).join(" ")), 640);
+      const look = secs.find(s => /^(description|appearance|morphology|characteristics|anatomy)/i.test(s.title));
+      if (look && look.text[0]) info.description = clipText(cleanWiki(look.text[0]), 440);
+      const hist = secs.filter(s => /taxonom|history|etymolog|naming|nomenclature|discover|systematic|classification/i.test(s.title));
+      if (hist.length) info.history = clipText(cleanWiki(hist.map(s => s.text.slice(0, 2).join(" ")).join(" ")), 720);
+      secs.filter(s => s.title && s.text[0] && !hist.includes(s) && s !== look && /biolog|behaviou?r|ecolog|diet|feeding|reproduc|life|habitat|distribution|fisher|aquaculture|human|cultur|\buse|food|conserv|status|threat/i.test(s.title))
+        .slice(0, 5).forEach(s => info.facts.push({ title: s.title, text: clipText(firstSentences(s.text[0], 2), 260) }));
+      info.sources.push({ label: "Wikipedia", url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/ /g, "_"))}` });
+    } else if (detail && detail.wikipedia_summary) {
+      info.about = clipText(stripHtml(detail.wikipedia_summary), 640);
+    }
+    info.found = !!(info.about || info.history || info.facts.length);
+
+    // 3. Owner only: let the AI fill what the public sources left out
+    if (aiKey() && (!info.about || !info.history || info.facts.length < 2)) {
+      try {
+        const out = parseJsonLoose(await askClaude([{ type: "text", text:
+          `Fish: "${name}"${en ? ` (${en})` : ""}, caught around Karimun and the Riau Islands, Indonesia. Reply with ONLY JSON: {"about":"2-3 sentences describing the fish","history":"2-3 sentences on how it was named or described and its place in fishing or local life","facts":[{"title":"short label","text":"one interesting fact"}]} with 3 to 4 facts. Only say what you are confident is true; leave a field empty rather than guess.` }], 700));
+        if (out) {
+          if (!info.about && out.about) info.about = String(out.about);
+          if (!info.history && out.history) info.history = String(out.history);
+          if (info.facts.length < 2 && Array.isArray(out.facts)) info.facts = out.facts.filter(f => f && f.text).slice(0, 4).map(f => ({ title: String(f.title || "Fact"), text: String(f.text) }));
+          info.ai = true;
+          info.found = !!(info.about || info.history || info.facts.length);
+        }
+      } catch (e) { /* the AI is a bonus; ignore its failures */ }
+    }
+    infoCachePut(cacheKey, info);
+    return info;
+  }
+
+  function speciesStats(name) {
+    const cs = state.catches.filter(c => c.species === name).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id));
+    const mode = (arr) => { const m = new Map(); arr.filter(Boolean).forEach(v => m.set(v, (m.get(v) || 0) + 1)); return [...m.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || ""; };
+    const weights = cs.map(c => parseFloat(String(c.weight || "").replace(",", "."))).filter(w => w > 0);
+    return {
+      cs, entries: cs.length, total: cs.reduce((s, c) => s + qtyOf(c), 0),
+      first: cs[0], last: cs[cs.length - 1],
+      places: new Set(cs.map(c => c.location).filter(Boolean)).size,
+      heaviest: weights.length ? Math.max(...weights) : 0,
+      bait: mode(cs.map(c => c.bait)), method: mode(cs.map(c => c.method)),
+    };
+  }
+
+  function infoHtml(info, name) {
+    if (!info || !info.found) {
+      return `<div class="info-block"><p class="info-none">No write-up found online for this one yet.</p><button type="button" class="toggle-btn info-retry" data-retry="1">Search again</button></div>`;
+    }
+    const chips = [info.family && `Family · ${escapeHtml(info.family)}`, info.order && `Order · ${escapeHtml(info.order)}`, info.status && `Status · ${escapeHtml(info.status)}`].filter(Boolean);
+    return `
+      ${chips.length ? `<div class="info-chips">${chips.map(c => `<span>${c}</span>`).join("")}</div>` : ""}
+      ${info.scope ? `<p class="info-scope">There is no page for this exact species, so the notes below describe the ${escapeHtml(info.scope)}.</p>` : ""}
+      ${info.about ? `<div class="info-block"><h4>About</h4><p>${escapeHtml(info.about)}</p>${info.description ? `<p>${escapeHtml(info.description)}</p>` : ""}</div>` : ""}
+      ${info.history ? `<div class="info-block"><h4>History &amp; naming</h4><p>${escapeHtml(info.history)}</p></div>` : ""}
+      ${info.facts.length ? `<div class="info-block"><h4>Good to know</h4><ul class="fact-list">${info.facts.map(f => `<li><b>${escapeHtml(f.title)}</b> ${escapeHtml(f.text)}</li>`).join("")}</ul></div>` : ""}
+      <p class="info-src">${info.ai ? "Partly written by AI. " : ""}Sources: ${info.sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(", ") || "public references"}</p>`;
+  }
+
   function renderSpecies() {
     const list = document.getElementById("speciesList");
     const query = (document.getElementById("speciesSearch").value || "").trim().toLowerCase();
@@ -3087,56 +3498,101 @@ A backup file is downloaded first.`)) return;
     const nos = catchNumbers();
     const firstBySpecies = new Map();
     [...state.catches].sort((a, b) => (nos.get(a.id) || 0) - (nos.get(b.id) || 0)).forEach(c => { if (!firstBySpecies.has(c.species)) firstBySpecies.set(c.species, c); });
-    const photoBy = new Map(), countBy = new Map();
-    [...state.catches].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id)).forEach(c => { if (c.photo && !photoBy.has(c.species)) photoBy.set(c.species, c); });
+    const countBy = new Map();
     state.catches.forEach(c => countBy.set(c.species, (countBy.get(c.species) || 0) + qtyOf(c)));
     const names = Object.keys(state.species);
     const found = names.filter(n => firstBySpecies.has(n)).length;
     const pct = names.length ? Math.round(found / names.length * 100) : 0;
+    if (names.length === 0) { list.innerHTML = `<p class="empty-state">No species yet. They appear here as you log catches.</p>`; return; }
     const head = `<div class="tome-progress"><span class="tome-lab">Collection</span><i class="tome-bar" aria-hidden="true"><em style="width:${pct}%"></em></i><span class="tome-of"><b>${found}</b> of ${names.length} species caught</span></div>`;
-    if (entries.length === 0) {
-      list.innerHTML = head + `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`;
-      return;
-    }
-    list.innerHTML = head + `<div class="tomes">` + entries.map(([id, en]) => {
+    const tiles = entries.map(([id, en]) => {
       const fc = firstBySpecies.get(id);
-      const ph = photoBy.get(id);
       const n = countBy.get(id) || 0;
-      return `
-        <article class="tome${fc ? "" : " is-locked"}${ph ? " has-photo" : ""}"${ph ? ` role="button" tabindex="0" data-photo-id="${ph.id}" aria-label="Open photo of ${escapeHtml(id)}"` : ""}>
-          <span class="tome-photo">${ph ? `<img src="${ph.photo}" alt="" loading="lazy" decoding="async" />` : FISH_GLYPH}</span>
-          <span class="tome-no">${fc ? pad3(nos.get(fc.id) || 0) : "???"}</span>
-          ${fc ? waterMark(fc.waterType) : ""}
-          <span class="tome-cap"><b>${escapeHtml(id)}</b><i>${escapeHtml(en)}</i></span>
-          ${n > 0 ? `<span class="tome-count">×${n}</span>` : ""}
-          ${editUnlocked ? `<a href="#" class="species-delete-link" data-species="${escapeHtml(id)}" title="Delete this species">Delete</a>` : ""}
-        </article>`;
-    }).join("") + `</div>`;
-    list.querySelectorAll(".tome[data-photo-id]").forEach(el => {
-      const open = () => {
-        const all = catchPhotos(state.catches);
-        openLightbox(all, all.findIndex(x => x.id === Number(el.dataset.photoId)), el);
+      const label = fc ? `${pad3(nos.get(fc.id) || 0)}, ${id}` : `Not caught yet, ${id}`;
+      return `<button type="button" class="tome${fc ? "" : " is-locked"}${id === speciesSel ? " is-sel" : ""}" data-name="${escapeHtml(id)}" aria-label="${escapeHtml(label)}"><span class="tome-photo">${fishIcon(id, en)}</span><span class="tome-no">${fc ? pad3(nos.get(fc.id) || 0) : "???"}</span>${fc ? waterMark(fc.waterType) : ""}<span class="tome-cap"><b>${escapeHtml(id)}</b><i>${escapeHtml(en)}</i></span>${n > 0 ? `<span class="tome-count">×${n}</span>` : ""}</button>`;
+    }).join("");
+    list.innerHTML = `${head}${entries.length ? `<div class="tomes">${tiles}</div>` : `<p class="empty-state">No species match "${escapeHtml(query)}".</p>`}`;
+    list.querySelectorAll(".tome").forEach(t => t.addEventListener("click", () => {
+      speciesSel = t.dataset.name;
+      list.querySelectorAll(".tome").forEach(x => x.classList.toggle("is-sel", x === t));
+      showSpecies(speciesSel, t);
+    }));
+  }
+
+  function showSpecies(name, opener) {
+    const st = speciesStats(name);
+    const en = state.species[name] || "";
+    const nos = catchNumbers();
+    const photoCatch = [...st.cs].reverse().find(c => c.photo);
+    const seq = ++infoSeq;
+    const stat = (label, value, wide) => value ? `<div class="stat${wide ? " wide" : ""}"><span>${label}</span><b>${value}</b></div>` : "";
+    const caught = st.total
+      ? `<b class="stat-big">×${st.total}</b> <em>in ${st.entries} ${st.entries === 1 ? "entry" : "entries"}</em>`
+      : `<em>Not caught yet</em>`;
+    const body = openEntry(`
+      <div class="entry">
+        <div class="entry-l">
+          <div class="detail-frame">
+            ${photoCatch
+              ? `<button type="button" class="photo-open" aria-label="Enlarge photo of ${escapeHtml(name)}"><img src="${photoCatch.photo}" alt="${escapeHtml(name)}" class="catch-photo" /></button>`
+              : `<div class="detail-nophoto" id="infoPhoto">${fishIcon(name, en)}</div>`}
+            ${st.first ? `<span class="detail-no">${pad3(nos.get(st.first.id) || 0)}</span>` : ""}
+          </div>
+          <h3 class="detail-title">${escapeHtml(name)}</h3>
+          <p class="detail-sub">${escapeHtml(en || "—")}</p>
+          <div class="stat-grid">
+            ${stat("Caught", caught, true)}
+            ${st.first ? stat("First caught", `${shortDate(st.first.date)}`) : ""}
+            ${st.last && st.entries > 1 ? stat("Latest", shortDate(st.last.date)) : ""}
+            ${st.places ? stat("Places", String(st.places)) : ""}
+            ${st.heaviest ? stat("Heaviest", `${st.heaviest} kg`) : ""}
+            ${st.bait ? stat("Usual bait", escapeHtml(st.bait)) : ""}
+            ${st.method ? stat("Usual method", escapeHtml(st.method)) : ""}
+          </div>
+          ${st.last ? `<button type="button" class="toggle-btn detail-link" id="seeInLog">See in Catch Log</button>` : ""}
+          ${editUnlocked ? `<div class="owner-action-row"><button type="button" class="delete-catch-btn" id="delSpecies">Delete this species</button></div>` : ""}
+        </div>
+        <div class="entry-r"><div class="info-wrap" id="infoWrap"></div></div>
+      </div>`, opener);
+    const ph = body.querySelector(".photo-open");
+    if (ph && photoCatch) ph.addEventListener("click", () => {
+      const all = catchPhotos(state.catches);
+      openLightbox(all, all.findIndex(x => x.id === photoCatch.id), ph);
+    });
+    const see = body.querySelector("#seeInLog");
+    if (see) see.addEventListener("click", () => { closeEntry(); expandedId = unitKey(st.last); switchTab("log"); render(); });
+    const del = body.querySelector("#delSpecies");
+    if (del) del.addEventListener("click", () => {
+      const usedCount = state.catches.filter(c => c.species === name).reduce((sum, c) => sum + qtyOf(c), 0);
+      const warn = usedCount > 0 ? `\n\nHeads up: ${usedCount} logged catch(es) still use this species name — they'll keep "${name}" as plain text, just without an English/Latin translation.` : "";
+      if (!confirm(`Delete "${name}" from the Species list?${warn}`)) return;
+      closeEntry();
+      delete state.species[name];
+      deletedSpeciesNames.add(name);
+      speciesSel = null;
+      renderSpecies();
+      scheduleSave();
+    });
+    const load = () => {
+      const wrap = body.querySelector("#infoWrap");
+      if (wrap) wrap.innerHTML = `<div class="info-load" aria-live="polite"><i></i><i></i><i></i><span>Looking this fish up online…</span></div>`;
+      const failed = (msg) => {
+        if (seq !== infoSeq) return;
+        const w = body.querySelector("#infoWrap"); if (!w) return;
+        w.innerHTML = `<div class="info-block"><p class="info-none">${msg}</p><button type="button" class="toggle-btn info-retry" data-retry="1">Try again</button></div>`;
+        const retry = w.querySelector("[data-retry]");
+        if (retry) retry.addEventListener("click", () => { try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[(latinOf(state.species[name]) || name).toLowerCase()]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (e) { /* ignore */ } load(); });
       };
-      el.addEventListener("click", open);
-      el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
-    });
-    list.querySelectorAll(".species-delete-link").forEach(el => {
-      el.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const name = el.dataset.species;
-        const usedCount = state.catches.filter(c => c.species === name).reduce((sum, c) => sum + qtyOf(c), 0);
-        const warn = usedCount > 0
-          ? `\n\nHeads up: ${usedCount} logged catch(es) still use this species name — they'll keep "${name}" as plain text, just without an English/Latin translation.`
-          : "";
-        const ok = confirm(`Delete "${name}" from the Species list?${warn}`);
-        if (!ok) return;
-        delete state.species[name];
-        deletedSpeciesNames.add(name);
-        renderSpecies();
-        scheduleSave();
-      });
-    });
+      fetchFishInfo(name).then(info => {
+        if (seq !== infoSeq) return;
+        const w = body.querySelector("#infoWrap"); if (!w) return;
+        if (!info.found) { failed("No write-up found online for this one yet."); return; }
+        w.innerHTML = infoHtml(info, name);
+        const slot = body.querySelector("#infoPhoto");
+        if (slot && info.photo) slot.innerHTML = `<img src="${info.photo.url}" alt="" class="catch-photo" /><span class="photo-credit">${escapeHtml(info.photo.credit)}</span>`;
+      }).catch(() => failed("Couldn't reach the online sources. Check your connection and try again."));
+    };
+    load();
   }
   document.getElementById("speciesSearch").addEventListener("input", renderSpecies);
 
@@ -4793,6 +5249,7 @@ A backup file is downloaded first.`)) return;
     try {
       const compressed = await compressImage(file, 800, 0.6);
       showPhotoPreview(compressed);
+      onPhotoChosen(compressed);
     } catch (err) {
       console.error("Photo processing failed:", err);
       alert("Could not process that photo. Try a different one.");
@@ -5112,6 +5569,134 @@ A backup file is downloaded first.`)) return;
   });
 
   // Automatic / Manual name toggle
+  // ---- Automatic English / Latin names: look the Indonesian name up online, and identify the fish from its photo
+  const NAME_LS = "catchlog_name_lookup_v1";
+  let autoPick = null, lookupOptions = [], lookupSeq = 0, lookupTimer = 0, pidSeq = 0;
+  const nlBox = document.getElementById("nameLookup"), nlStatus = document.getElementById("nlStatus"), nlList = document.getElementById("nlList");
+  const pidLine = document.getElementById("pidLine"), pidResult = document.getElementById("pidResult");
+
+  const fishLatin = (t) => (t.rank === "genus" ? `${t.name} sp.` : t.name);
+  const fishLabel = (english, latin) => (english && latin && english.toLowerCase() !== latin.toLowerCase() ? `${english} (${latin})` : (latin || english));
+  async function lookupNames(q) {
+    const key = q.trim().toLowerCase();
+    try { const hit = JSON.parse(localStorage.getItem(NAME_LS) || "{}")[key]; if (hit && Date.now() - hit.t < 30 * 864e5) return hit.v; } catch (e) { /* no storage */ }
+    const r = await fetch(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(q)}&locale=id&per_page=10&taxon_id=47178,47273&is_active=true`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    const out = (j.results || []).map((t, i) => {
+      const pc = (t.preferred_common_name || "").toLowerCase(), mt = (t.matched_term || "").toLowerCase();
+      let s = 0;
+      if (pc === key || pc === "ikan " + key) s += 4; else if (pc.includes(key)) s += 2;
+      if (mt === key) s += 2; else if (mt.includes(key)) s += 1;
+      if (t.rank === "species") s += 1;
+      return { t, s: s - i * 0.01 };
+    }).sort((a, b) => b.s - a.s).slice(0, 5).map(({ t }) => {
+      const english = t.english_common_name || "", latin = fishLatin(t);
+      return { english, latin, label: fishLabel(english, latin), local: t.preferred_common_name || "", rank: t.rank };
+    });
+    try { const all = JSON.parse(localStorage.getItem(NAME_LS) || "{}"); all[key] = { t: Date.now(), v: out }; localStorage.setItem(NAME_LS, JSON.stringify(all)); } catch (e) { /* ignore */ }
+    return out;
+  }
+  function drawNl(status, opts) {
+    nlBox.hidden = false;
+    nlStatus.innerHTML = status;
+    const list = opts || [];
+    nlList.innerHTML = list.map((o, i) => `<button type="button" class="nl-chip${autoPick && autoPick.label === o.label ? " is-on" : ""}" data-i="${i}">${escapeHtml(o.label)}${o.local ? ` <small>· ${escapeHtml(o.local)}</small>` : ""}</button>`).join("")
+      + (list.length ? `<button type="button" class="nl-chip nl-none${autoPick ? "" : " is-on"}" data-i="-1">None of these</button>` : "");
+  }
+  const pickStatus = () => (autoPick ? `Will be saved as <b>${escapeHtml(autoPick.label)}</b>` : "Will be saved with just the Indonesian name");
+  nlList.addEventListener("click", (e) => {
+    const b = e.target.closest(".nl-chip"); if (!b) return;
+    const i = Number(b.dataset.i);
+    autoPick = i >= 0 ? lookupOptions[i] : null;
+    drawNl(pickStatus(), lookupOptions);
+  });
+  async function runLookup(name) {
+    const seq = ++lookupSeq;
+    drawNl("Searching online…", []);
+    try {
+      const opts = await lookupNames(name);
+      if (seq !== lookupSeq) return;
+      lookupOptions = opts;
+      if (!opts.length) { autoPick = null; drawNl("No match found online. It will be saved with just the Indonesian name. Use Manual to type your own.", []); return; }
+      autoPick = opts[0];
+      drawNl(pickStatus(), opts);
+    } catch (e) {
+      if (seq !== lookupSeq) return;
+      autoPick = null;
+      drawNl("Can't reach the online lookup right now. It will be saved with just the Indonesian name.", []);
+    }
+  }
+  function scheduleLookup() {
+    clearTimeout(lookupTimer); lookupSeq++; autoPick = null; lookupOptions = [];
+    const v = document.getElementById("f-species").value.trim();
+    if (nameMode !== "automatic" || v.length < 3) { nlBox.hidden = true; return; }
+    const key = Object.keys(state.species).find(k => k.toLowerCase() === v.toLowerCase());
+    if (key && state.species[key] && state.species[key] !== key) { drawNl(`Already in your species list as <b>${escapeHtml(state.species[key])}</b>`, []); return; }
+    drawNl("Searching online…", []);
+    lookupTimer = setTimeout(() => runLookup(v), 650);
+  }
+  function clearNameLookup() {
+    clearTimeout(lookupTimer); lookupSeq++; pidSeq++; autoPick = null; lookupOptions = [];
+    nlBox.hidden = true; nlList.innerHTML = ""; nlStatus.innerHTML = "";
+    pidLine.textContent = ""; pidResult.innerHTML = "";
+  }
+  document.getElementById("f-species").addEventListener("input", scheduleLookup);
+  ["nameModeAuto", "nameModeManual"].forEach(id => document.getElementById(id).addEventListener("click", () => setTimeout(scheduleLookup, 0)));
+
+  // ---- Photo ID (owner's key, this browser only)
+  const PID_PROMPT = `You are a fish identification expert for Karimun and the Riau Islands, Indonesia (sea and freshwater). Identify the fish in this photo. Reply with ONLY JSON: {"indonesian_name":"common Indonesian or local name","english_name":"common English name","scientific_name":"Genus species, or Genus sp. if unsure of the species","water":"Air Laut or Air Tawar","confidence":0.0,"note":"one short sentence on what you looked at"} with confidence between 0 and 1. If there is no fish in the photo, leave the names empty and use confidence 0.`;
+  function drawPidSetup() {
+    document.getElementById("pidNote").textContent = aiKey() ? "Photo ID is on. New photos are identified as you add them." : "Photo ID is off.";
+    document.getElementById("pidRemove").disabled = !aiKey();
+  }
+  document.getElementById("pidSave").addEventListener("click", () => {
+    const v = document.getElementById("pidKey").value.trim();
+    if (!/^sk-ant-/.test(v)) { document.getElementById("pidNote").textContent = "That doesn't look like an Anthropic key (it starts with sk-ant-)."; return; }
+    try { localStorage.setItem("catchlog_ai_key", v); } catch (e) { document.getElementById("pidNote").textContent = "This browser wouldn't save the key."; return; }
+    document.getElementById("pidKey").value = ""; drawPidSetup();
+    if (pendingPhotoData) onPhotoChosen(pendingPhotoData);
+  });
+  document.getElementById("pidRemove").addEventListener("click", () => { try { localStorage.removeItem("catchlog_ai_key"); } catch (e) { /* ignore */ } drawPidSetup(); });
+  drawPidSetup();
+
+  async function onPhotoChosen(dataUrl) {
+    pidSeq++; const seq = pidSeq;
+    pidResult.innerHTML = "";
+    if (!aiKey()) {
+      pidLine.innerHTML = `Want this fish identified from the photo? <a href="#" id="pidOpen">Turn on photo ID</a>`;
+      document.getElementById("pidOpen").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("pidSetup").open = true; document.getElementById("pidKey").focus(); });
+      return;
+    }
+    pidLine.textContent = "Looking at the photo…";
+    try {
+      const out = parseJsonLoose(await askClaude([{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: dataUrl.split(",")[1] } }, { type: "text", text: PID_PROMPT }], 400));
+      if (seq !== pidSeq) return;
+      if (!out || (!out.indonesian_name && !out.scientific_name && !out.english_name)) { pidLine.textContent = "Couldn't tell what fish this is."; return; }
+      const conf = Math.round(Math.max(0, Math.min(1, Number(out.confidence) || 0)) * 100);
+      const label = fishLabel(String(out.english_name || ""), String(out.scientific_name || ""));
+      pidLine.textContent = "";
+      pidResult.innerHTML = `<div class="pid-card"><div><b>${escapeHtml(out.indonesian_name || out.english_name || "Unknown")}</b>${label ? ` · ${escapeHtml(label)}` : ""}<small>${conf}% sure${out.note ? " · " + escapeHtml(String(out.note)) : ""}</small></div><button type="button" class="toggle-btn" id="pidUse">Use this</button></div>`;
+      document.getElementById("pidUse").addEventListener("click", () => {
+        const sp = document.getElementById("f-species");
+        if (out.indonesian_name) { sp.value = String(out.indonesian_name); sp.dispatchEvent(new Event("input", { bubbles: true })); }
+        clearTimeout(lookupTimer); lookupSeq++;
+        if (out.water === "Air Laut" || out.water === "Air Tawar") document.getElementById("f-water").value = out.water;
+        if (nameMode === "manual") {
+          document.getElementById("f-english").value = String(out.english_name || "");
+          document.getElementById("f-latin").value = String(out.scientific_name || "");
+        } else if (label) {
+          autoPick = { english: String(out.english_name || ""), latin: String(out.scientific_name || ""), label, local: "" };
+          lookupOptions = [autoPick];
+          drawNl(pickStatus(), lookupOptions);
+        }
+        pidResult.innerHTML = "";
+      });
+    } catch (e) {
+      if (seq === pidSeq) pidLine.textContent = "Photo ID didn't work: " + (e && e.message ? e.message : "unknown error");
+    }
+  }
+  document.getElementById("removePhotoBtn").addEventListener("click", () => { pidSeq++; pidLine.textContent = ""; pidResult.innerHTML = ""; });
   let nameMode = "automatic";
   document.getElementById("nameModeAuto").addEventListener("click", () => {
     nameMode = "automatic";
@@ -5131,6 +5716,7 @@ A backup file is downloaded first.`)) return;
     formIds.forEach(id => document.getElementById(id).value = "");
     document.getElementById("f-english").value = "";
     document.getElementById("f-latin").value = "";
+    clearNameLookup();
     document.getElementById("f-qty").value = "1";
     document.getElementById("f-time").value = "Pagi (Morning)";
     clockAuto = true;
@@ -5249,8 +5835,8 @@ A backup file is downloaded first.`)) return;
       } else if (!state.species[species]) {
         state.species[species] = species;
       }
-    } else if (!state.species[species]) {
-      state.species[species] = species;
+    } else if (!state.species[species] || state.species[species] === species) {
+      state.species[species] = autoPick ? autoPick.label : species;
     }
 
     resetCatchForm();
@@ -5377,7 +5963,7 @@ A backup file is downloaded first.`)) return;
   document.body.insertBefore(cv, document.body.firstChild);
   var ctx = cv.getContext("2d");
   if (ctx) {
-    var W = 0, H = 0, dpr = 1, raf = 0, last = 0, parts = [];
+    var W = 0, H = 0, SC = 0.5, raf = 0, last = 0, parts = [];
     var sprite = function (r, g, b) {
       var s = 64, c = document.createElement("canvas"); c.width = c.height = s;
       var x = c.getContext("2d"), gr = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
@@ -5397,11 +5983,11 @@ A backup file is downloaded first.`)) return;
       return { k: gold ? "gold" : "ember", x: W * Math.pow(Math.random(), 1.35), y: fresh ? rnd(0, H) : H + rnd(0, 30), s: rnd(1.1, 3.4), vx: rnd(-4, 9), vy: -rnd(9, 30), a: rnd(0.45, 1), f: rnd(1.5, 4.5), p: rnd(0, 6.28), life: 0, age: 0 };
     };
     var resize = function () {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // the embers are soft glows, so a half-size canvas looks the same and costs a quarter of the pixels
       W = innerWidth; H = innerHeight;
-      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.max(46, Math.min(130, Math.round(W * H / 15000)));
+      cv.width = Math.round(W * SC); cv.height = Math.round(H * SC);
+      ctx.setTransform(SC, 0, 0, SC, 0, 0);
+      var n = Math.max(30, Math.min(64, Math.round(W * H / 28000)));
       parts = []; for (var i = 0; i < n; i++) parts.push(make(true));
       if (reduce) draw(0, 0);
     };
@@ -5429,9 +6015,11 @@ A backup file is downloaded first.`)) return;
     var step = function (now) {
       raf = 0;
       if (document.hidden) { last = 0; return; }
-      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
-      draw(dt, now / 1000);
       raf = requestAnimationFrame(step);
+      if (now - last < 32) return;                       // about 30 frames a second is plenty for drifting embers
+      if (document.body.classList.contains("no-scroll")) { last = now; return; }   // still while a dialog is open
+      var dt = last ? Math.min(0.06, (now - last) / 1000) : 0; last = now;
+      draw(dt, now / 1000);
     };
     var kick = function () { if (!reduce && !raf && !document.hidden) raf = requestAnimationFrame(step); };
     addEventListener("resize", resize); document.addEventListener("visibilitychange", kick);
