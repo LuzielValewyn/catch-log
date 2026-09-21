@@ -8,11 +8,11 @@
 <script>(function(){try{var t=localStorage.getItem("catchlog_theme");if(t!=="light")t="dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#FFFFFF":"#08050A");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
 <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion-ok");</script>
 <title>Del's Catch Log</title>
-<link rel="icon" href="favicon.ico?v=4" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=4">
-<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=4">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=4">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=4">
+<link rel="icon" href="favicon.ico?v=5" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=5">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=5">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=5">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=5">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300..700&family=Cinzel:wght@400..800&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
@@ -1385,33 +1385,30 @@
 
   /* The logo: brand mark in the corner (theme switch moves to the right end), welcome dialog, About badge, hero */
   .brand-mark {
-    position: fixed; top: 12px; left: 26px; z-index: 37; width: 38px; height: 38px; display: block; border-radius: 50%;
+    position: fixed; top: 11px; left: 24px; z-index: 37; width: 42px; height: 42px; display: block; border-radius: 10px; overflow: hidden;
     box-shadow: 0 0 0 1px rgba(var(--fg), 0.3), 0 8px 20px -8px rgba(0, 0, 0, 0.7);
     transition: transform 260ms var(--ease-out), box-shadow 200ms var(--ease-out);
   }
-  .brand-mark img { display: block; width: 100%; height: 100%; border-radius: 50%; }
+  .brand-mark img { display: block; width: 100%; height: 100%; }
   .brand-mark:hover { transform: scale(1.07) rotate(-6deg); box-shadow: 0 0 0 1px rgba(var(--fg), 0.6), 0 10px 24px -8px rgba(0, 0, 0, 0.8); }
   .brand-mark:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
   .theme-toggle { left: auto; right: 26px; }
   #dashFilterBanner { right: 76px; }
-  .hero-logo { display: block; width: 44px; height: 44px; margin: 4px auto 0; border-radius: 50%; opacity: 0.92; box-shadow: 0 0 0 1px rgba(var(--fg), 0.28), 0 10px 26px -10px rgba(0, 0, 0, 0.8); }
-  .hero-logo + .hero-label { margin-top: 14px; }
-  .modal-logo { display: block; width: 72px; height: 72px; margin: 2px auto 14px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(var(--fg), 0.3), 0 14px 30px -12px rgba(0, 0, 0, 0.8); }
+  .modal-logo { display: block; width: 72px; height: 72px; margin: 2px auto 14px; border-radius: 16px; box-shadow: 0 0 0 1px rgba(var(--fg), 0.3), 0 14px 30px -12px rgba(0, 0, 0, 0.8); }
   #nameGate .modal-box { text-align: center; }
   #nameGate .modal-title { margin-bottom: 8px; }
   .about-photo { position: relative; display: inline-block; margin-bottom: 16px; }
   .about-photo .modal-photo { display: block; margin-bottom: 0; }
-  .about-logo { position: absolute; right: -8px; bottom: -4px; width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--panel-strong); box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7); background: #fff; }
-  :root[data-theme="light"] .brand-mark, :root[data-theme="light"] .hero-logo, :root[data-theme="light"] .modal-logo { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 20px -8px rgba(20, 20, 40, 0.4); }
+  .about-logo { position: absolute; right: -8px; bottom: -4px; width: 50px; height: 50px; border-radius: 12px; border: 3px solid var(--panel-strong); box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7); background: #000; }
+  :root[data-theme="light"] .brand-mark, :root[data-theme="light"] .modal-logo { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 20px -8px rgba(20, 20, 40, 0.4); }
   @media (max-width: 760px) {
-    .brand-mark { top: calc(8px + env(safe-area-inset-top)); left: 10px; width: 36px; height: 36px; }
-    .hero-logo { width: 40px; height: 40px; margin-top: 10px; }
+    .brand-mark { top: calc(7px + env(safe-area-inset-top)); left: 10px; width: 40px; height: 40px; }
   }
 </style>
 </head>
 <body class="is-loading">
 
-<a href="#" class="brand-mark" id="brandMark" aria-label="Go to the dashboard" title="Del's Catch Log"><img src="logo-192.png?v=4" alt="" width="36" height="36" decoding="async"></a>
+<a href="#" class="brand-mark" id="brandMark" aria-label="Go to the dashboard" title="Del's Catch Log"><img src="logo-192.png?v=5" alt="" width="36" height="36" decoding="async"></a>
 <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light mode" title="Switch to light mode"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 1 1 9.4 4a6.6 6.6 0 0 0 10.6 10.6z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"/></svg></button>
 <div class="app">
   <header class="deck">
@@ -1448,7 +1445,6 @@
       <div class="hero">
         <div class="hero-main">
           <div class="hero-head"><button type="button" id="aboutCard" class="about-btn">About Del <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>
-          <img class="hero-logo" src="logo-192.png?v=4" alt="" width="44" height="44" decoding="async">
           <div class="hero-label">Fish caught, lifetime</div>
           <div class="led" id="statCatchesLed" data-ghost="8888" role="img" aria-label="0 catches"><span id="statCatches">0</span></div>
           <div class="hero-sub">Every one caught by Del and logged the day it happened.</div>
@@ -1828,7 +1824,7 @@
 
 <div id="nameGate" class="modal-overlay open">
   <div class="modal-box">
-    <img class="modal-logo" src="logo-192.png?v=4" alt="" width="72" height="72" decoding="async">
+    <img class="modal-logo" src="logo-192.png?v=5" alt="" width="72" height="72" decoding="async">
     <div class="modal-title">Welcome</div>
     <p class="modal-text" style="margin-bottom:16px;">What's your name? It'll be shown when you visit, and logged so Del knows who's been checking out the catch log.</p>
     <input type="text" id="nameGateInput" class="input" placeholder="Your name" aria-label="Your name" style="margin-bottom:12px;" />
@@ -1839,7 +1835,7 @@
 <div id="aboutModal" class="modal-overlay">
   <div class="modal-box">
     <button id="closeModal" class="modal-close" aria-label="Close"></button>
-    <span class="about-photo"><img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" /><img class="about-logo" src="logo-192.png?v=4" alt="" width="46" height="46" decoding="async"></span>
+    <span class="about-photo"><img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" /><img class="about-logo" src="logo-192.png?v=5" alt="" width="46" height="46" decoding="async"></span>
     <h2 class="modal-title">Del</h2>
     <p class="modal-text">
       My name is Del, and this is the journal of my life, written in ripples and tight lines. Every species in this log represents a story of patience, of quiet dawns out on the open sea, and magical sunsets hidden along winding rivers. From the unpredictable currents of the saltwater to the serene depths of freshwater, each fish holds the memory of the exact day nature and I crossed paths. This isn't just a catch log — it is a map of my lifetime adventures.
