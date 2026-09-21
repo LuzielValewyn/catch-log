@@ -1073,6 +1073,10 @@
   .info-src a { text-decoration: underline; }
   .info-none { font-size: 14px; color: var(--ink-2); margin-bottom: 10px; }
   .info-block:first-child { margin-top: 0; }
+  .my-notes { margin-bottom: 22px; padding: 14px 16px 16px; border: 1px solid rgba(242, 195, 107, 0.35); border-radius: 8px; background: rgba(242, 195, 107, 0.05); }
+  .my-notes .info-block:first-of-type { margin-top: 8px; }
+  .my-tag { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--gold); }
+  .name-edit textarea.input { resize: vertical; line-height: 1.5; font-family: var(--sans); }
   .name-edit { margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.3); }
   .name-edit .field-wrap { margin-bottom: 12px; }
   .name-edit .info-none { margin-bottom: 12px; }
@@ -1101,17 +1105,6 @@
   .nl-chip small { color: var(--ink-3); }
   .nl-chip:hover { border-color: var(--ink); }
   .nl-chip.is-on { border-color: #EE3B45; background: rgba(122, 16, 26, 0.5); }
-  .photo-id { margin: 0 0 18px; }
-  .pid-line { margin-top: 2px; font-size: 13px; color: var(--ink-2); }
-  .pid-line:empty { display: none; }
-  .pid-line a { color: var(--gold-text); text-decoration: underline; }
-  .pid-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 10px; padding: 12px 14px; border: 1px solid rgba(239, 231, 222, 0.3); border-radius: 8px; background: rgba(0, 0, 0, 0.4); font-size: 14px; }
-  .pid-card small { display: block; margin-top: 3px; font-size: 12px; color: var(--ink-3); }
-  .pid-card .toggle-btn { flex: none; }
-  .pid-setup { margin-top: 12px; font-size: 13px; color: var(--ink-2); }
-  .pid-setup summary { cursor: pointer; }
-  .pid-setup p { margin: 10px 0; line-height: 1.5; }
-  .pid-note { color: var(--ink-3); }
 
   /* Speed: no live blur over the drifting embers, the map filter runs per tile image */
   *, *::before, *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
@@ -1505,16 +1498,6 @@
             <img id="photoPreview" alt="Photo preview" style="width:100%; max-height:240px; object-fit:cover; border-radius:4px; display:block;" />
             <button type="button" id="removePhotoBtn" class="photo-remove">Remove</button>
           </div>
-        </div>
-        <div class="photo-id" id="photoId">
-          <div class="pid-line" id="pidLine" aria-live="polite"></div>
-          <div class="pid-result" id="pidResult"></div>
-          <details class="pid-setup" id="pidSetup">
-            <summary>Identify fish from photos (AI)</summary>
-            <p>Paste an Anthropic API key and every new photo is identified as you add it. The key stays in this browser only and is sent only to Anthropic.</p>
-            <div class="toggle-row"><input class="input" type="password" id="pidKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" style="flex:1; min-width:0;"><button type="button" class="toggle-btn" id="pidSave">Save</button><button type="button" class="toggle-btn" id="pidRemove">Remove</button></div>
-            <p class="pid-note" id="pidNote"></p>
-          </details>
         </div>
         <button class="submit-btn" id="submitBtn" disabled>Log this catch</button>
       </div>
@@ -1983,6 +1966,7 @@
     (d.catches || []).forEach(id => deletedCatchIds.add(id)); (d.gear || []).forEach(n => deletedGearNames.add(n)); (d.species || []).forEach(n => deletedSpeciesNames.add(n));
     state.catches = mergeById(p.state.catches, state.catches);
     const sp = { ...(state.species || {}) }; deletedSpeciesNames.forEach(n => delete sp[n]); state.species = { ...sp, ...(p.state.species || {}) };
+    state.notes = { ...(state.notes || {}), ...(p.state.notes || {}) };
     const gr = { ...(state.gear || {}) }; deletedGearNames.forEach(n => delete gr[n]); state.gear = { ...gr, ...(p.state.gear || {}) };
     state.visitors = mergeVisitors(p.state.visitors, state.visitors);
     return true;
@@ -2251,6 +2235,7 @@ A backup file is downloaded first.`)) return;
         const mergedSpecies = { ...(remote.species || {}) };
         deletedSpeciesNames.forEach(name => delete mergedSpecies[name]);
         state.species = { ...mergedSpecies, ...(state.species || {}) };
+        state.notes = { ...(remote.notes || {}), ...(state.notes || {}) };
         const mergedGear = { ...(remote.gear || {}) };
         deletedGearNames.forEach(name => delete mergedGear[name]);
         state.gear = { ...mergedGear, ...(state.gear || {}) };
@@ -3360,30 +3345,6 @@ A backup file is downloaded first.`)) return;
       if (t) { logScrolledKey = expandedId; t.scrollIntoView({ block: "center" }); }
     }
   }
-  // ---- Optional AI helper: only used when the owner has pasted a key (kept in this browser, never saved to the database)
-  function aiKey() { try { return localStorage.getItem("catchlog_ai_key") || ""; } catch (e) { return ""; } }
-  async function askClaude(content, maxTokens) {
-    const key = aiKey();
-    if (!key) throw new Error("no key");
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
-      body: JSON.stringify({ model: "claude-sonnet-5", max_tokens: maxTokens || 600, messages: [{ role: "user", content }] }),
-    });
-    if (!r.ok) {
-      let msg = "";
-      try { msg = (await r.json()).error.message; } catch (e) { /* not JSON */ }
-      throw new Error(msg || "HTTP " + r.status);
-    }
-    const j = await r.json();
-    return (j.content || []).map(b => b.text || "").join("");
-  }
-  function parseJsonLoose(text) {
-    const m = String(text || "").match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    try { return JSON.parse(m[0]); } catch (e) { return null; }
-  }
-
   // ---- Species entry: what Del has caught, plus an automatic write-up from public sources (iNaturalist, Wikipedia)
   let speciesSel = null, infoSeq = 0;
   const INFO_LS = "catchlog_fishinfo_v2";   // v2: the v1 cache held wrong matches such as a shark for patin
@@ -3444,15 +3405,17 @@ A backup file is downloaded first.`)) return;
     if (detail && detail.wikipedia_url) titles.push(decodeURIComponent(detail.wikipedia_url.split("/wiki/")[1] || ""));
     if (latin) titles.push(latin.replace(/ /g, "_"));
     (detail && detail.ancestors ? detail.ancestors.slice().reverse() : []).forEach(a => { if (a.rank === "genus" || a.rank === "family") titles.push(a.name); });
-    let wiki = "", wikiTitle = "";
-    for (const t of [...new Set(titles.filter(Boolean))]) {
-      try {
-        const w = await J(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&titles=${encodeURIComponent(t)}&format=json&origin=*`);
-        const p = Object.values(w.query.pages)[0];
-        // the page has to talk about this genus, so a redirect to something unrelated is ignored
-        const genus = latin.split(" ")[0].toLowerCase();
-        if (p && !p.missing && p.extract && p.extract.length > 200 && (!genus || p.extract.toLowerCase().includes(genus))) { wiki = p.extract; wikiTitle = p.title; break; }
-      } catch (e) { /* try the next title */ }
+    let wiki = "", wikiTitle = "", wikiHost = "en";
+    const genus = latin.split(" ")[0].toLowerCase();
+    find: for (const host of ["en", "id"]) {
+      for (const t of [...new Set(titles.filter(Boolean))]) {
+        try {
+          const w = await J(`https://${host}.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&titles=${encodeURIComponent(t)}&format=json&origin=*`);
+          const p = Object.values(w.query.pages)[0];
+          // the page has to talk about this genus, so a redirect to something unrelated is ignored
+          if (p && !p.missing && p.extract && p.extract.length > 200 && (!genus || p.extract.toLowerCase().includes(genus))) { wiki = p.extract; wikiTitle = p.title; wikiHost = host; break find; }
+        } catch (e) { /* try the next title */ }
+      }
     }
 
     const info = { found: false, latin: latin || (taxon ? taxon.name : ""), rank: taxon ? taxon.rank : "", about: "", history: "", facts: [], sources: [] };
@@ -3472,32 +3435,18 @@ A backup file is downloaded first.`)) return;
       const secs = parseWikiText(wiki);
       const intro = secs[0].text;
       info.about = clipText(cleanWiki(intro.slice(0, 2).join(" ")), 640);
-      const look = secs.find(s => /^(description|appearance|morphology|characteristics|anatomy)/i.test(s.title));
+      const look = secs.find(s => /^(description|appearance|morphology|characteristics|anatomy|deskripsi|ciri|morfologi|penampakan)/i.test(s.title));
       if (look && look.text[0]) info.description = clipText(cleanWiki(look.text[0]), 440);
-      const hist = secs.filter(s => /taxonom|history|etymolog|naming|nomenclature|discover|systematic|classification/i.test(s.title));
+      const hist = secs.filter(s => /taxonom|history|etymolog|naming|nomenclature|discover|systematic|classification|taksonomi|sejarah|etimologi|penamaan|klasifikasi|sistematika/i.test(s.title));
       if (hist.length) info.history = clipText(cleanWiki(hist.map(s => s.text.slice(0, 2).join(" ")).join(" ")), 720);
-      secs.filter(s => s.title && s.text[0] && !hist.includes(s) && s !== look && /biolog|behaviou?r|ecolog|diet|feeding|reproduc|life|habitat|distribution|fisher|aquaculture|human|cultur|\buse|food|conserv|status|threat/i.test(s.title))
+      secs.filter(s => s.title && s.text[0] && !hist.includes(s) && s !== look && /biolog|behaviou?r|ecolog|diet|feeding|reproduc|life|habitat|distribution|fisher|aquaculture|human|cultur|\buse|food|conserv|status|threat|distribusi|persebaran|perilaku|makanan|pakan|pemijahan|perikanan|budidaya|manfaat|kuliner|ancaman|kegunaan|ekologi|penyebaran|kebiasaan|olahan/i.test(s.title))
         .slice(0, 5).forEach(s => info.facts.push({ title: s.title, text: clipText(firstSentences(s.text[0], 2), 260) }));
-      info.sources.push({ label: "Wikipedia", url: `https://en.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/ /g, "_"))}` });
+      info.sources.push({ label: wikiHost === "id" ? "Wikipedia (Indonesia)" : "Wikipedia", url: `https://${wikiHost}.wikipedia.org/wiki/${encodeURIComponent(wikiTitle.replace(/ /g, "_"))}` });
     } else if (detail && detail.wikipedia_summary) {
       info.about = clipText(stripHtml(detail.wikipedia_summary), 640);
     }
     info.found = !!(info.about || info.history || info.facts.length);
 
-    // 3. Owner only: let the AI fill what the public sources left out
-    if (aiKey() && (!info.about || !info.history || info.facts.length < 2)) {
-      try {
-        const out = parseJsonLoose(await askClaude([{ type: "text", text:
-          `Fish: "${name}"${en ? ` (${en})` : ""}, caught around Karimun and the Riau Islands, Indonesia. Reply with ONLY JSON: {"about":"2-3 sentences describing the fish","history":"2-3 sentences on how it was named or described and its place in fishing or local life","facts":[{"title":"short label","text":"one interesting fact"}]} with 3 to 4 facts. Only say what you are confident is true; leave a field empty rather than guess.` }], 700));
-        if (out) {
-          if (!info.about && out.about) info.about = String(out.about);
-          if (!info.history && out.history) info.history = String(out.history);
-          if (info.facts.length < 2 && Array.isArray(out.facts)) info.facts = out.facts.filter(f => f && f.text).slice(0, 4).map(f => ({ title: String(f.title || "Fact"), text: String(f.text) }));
-          info.ai = true;
-          info.found = !!(info.about || info.history || info.facts.length);
-        }
-      } catch (e) { /* the AI is a bonus; ignore its failures */ }
-    }
     infoCachePut(cacheKey, info);
     return info;
   }
@@ -3526,7 +3475,7 @@ A backup file is downloaded first.`)) return;
       ${info.about ? `<div class="info-block"><h4>About</h4><p>${escapeHtml(info.about)}</p>${info.description ? `<p>${escapeHtml(info.description)}</p>` : ""}</div>` : ""}
       ${info.history ? `<div class="info-block"><h4>History &amp; naming</h4><p>${escapeHtml(info.history)}</p></div>` : ""}
       ${info.facts.length ? `<div class="info-block"><h4>Good to know</h4><ul class="fact-list">${info.facts.map(f => `<li><b>${escapeHtml(f.title)}</b> ${escapeHtml(f.text)}</li>`).join("")}</ul></div>` : ""}
-      <p class="info-src">${info.ai ? "Partly written by AI. " : ""}Sources: ${info.sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(", ") || "public references"}</p>`;
+      <p class="info-src">Sources: ${info.sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`).join(", ") || "public references"}</p>`;
   }
 
   function renderSpecies() {
@@ -3590,9 +3539,9 @@ A backup file is downloaded first.`)) return;
             ${st.method ? stat("Usual method", escapeHtml(st.method)) : ""}
           </div>
           ${st.last ? `<button type="button" class="toggle-btn detail-link" id="seeInLog">See in Catch Log</button>` : ""}
-          ${editUnlocked ? `<div class="owner-action-row"><button type="button" class="edit-catch-btn" id="editNames">Edit names</button><button type="button" class="delete-catch-btn" id="delSpecies">Delete this species</button></div>` : ""}
+          ${editUnlocked ? `<div class="owner-action-row"><button type="button" class="edit-catch-btn" id="editNames">Edit names</button><button type="button" class="edit-catch-btn" id="editNotes">Edit notes</button><button type="button" class="delete-catch-btn" id="delSpecies">Delete this species</button></div>` : ""}
         </div>
-        <div class="entry-r"><div id="nameEdit"></div><div class="info-wrap" id="infoWrap"></div></div>
+        <div class="entry-r"><div id="nameEdit"></div><div id="notesEdit"></div><div id="notesBox"></div><div class="info-wrap" id="infoWrap"></div></div>
       </div>`, opener);
     const ph = body.querySelector(".photo-open");
     if (ph && photoCatch) ph.addEventListener("click", () => {
@@ -3637,6 +3586,36 @@ A backup file is downloaded first.`)) return;
       });
       en.focus({ preventScroll: true });
     };
+    // my own notes: shown to everyone, written only by the owner, kept in the logbook
+    const noteOf = () => (state.notes && state.notes[name]) || { history: "", facts: "" };
+    const hasNotes = () => { const n = noteOf(); return !!((n.history || "").trim() || (n.facts || "").trim()); };
+    const paras = (t) => t.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+    const bullets = (t) => { const ls = t.split(/\n+/).map(l => l.replace(/^[-•*]\s*/, "").trim()).filter(Boolean); return ls.length ? `<ul class="fact-list">${ls.map(l => `<li>${escapeHtml(l)}</li>`).join("")}</ul>` : ""; };
+    const drawNotes = () => {
+      const box = body.querySelector("#notesBox"); if (!box) return;
+      const n = noteOf(), h = (n.history || "").trim(), f = (n.facts || "").trim();
+      box.innerHTML = h || f ? `<div class="my-notes"><p class="my-tag">From Del</p>${h ? `<div class="info-block"><h4>History</h4>${paras(h)}</div>` : ""}${f ? `<div class="info-block"><h4>Fun facts</h4>${bullets(f)}</div>` : ""}</div>` : "";
+    };
+    const showNotesEdit = () => {
+      const box = body.querySelector("#notesEdit"); if (!box) return;
+      const n = noteOf();
+      box.innerHTML = `<div class="name-edit">
+        <label class="field-wrap"><span class="field-label">History</span><textarea class="input" id="ntHist" rows="4" maxlength="1200" placeholder="How it was named, its place in local fishing, your own story with it…">${escapeHtml(n.history || "")}</textarea></label>
+        <label class="field-wrap"><span class="field-label">Fun facts (one per line)</span><textarea class="input" id="ntFacts" rows="5" maxlength="1200" placeholder="Grows up to 1 m\nBest bait is live shrimp">${escapeHtml(n.facts || "")}</textarea></label>
+        <div class="toggle-row"><button type="button" class="toggle-btn active" id="ntSave">Save notes</button><button type="button" class="toggle-btn" id="ntCancel">Cancel</button></div></div>`;
+      box.querySelector("#ntCancel").addEventListener("click", () => { box.innerHTML = ""; });
+      box.querySelector("#ntSave").addEventListener("click", () => {
+        state.notes = state.notes || {};
+        state.notes[name] = { history: box.querySelector("#ntHist").value.trim(), facts: box.querySelector("#ntFacts").value.trim() };
+        box.innerHTML = "";
+        drawNotes();
+        scheduleSave();
+      });
+      box.querySelector("#ntHist").focus({ preventScroll: true });
+    };
+    drawNotes();
+    const notesBtn = body.querySelector("#editNotes");
+    if (notesBtn) notesBtn.addEventListener("click", showNotesEdit);
     const editBtn = body.querySelector("#editNames");
     if (editBtn) editBtn.addEventListener("click", () => showNameEdit(false));
     const load = () => {
@@ -3654,6 +3633,7 @@ A backup file is downloaded first.`)) return;
         const w = body.querySelector("#infoWrap"); if (!w) return;
         if (!info.found) {
           failed("No write-up found online for this one yet.");
+          if (hasNotes()) { const w2 = body.querySelector("#infoWrap"); if (w2) w2.innerHTML = ""; return; }
           if (editUnlocked && !latinOf(state.species[name])) showNameEdit(true);
           return;
         }
@@ -5338,7 +5318,6 @@ A backup file is downloaded first.`)) return;
     try {
       const compressed = await compressImage(file, 800, 0.6);
       showPhotoPreview(compressed);
-      onPhotoChosen(compressed);
     } catch (err) {
       console.error("Photo processing failed:", err);
       alert("Could not process that photo. Try a different one.");
@@ -5658,11 +5637,10 @@ A backup file is downloaded first.`)) return;
   });
 
   // Automatic / Manual name toggle
-  // ---- Automatic English / Latin names: look the Indonesian name up online, and identify the fish from its photo
+  // ---- Automatic English / Latin names: look the Indonesian name up online
   const NAME_LS = "catchlog_name_lookup_v1";
-  let autoPick = null, lookupOptions = [], lookupSeq = 0, lookupTimer = 0, pidSeq = 0;
+  let autoPick = null, lookupOptions = [], lookupSeq = 0, lookupTimer = 0;
   const nlBox = document.getElementById("nameLookup"), nlStatus = document.getElementById("nlStatus"), nlList = document.getElementById("nlList");
-  const pidLine = document.getElementById("pidLine"), pidResult = document.getElementById("pidResult");
 
   const fishLatin = (t) => (t.rank === "genus" ? `${t.name} sp.` : t.name);
   const fishLabel = (english, latin) => (english && latin && english.toLowerCase() !== latin.toLowerCase() ? `${english} (${latin})` : (latin || english));
@@ -5726,66 +5704,14 @@ A backup file is downloaded first.`)) return;
     lookupTimer = setTimeout(() => runLookup(v), 650);
   }
   function clearNameLookup() {
-    clearTimeout(lookupTimer); lookupSeq++; pidSeq++; autoPick = null; lookupOptions = [];
+    clearTimeout(lookupTimer); lookupSeq++; autoPick = null; lookupOptions = [];
     nlBox.hidden = true; nlList.innerHTML = ""; nlStatus.innerHTML = "";
-    pidLine.textContent = ""; pidResult.innerHTML = "";
   }
   document.getElementById("f-species").addEventListener("input", scheduleLookup);
   ["nameModeAuto", "nameModeManual"].forEach(id => document.getElementById(id).addEventListener("click", () => setTimeout(scheduleLookup, 0)));
 
-  // ---- Photo ID (owner's key, this browser only)
-  const PID_PROMPT = `You are a fish identification expert for Karimun and the Riau Islands, Indonesia (sea and freshwater). Identify the fish in this photo. Reply with ONLY JSON: {"indonesian_name":"common Indonesian or local name","english_name":"common English name","scientific_name":"Genus species, or Genus sp. if unsure of the species","water":"Air Laut or Air Tawar","confidence":0.0,"note":"one short sentence on what you looked at"} with confidence between 0 and 1. If there is no fish in the photo, leave the names empty and use confidence 0.`;
-  function drawPidSetup() {
-    document.getElementById("pidNote").textContent = aiKey() ? "Photo ID is on. New photos are identified as you add them." : "Photo ID is off.";
-    document.getElementById("pidRemove").disabled = !aiKey();
-  }
-  document.getElementById("pidSave").addEventListener("click", () => {
-    const v = document.getElementById("pidKey").value.trim();
-    if (!/^sk-ant-/.test(v)) { document.getElementById("pidNote").textContent = "That doesn't look like an Anthropic key (it starts with sk-ant-)."; return; }
-    try { localStorage.setItem("catchlog_ai_key", v); } catch (e) { document.getElementById("pidNote").textContent = "This browser wouldn't save the key."; return; }
-    document.getElementById("pidKey").value = ""; drawPidSetup();
-    if (pendingPhotoData) onPhotoChosen(pendingPhotoData);
-  });
-  document.getElementById("pidRemove").addEventListener("click", () => { try { localStorage.removeItem("catchlog_ai_key"); } catch (e) { /* ignore */ } drawPidSetup(); });
-  drawPidSetup();
-
-  async function onPhotoChosen(dataUrl) {
-    pidSeq++; const seq = pidSeq;
-    pidResult.innerHTML = "";
-    if (!aiKey()) {
-      pidLine.innerHTML = `Want this fish identified from the photo? <a href="#" id="pidOpen">Turn on photo ID</a>`;
-      document.getElementById("pidOpen").addEventListener("click", (e) => { e.preventDefault(); document.getElementById("pidSetup").open = true; document.getElementById("pidKey").focus(); });
-      return;
-    }
-    pidLine.textContent = "Looking at the photo…";
-    try {
-      const out = parseJsonLoose(await askClaude([{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: dataUrl.split(",")[1] } }, { type: "text", text: PID_PROMPT }], 400));
-      if (seq !== pidSeq) return;
-      if (!out || (!out.indonesian_name && !out.scientific_name && !out.english_name)) { pidLine.textContent = "Couldn't tell what fish this is."; return; }
-      const conf = Math.round(Math.max(0, Math.min(1, Number(out.confidence) || 0)) * 100);
-      const label = fishLabel(String(out.english_name || ""), String(out.scientific_name || ""));
-      pidLine.textContent = "";
-      pidResult.innerHTML = `<div class="pid-card"><div><b>${escapeHtml(out.indonesian_name || out.english_name || "Unknown")}</b>${label ? ` · ${escapeHtml(label)}` : ""}<small>${conf}% sure${out.note ? " · " + escapeHtml(String(out.note)) : ""}</small></div><button type="button" class="toggle-btn" id="pidUse">Use this</button></div>`;
-      document.getElementById("pidUse").addEventListener("click", () => {
-        const sp = document.getElementById("f-species");
-        if (out.indonesian_name) { sp.value = String(out.indonesian_name); sp.dispatchEvent(new Event("input", { bubbles: true })); }
-        clearTimeout(lookupTimer); lookupSeq++;
-        if (out.water === "Air Laut" || out.water === "Air Tawar") document.getElementById("f-water").value = out.water;
-        if (nameMode === "manual") {
-          document.getElementById("f-english").value = String(out.english_name || "");
-          document.getElementById("f-latin").value = String(out.scientific_name || "");
-        } else if (label) {
-          autoPick = { english: String(out.english_name || ""), latin: String(out.scientific_name || ""), label, local: "" };
-          lookupOptions = [autoPick];
-          drawNl(pickStatus(), lookupOptions);
-        }
-        pidResult.innerHTML = "";
-      });
-    } catch (e) {
-      if (seq === pidSeq) pidLine.textContent = "Photo ID didn't work: " + (e && e.message ? e.message : "unknown error");
-    }
-  }
-  document.getElementById("removePhotoBtn").addEventListener("click", () => { pidSeq++; pidLine.textContent = ""; pidResult.innerHTML = ""; });
+  // an AI key pasted during an earlier version is no longer used: clear it
+  try { localStorage.removeItem("catchlog_ai_key"); } catch (e) { /* no storage */ }
   let nameMode = "automatic";
   document.getElementById("nameModeAuto").addEventListener("click", () => {
     nameMode = "automatic";
