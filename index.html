@@ -1078,6 +1078,13 @@
   .name-edit .info-none { margin-bottom: 12px; }
   .name-edit .toggle-btn { flex: none; padding: 9px 18px; }
 
+  /* Catch photos: newest at the right, scrolls to the left */
+  .gallery-strip .shot { direction: ltr; }
+  .gallery-progress { position: relative; height: 3px; margin: 2px 4px 0; border-radius: 2px; background: rgba(239, 231, 222, 0.14); overflow: hidden; }
+  .gallery-progress i { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; border-radius: 2px; background: linear-gradient(270deg, #F0333D, #B3121B); }
+  .gallery-strip { scrollbar-width: none; }
+  .gallery-strip::-webkit-scrollbar { display: none; }
+
   /* Gear sets: rod and reel icons */
   .gear-list-detail { align-items: center; padding: 4px 0; font-size: 14px; }
   .gd-label { display: inline-flex; align-items: center; gap: 9px; }
@@ -1156,6 +1163,11 @@
     .cell-num { font-size: 30px; }
     .box { padding: 18px var(--bx) 20px; }
     .tome-progress { flex-wrap: wrap; gap: 8px 14px; }
+    /* phones: the second photo is cut off on purpose, with a fade on the far edge and a hint next to the count */
+    .gallery-strip .shot { width: 44vw; max-width: 200px; }
+    .gallery-strip.has-more { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 44px); mask-image: linear-gradient(90deg, transparent 0, #000 44px); }
+    .gallery-count::after { content: " · swipe ←"; color: #FFE7A3; }
+    .gallery-progress { margin: 4px 2px 0; height: 4px; }
     .album-grid, .tomes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding-left: 0; padding-right: 0; }
     .tile-cap b, .tome-cap b { font-size: 15.5px; }
     .tile-cap i, .tome-cap i { font-size: 10.5px; }
@@ -1279,7 +1291,8 @@
             <button type="button" class="icon-btn" id="galleryNext" aria-label="Scroll photos right"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
         </div>
-        <div class="gallery-strip" id="galleryStrip"></div>
+        <div class="gallery-strip" id="galleryStrip" dir="rtl"></div>
+        <div class="gallery-progress" id="galleryProgress" aria-hidden="true"><i></i></div>
       </div>
 
       <div class="grid">
@@ -3373,7 +3386,7 @@ A backup file is downloaded first.`)) return;
 
   // ---- Species entry: what Del has caught, plus an automatic write-up from public sources (iNaturalist, Wikipedia)
   let speciesSel = null, infoSeq = 0;
-  const INFO_LS = "catchlog_fishinfo_v1";
+  const INFO_LS = "catchlog_fishinfo_v2";   // v2: the v1 cache held wrong matches such as a shark for patin
   const INFO_TTL = 30 * 864e5, INFO_MISS_TTL = 864e5;
   function infoCacheGet(k) {
     try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); const h = all[k]; if (h && Date.now() - h.t < (h.data && h.data.found ? INFO_TTL : INFO_MISS_TTL)) return h.data; } catch (e) { /* no storage */ }
@@ -3386,9 +3399,14 @@ A backup file is downloaded first.`)) return;
   const clipText = (s, n) => (s.length <= n ? s : s.slice(0, n).replace(/\s+\S*$/, "") + "…");
   const cleanWiki = (s) => s.replace(/\[[^\]]*\]/g, "").replace(/\s+/g, " ").trim();
   const firstSentences = (s, n) => { const m = cleanWiki(s).match(/[^.!?]+[.!?]+(\s|$)/g); return m ? m.slice(0, n).join("").trim() : cleanWiki(s); };
+  // The Latin name is the part in brackets. Without brackets, a part written like a scientific name
+  // ("Pangasius" or "Pangasius hypophthalmus") is accepted, e.g. "Pangasius / Silver Catfish".
   function latinOf(en) {
+    const clean = (t) => t.replace(/\b(sp|spp|cf|aff)\b\.?/gi, "").replace(/\s+/g, " ").trim();
     const m = /\(([^)]+)\)\s*$/.exec(en || "");
-    return m ? m[1].replace(/\b(sp|spp|cf|aff)\b\.?/gi, "").replace(/\s+/g, " ").trim() : "";
+    if (m) return clean(m[1]);
+    for (const part of String(en || "").split(/\s*[\/,;]\s*/)) if (/^[A-Z][a-z]{3,}( [a-z]{3,})?$/.test(part.trim())) return part.trim();
+    return "";
   }
   function parseWikiText(txt) {
     const secs = [{ title: "", text: [] }];
@@ -3402,7 +3420,7 @@ A backup file is downloaded first.`)) return;
 
   async function fetchFishInfo(name) {
     const en = state.species[name] || "";
-    const latin = latinOf(en);
+    const latin = en && en !== name ? latinOf(en) : "";   // an entry that only repeats the local name has no Latin name
     const cacheKey = (latin || name).toLowerCase();
     const cached = infoCacheGet(cacheKey);
     if (cached) return cached;
@@ -3411,13 +3429,13 @@ A backup file is downloaded first.`)) return;
     // 1. the taxon on iNaturalist: rank, family, conservation status, a fallback photo
     let taxon = null, detail = null;
     try {
-      const q = latin || name;
+      const q = latin;
+      if (!q) throw new Error("no Latin name");
       const s = await J(`https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(q)}&locale=en&per_page=8&taxon_id=47178,47273&is_active=true`);
       const list = s.results || [];
-      taxon = list.find(t => t.name.toLowerCase() === q.toLowerCase()) || null;
-      // with only a local name to go on, accept a hit only when that name really is one of its common names
-      if (!taxon && !latin) taxon = list.find(t => (t.matched_term || "").toLowerCase().includes(q.toLowerCase())) || null;
-      if (!taxon && latin) taxon = list[0] || null;
+      // only an exact match on the scientific name (or a name it used to have); a fuzzy hit is how a shark once turned up for patin
+      const ql = q.toLowerCase();
+      taxon = list.find(t => t.name.toLowerCase() === ql) || list.find(t => (t.matched_term || "").toLowerCase() === ql) || null;
       if (taxon) detail = ((await J(`https://api.inaturalist.org/v1/taxa/${taxon.id}?locale=en`)).results || [])[0] || null;
     } catch (e) { /* offline or blocked: carry on with what we have */ }
 
@@ -3431,7 +3449,9 @@ A backup file is downloaded first.`)) return;
       try {
         const w = await J(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&titles=${encodeURIComponent(t)}&format=json&origin=*`);
         const p = Object.values(w.query.pages)[0];
-        if (p && !p.missing && p.extract && p.extract.length > 200) { wiki = p.extract; wikiTitle = p.title; break; }
+        // the page has to talk about this genus, so a redirect to something unrelated is ignored
+        const genus = latin.split(" ")[0].toLowerCase();
+        if (p && !p.missing && p.extract && p.extract.length > 200 && (!genus || p.extract.toLowerCase().includes(genus))) { wiki = p.extract; wikiTitle = p.title; break; }
       } catch (e) { /* try the next title */ }
     }
 
@@ -3594,7 +3614,7 @@ A backup file is downloaded first.`)) return;
       scheduleSave();
     });
     // owner only: type the English and Latin names yourself; the write-up is then looked up from the Latin name
-    const splitNames = () => { const cur = state.species[name] || ""; const lat = latinOf(cur); const eng = lat ? cur.replace(/\s*\([^)]*\)\s*$/, "").trim() : (cur && cur !== name ? cur : ""); return { eng, lat }; };
+    const splitNames = () => { const cur = state.species[name] || ""; const lat = latinOf(cur); const hasBr = /\([^)]+\)\s*$/.test(cur); const eng = lat ? (hasBr ? cur.replace(/\s*\([^)]*\)\s*$/, "") : cur.split(/\s*[\/,;]\s*/).filter(p => p.trim() !== lat).join(", ")).trim() : (cur && cur !== name ? cur : ""); return { eng, lat }; };
     const showNameEdit = (auto) => {
       const box = body.querySelector("#nameEdit"); if (!box) return;
       const cur = splitNames();
@@ -3659,8 +3679,13 @@ A backup file is downloaded first.`)) return;
   let galleryItems = [];
   function updateGalleryArrows() {
     const strip = document.getElementById("galleryStrip");
-    document.getElementById("galleryPrev").disabled = strip.scrollLeft <= 2;
-    document.getElementById("galleryNext").disabled = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 2;
+    // the strip runs right to left, so scrollLeft counts down from 0 at the newest photo
+    const max = strip.scrollWidth - strip.clientWidth, pos = Math.abs(strip.scrollLeft);
+    document.getElementById("galleryPrev").disabled = pos >= max - 2;
+    document.getElementById("galleryNext").disabled = pos <= 2;
+    const bar = document.querySelector("#galleryProgress i"), wrap = document.getElementById("galleryProgress");
+    if (bar) { const more = max > 4; wrap.style.visibility = more ? "" : "hidden"; const w = more ? (strip.clientWidth / strip.scrollWidth) * 100 : 100; bar.style.width = w + "%"; bar.style.right = (more ? (pos / max) * (100 - w) : 0) + "%"; }
+    strip.classList.toggle("has-more", pos < max - 4);
   }
   function renderGallery(catches) {
     const box = document.getElementById("galleryBox");
@@ -3687,6 +3712,20 @@ A backup file is downloaded first.`)) return;
     strip.querySelectorAll(".shot").forEach(b => b.addEventListener("click", () => openLightbox(galleryItems, Number(b.dataset.idx), b)));
     strip.scrollLeft = 0;
     updateGalleryArrows();
+    nudgeGallery();
+  }
+  let galleryNudged = false;
+  function nudgeGallery() {
+    if (galleryNudged || !(window.matchMedia("(max-width: 760px)").matches) || reduceMotion() || galleryItems.length < 3 || !("IntersectionObserver" in window)) return;
+    const strip = document.getElementById("galleryStrip");
+    const io = new IntersectionObserver((en) => {
+      if (!en[0].isIntersecting) return;
+      io.disconnect(); galleryNudged = true;
+      strip.style.scrollSnapType = "none";
+      strip.scrollTo({ left: -64, behavior: "smooth" });
+      setTimeout(() => { strip.scrollTo({ left: 0, behavior: "smooth" }); setTimeout(() => { strip.style.scrollSnapType = ""; }, 500); }, 750);
+    }, { threshold: 0.6 });
+    io.observe(strip);
   }
   (function wireGalleryArrows() {
     const strip = document.getElementById("galleryStrip");
