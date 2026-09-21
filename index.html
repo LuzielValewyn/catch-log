@@ -82,7 +82,7 @@
   }
   /* the light: ember from the top left, cold blue from the right, a red haze at the floor */
   body::before {
-    content: ""; position: fixed; inset: 0; z-index: -3; pointer-events: none;
+    content: ""; position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; z-index: -3; pointer-events: none;
     background:
       radial-gradient(62% 52% at 0% 0%, rgba(168, 58, 14, 0.62) 0%, rgba(104, 32, 10, 0.3) 42%, transparent 74%),
       radial-gradient(55% 62% at 100% 32%, rgba(30, 48, 132, 0.5), transparent 72%),
@@ -91,10 +91,10 @@
   }
   /* long sweeping arcs and a faint ring, as on the game menus */
   body::after {
-    content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: 0.9;
+    content: ""; position: fixed; top: 0; left: 0; right: 0; height: 100vh; height: 100lvh; z-index: -2; pointer-events: none; opacity: 0.9;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23fff' stroke-linecap='round'%3E%3Cpath d='M-80 940C260 520 760 180 1680 40' stroke-opacity='.11' stroke-width='1.4'/%3E%3Cpath d='M-120 720C240 420 700 190 1250-60' stroke-opacity='.07' stroke-width='1'/%3E%3Cpath d='M1180 980C1330 660 1490 420 1700 330' stroke-opacity='.09' stroke-width='1.2'/%3E%3Ccircle cx='800' cy='150' r='150' stroke-opacity='.05'/%3E%3Ccircle cx='800' cy='150' r='215' stroke-opacity='.04'/%3E%3Ccircle cx='800' cy='150' r='290' stroke-opacity='.03'/%3E%3C/g%3E%3C/svg%3E") center / cover no-repeat;
   }
-  #embers { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+  #embers { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100lvh; z-index: -1; pointer-events: none; }
   ::selection { background: var(--ember); color: #fff; }
   :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
   a { color: inherit; text-underline-offset: 3px; }
@@ -178,12 +178,19 @@
   .led {
     display: block; align-self: center; margin: 6px 0 0;
     font-family: var(--logo); font-weight: 600; font-size: clamp(110px, 15vw, 215px); line-height: 1; letter-spacing: 0.02em;
-    color: transparent; background: linear-gradient(180deg, #FFF6DC 0%, #F7CB78 34%, #EC7B33 74%, #B3301A 100%);
-    -webkit-background-clip: text; background-clip: text;
+    color: #F7CB78;
     filter: drop-shadow(0 0 34px rgba(232, 103, 42, 0.5)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.55));
   }
-  .led::before { display: none; }
-  .led > span { color: transparent; }
+  .led > span {
+    display: inline-block; color: #F7CB78;
+    /* a soft white band rides over the gold-to-ember gradient */
+    background-image: linear-gradient(105deg, transparent 43%, rgba(255, 252, 240, 0.95) 50%, transparent 57%), linear-gradient(180deg, #FFF6DC 0%, #F7CB78 34%, #EC7B33 74%, #B3301A 100%);
+    background-size: 300% 100%, 100% 100%; background-repeat: no-repeat; background-position: 0% 0, 0 0;
+  }
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    .led > span { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+  }
+  @keyframes ledShine { 0% { background-position: 0% 0, 0 0; } 26% { background-position: 100% 0, 0 0; } 100% { background-position: 100% 0, 0 0; } }
   .hero-sub { margin-top: 14px; max-width: 48ch; font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--ink-2); text-shadow: 0 1px 14px #000; }
   .hero-dates { position: absolute; left: 0; right: 0; bottom: 6px; display: flex; justify-content: space-between; margin: 0; padding: 0 4px; text-align: left; }
   .hero-dates > div:last-child { text-align: right; }
@@ -252,6 +259,9 @@
     background: linear-gradient(90deg, rgba(172, 78, 26, 0.97) 0%, rgba(152, 65, 22, 0.93) 70%, rgba(140, 58, 20, 0.88) 100%);
     box-shadow: inset 0 1px 0 rgba(255, 214, 170, 0.16);
     -webkit-mask: var(--dither) 0 0 / 100% 100% no-repeat; mask: var(--dither) 0 0 / 100% 100% no-repeat;
+  }
+  @media (max-width: 760px) {
+    .box-title-row::before, .bar::before { -webkit-mask: linear-gradient(90deg, #000 80%, transparent 100%); mask: linear-gradient(90deg, #000 80%, transparent 100%); }
   }
   .box-title-row > *, .bar > * { position: relative; z-index: 1; }
   .box-title-row:first-child { margin-top: -22px; }
@@ -1063,6 +1073,15 @@
   .info-src a { text-decoration: underline; }
   .info-none { font-size: 14px; color: var(--ink-2); margin-bottom: 10px; }
   .info-block:first-child { margin-top: 0; }
+  .name-edit { margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.3); }
+  .name-edit .field-wrap { margin-bottom: 12px; }
+  .name-edit .info-none { margin-bottom: 12px; }
+  .name-edit .toggle-btn { flex: none; padding: 9px 18px; }
+
+  /* Gear sets: rod and reel icons */
+  .gear-list-detail { align-items: center; padding: 4px 0; font-size: 14px; }
+  .gd-label { display: inline-flex; align-items: center; gap: 9px; }
+  .gd-label svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: var(--gold); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
   /* Log Entry: automatic names and photo ID */
   .name-lookup { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.3); }
@@ -1095,9 +1114,8 @@
   .leaflet-tile-pane .leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.72) contrast(0.95) saturate(0.5) sepia(0.25); }
 
   /* motion that belongs to this look */
-  @keyframes emberIn { from { opacity: 0; filter: blur(14px); transform: scale(1.06); } to { opacity: 1; transform: none; } }
-  .motion-ok .led > span { animation: emberIn 1200ms var(--ease-out) both; }
-  .motion-ok .led::before { animation: none; }
+  @keyframes emberIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+  .motion-ok .led > span { animation: emberIn 1000ms var(--ease-out) both, ledShine 5s ease-in-out 2.4s infinite; }
   .motion-ok .hero-streak { animation: fadeIn 1400ms ease 300ms both; }
 
   @media (min-width: 761px) {
@@ -1122,6 +1140,8 @@
     .deck, .foot { display: none; }
     .main { padding: 16px 16px 112px; }
     .topbar { margin-bottom: 20px; }
+    .topbar-right { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: 10px; z-index: 40; margin: 0; }
+    body.is-owner #editModeLinkTop { display: block; padding: 4px 11px; border: 1px solid rgba(242, 195, 107, 0.5); border-radius: 999px; background: rgba(8, 5, 10, 0.9); font-size: 11px; letter-spacing: 0.03em; color: var(--gold); text-decoration: none; }
     .hero-main { padding: 6px 4px 0; min-height: 0; }
     .hero-head { position: static; align-self: flex-end; margin-bottom: -6px; }
     .hero-label { margin-top: 14px; font-size: 11px; letter-spacing: 0.3em; }
@@ -2924,8 +2944,8 @@ A backup file is downloaded first.`)) return;
       return `
         <div class="gear-list-row gear-list-clickable${isSel ? " is-sel" : ""}" data-gear="${escapeHtml(g)}" style="cursor:pointer; opacity:${!anyGearListSel || isSel ? 1 : 0.4};">
           <div class="gear-list-name">${escapeHtml(g)}</div>
-          <div class="gear-list-detail"><span>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
-          <div class="gear-list-detail"><span>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
+          <div class="gear-list-detail"><span class="gd-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21L19 4"/><path d="M8.5 15.6l1.6 1.5M12.6 11.2l1.5 1.5M16.2 7.3l1.4 1.4"/><path d="M19 4c2.4.5 3.3 2.5 3.3 5v5.5"/><path d="M22.3 14.5a1.5 1.5 0 1 1-3 0"/></svg>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
+          <div class="gear-list-detail"><span class="gd-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="7"/><circle cx="11" cy="13" r="2.6"/><path d="M11 6V3.5M8 3.5h6"/><path d="M16.5 8.5l3.2-3.2"/><circle cx="20.4" cy="4.6" r="1.4"/></svg>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
         </div>
       `;
     }).join("") || `<p class="empty-state">No gear sets yet.</p>`;
@@ -3368,7 +3388,7 @@ A backup file is downloaded first.`)) return;
   const firstSentences = (s, n) => { const m = cleanWiki(s).match(/[^.!?]+[.!?]+(\s|$)/g); return m ? m.slice(0, n).join("").trim() : cleanWiki(s); };
   function latinOf(en) {
     const m = /\(([^)]+)\)\s*$/.exec(en || "");
-    return m ? m[1].replace(/\b(sp|spp|cf|aff)\.?/gi, "").replace(/\s+/g, " ").trim() : "";
+    return m ? m[1].replace(/\b(sp|spp|cf|aff)\b\.?/gi, "").replace(/\s+/g, " ").trim() : "";
   }
   function parseWikiText(txt) {
     const secs = [{ title: "", text: [] }];
@@ -3550,9 +3570,9 @@ A backup file is downloaded first.`)) return;
             ${st.method ? stat("Usual method", escapeHtml(st.method)) : ""}
           </div>
           ${st.last ? `<button type="button" class="toggle-btn detail-link" id="seeInLog">See in Catch Log</button>` : ""}
-          ${editUnlocked ? `<div class="owner-action-row"><button type="button" class="delete-catch-btn" id="delSpecies">Delete this species</button></div>` : ""}
+          ${editUnlocked ? `<div class="owner-action-row"><button type="button" class="edit-catch-btn" id="editNames">Edit names</button><button type="button" class="delete-catch-btn" id="delSpecies">Delete this species</button></div>` : ""}
         </div>
-        <div class="entry-r"><div class="info-wrap" id="infoWrap"></div></div>
+        <div class="entry-r"><div id="nameEdit"></div><div class="info-wrap" id="infoWrap"></div></div>
       </div>`, opener);
     const ph = body.querySelector(".photo-open");
     if (ph && photoCatch) ph.addEventListener("click", () => {
@@ -3573,6 +3593,32 @@ A backup file is downloaded first.`)) return;
       renderSpecies();
       scheduleSave();
     });
+    // owner only: type the English and Latin names yourself; the write-up is then looked up from the Latin name
+    const splitNames = () => { const cur = state.species[name] || ""; const lat = latinOf(cur); const eng = lat ? cur.replace(/\s*\([^)]*\)\s*$/, "").trim() : (cur && cur !== name ? cur : ""); return { eng, lat }; };
+    const showNameEdit = (auto) => {
+      const box = body.querySelector("#nameEdit"); if (!box) return;
+      const cur = splitNames();
+      box.innerHTML = `<div class="name-edit">${auto ? `<p class="info-none">Not sure which fish this is, so nothing was guessed. If you know it, add its names and the write-up will load.</p>` : ""}
+        <label class="field-wrap"><span class="field-label">English name</span><input class="input" type="text" id="spEn" placeholder="e.g. Snubnose dart" value="${escapeHtml(cur.eng)}"></label>
+        <label class="field-wrap"><span class="field-label">Latin name</span><input class="input" type="text" id="spLat" placeholder="e.g. Trachinotus blochii" value="${escapeHtml(cur.lat)}"></label>
+        <div class="toggle-row"><button type="button" class="toggle-btn active" id="spSave">Save names</button><button type="button" class="toggle-btn" id="spCancel">Cancel</button></div></div>`;
+      const en = box.querySelector("#spEn"), lat = box.querySelector("#spLat");
+      box.querySelector("#spCancel").addEventListener("click", () => { box.innerHTML = ""; });
+      box.querySelector("#spSave").addEventListener("click", () => {
+        const e = en.value.trim(), l = lat.value.trim();
+        const label = e && l ? `${e} (${l})` : (e || l || name);
+        state.species[name] = label;
+        const sub = body.querySelector(".detail-sub"); if (sub) sub.textContent = label;
+        try { const all = JSON.parse(localStorage.getItem(INFO_LS) || "{}"); delete all[(l || name).toLowerCase()]; delete all[name.toLowerCase()]; localStorage.setItem(INFO_LS, JSON.stringify(all)); } catch (err) { /* no storage */ }
+        box.innerHTML = "";
+        renderSpecies();
+        scheduleSave();
+        load();
+      });
+      en.focus({ preventScroll: true });
+    };
+    const editBtn = body.querySelector("#editNames");
+    if (editBtn) editBtn.addEventListener("click", () => showNameEdit(false));
     const load = () => {
       const wrap = body.querySelector("#infoWrap");
       if (wrap) wrap.innerHTML = `<div class="info-load" aria-live="polite"><i></i><i></i><i></i><span>Looking this fish up online…</span></div>`;
@@ -3586,7 +3632,11 @@ A backup file is downloaded first.`)) return;
       fetchFishInfo(name).then(info => {
         if (seq !== infoSeq) return;
         const w = body.querySelector("#infoWrap"); if (!w) return;
-        if (!info.found) { failed("No write-up found online for this one yet."); return; }
+        if (!info.found) {
+          failed("No write-up found online for this one yet.");
+          if (editUnlocked && !latinOf(state.species[name])) showNameEdit(true);
+          return;
+        }
         w.innerHTML = infoHtml(info, name);
         const slot = body.querySelector("#infoPhoto");
         if (slot && info.photo) slot.innerHTML = `<img src="${info.photo.url}" alt="" class="catch-photo" /><span class="photo-credit">${escapeHtml(info.photo.credit)}</span>`;
@@ -5915,8 +5965,8 @@ A backup file is downloaded first.`)) return;
       return `
         <div class="gear-list-row">
           <div class="gear-list-name">${escapeHtml(name)}</div>
-          <div class="gear-list-detail"><span>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
-          <div class="gear-list-detail"><span>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
+          <div class="gear-list-detail"><span class="gd-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21L19 4"/><path d="M8.5 15.6l1.6 1.5M12.6 11.2l1.5 1.5M16.2 7.3l1.4 1.4"/><path d="M19 4c2.4.5 3.3 2.5 3.3 5v5.5"/><path d="M22.3 14.5a1.5 1.5 0 1 1-3 0"/></svg>Rod</span><span class="mono">${escapeHtml(info.rod || "—")}</span></div>
+          <div class="gear-list-detail"><span class="gd-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="13" r="7"/><circle cx="11" cy="13" r="2.6"/><path d="M11 6V3.5M8 3.5h6"/><path d="M16.5 8.5l3.2-3.2"/><circle cx="20.4" cy="4.6" r="1.4"/></svg>Reel</span><span class="mono">${escapeHtml(info.reel || "—")}</span></div>
           <div class="owner-action-row">
             <button class="edit-catch-btn" data-edit-gear="${escapeHtml(name)}">Edit</button>
             <button class="delete-catch-btn" data-delete-gear="${escapeHtml(name)}">Delete</button>
@@ -5984,7 +6034,10 @@ A backup file is downloaded first.`)) return;
     };
     var resize = function () {
       // the embers are soft glows, so a half-size canvas looks the same and costs a quarter of the pixels
-      W = innerWidth; H = innerHeight;
+      // measured from the canvas itself, which is sized to the large viewport: the iPhone toolbar sliding away does not change it
+      var rc = cv.getBoundingClientRect(), nw = Math.round(rc.width) || innerWidth, nh = Math.round(rc.height) || innerHeight;
+      if (parts.length && Math.abs(nw - W) < 2 && Math.abs(nh - H) < 2) return;
+      W = nw; H = nh;
       cv.width = Math.round(W * SC); cv.height = Math.round(H * SC);
       ctx.setTransform(SC, 0, 0, SC, 0, 0);
       var n = Math.max(30, Math.min(64, Math.round(W * H / 28000)));
