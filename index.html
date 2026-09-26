@@ -6,16 +6,12 @@
 <meta name="color-scheme" content="dark light" />
 <meta name="theme-color" content="#08050A" />
 <script>(function(){try{var t=localStorage.getItem("catchlog_theme");if(t!=="light")t="dark";document.documentElement.setAttribute("data-theme",t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="light"?"#FFFFFF":"#08050A");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<script>(function(){try{if(location.search.indexOf("owner=1")!==-1||sessionStorage.getItem("catchlog_entered")==="1")document.documentElement.setAttribute("data-entered","1");}catch(e){}})();</script>
 <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("motion-ok");</script>
 <title>Del's Catch Log</title>
-<link rel="icon" href="favicon.ico?v=7" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=7">
-<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png?v=7">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=7">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300..700&family=Cinzel:wght@400..800&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300..700&family=Cinzel:wght@400..800&family=Marcellus&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
@@ -61,7 +57,7 @@
     --glass: none;
     --logo: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
     --led: var(--logo);
-    --serif: 'Cormorant Garamond', 'Cinzel', Georgia, serif;
+    --serif: 'Marcellus', 'Cormorant Garamond', Georgia, serif;
     --sans: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --bx: 26px;
@@ -201,7 +197,7 @@
     .led > span { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
   }
   @keyframes ledShine { 0% { background-position: 0% 0, 0 0; } 26% { background-position: 100% 0, 0 0; } 100% { background-position: 100% 0, 0 0; } }
-  .hero-sub { margin-top: 14px; max-width: 48ch; font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--ink-2); text-shadow: 0 1px 14px var(--halo); }
+  .hero-sub { margin-top: 14px; max-width: 48ch; font-family: var(--serif); font-size: 19px; color: var(--ink-2); text-shadow: 0 1px 14px var(--halo); }
   .hero-dates { position: absolute; left: 0; right: 0; bottom: 6px; display: flex; justify-content: space-between; margin: 0; padding: 0 4px; text-align: left; }
   .hero-dates > div:last-child { text-align: right; }
   .hero-dates dt { font-size: 10.5px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
@@ -1026,7 +1022,7 @@
   .detail-nophoto .catch-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .detail-no { position: absolute; right: 16px; top: 10px; font-family: var(--logo); font-size: 40px; font-weight: 500; line-height: 1; letter-spacing: 0.02em; color: var(--gold); text-shadow: 0 2px 16px rgba(var(--halo-rgb), 0.95), 0 0 26px rgba(242, 195, 107, 0.4); pointer-events: none; }
   .detail-title { margin-top: 18px; font-family: var(--serif); font-size: 30px; font-weight: 600; line-height: 1.1; text-align: center; color: var(--title); }
-  .detail-sub { margin-top: 3px; font-family: var(--serif); font-style: italic; font-size: 16px; text-align: center; color: var(--ink-2); overflow-wrap: anywhere; }
+  .detail-sub { margin-top: 3px; font-family: var(--serif); font-size: 16px; text-align: center; color: var(--ink-2); overflow-wrap: anywhere; }
   .entry-r .catch-data { display: block; }
   .entry-r .data-row { flex-direction: row; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); }
   .entry-r .data-row:first-child { padding-top: 0; }
@@ -1041,7 +1037,7 @@
   .species-search { display: block; max-width: 460px; margin: 0 auto 22px; border-radius: 999px; text-align: center; padding-left: 20px; }
   .species-scroll { padding: 0; overflow: visible; background: none; border: none; box-shadow: none; }
   .tome-progress { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 0 0 4px; font-family: var(--serif); color: var(--ink-2); }
-  .tome-lab { font-style: italic; font-size: 17px; }
+  .tome-lab { font-size: 17px; }
   .tome-bar { position: relative; width: min(280px, 40%); height: 8px; background: var(--track-bg); box-shadow: 0 0 0 1px rgba(var(--rulec), 0.25); overflow: hidden; }
   .tome-bar em { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #B79A55, #F1DFA6); box-shadow: 0 0 12px rgba(241, 223, 166, 0.4); }
   .tome-of { font-size: 15px; letter-spacing: 0.02em; white-space: nowrap; }
@@ -1083,7 +1079,7 @@
   .info-block:first-child { margin-top: 0; }
   .my-notes { margin-bottom: 22px; padding: 14px 16px 16px; border: 1px solid rgba(242, 195, 107, 0.35); border-radius: 8px; background: rgba(242, 195, 107, 0.05); }
   .my-notes .info-block:first-of-type { margin-top: 8px; }
-  .my-tag { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--gold); }
+  .my-tag { font-family: var(--serif); font-size: 16px; color: var(--gold); }
   .name-edit textarea.input { resize: vertical; line-height: 1.5; font-family: var(--sans); }
   .name-edit { margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: rgba(var(--shade), 0.3); }
   .name-edit .field-wrap { margin-bottom: 12px; }
@@ -1093,7 +1089,7 @@
   /* Catch photos: newest at the right, scrolls to the left */
   .gallery-strip .shot { direction: ltr; }
   .gallery-progress { position: relative; height: 3px; margin: 2px 4px 0; border-radius: 2px; background: rgba(var(--fg), 0.14); overflow: hidden; }
-  .gallery-progress i { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; border-radius: 2px; background: linear-gradient(270deg, #F0333D, #B3121B); }
+  .gallery-progress i { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; border-radius: 2px; background: var(--rule-strong); }
   .gallery-strip { scrollbar-width: none; }
   .gallery-strip::-webkit-scrollbar { display: none; }
 
@@ -1222,7 +1218,7 @@
   .sim-open { cursor: pointer; transition: border-color 160ms var(--ease-out), background 200ms var(--ease-out); }
   .sim-open:hover { border-color: var(--gold); background: rgba(242, 195, 107, 0.12); }
   .add-warn b { font-weight: 600; }
-  .add-warn i { font-style: italic; color: var(--ink-2); }
+  .add-warn i { font-style: normal; color: var(--ink-2); }
   .add-warn small { display: block; margin-top: 2px; font-size: 11.5px; letter-spacing: 0.02em; color: var(--gold-text); }
   :root[data-theme="light"] .add-warn { background: rgba(238, 123, 58, 0.09); border-color: rgba(184, 87, 31, 0.5); }
   /* the dark map: filter each tile image once (cheap to pan and zoom) instead of the whole pane on every frame */
@@ -1471,12 +1467,230 @@
   @media (max-width: 760px) {
     .brand-mark { top: calc(7px + env(safe-area-inset-top)); left: 10px; width: 40px; height: 40px; }
   }
+
+  /* =====================================================================
+     THE JOURNAL: a fully animated landing page, separate from the Dashboard app.
+     Shown first; "Enter the Log" (or ?owner=1, or a session already entered) reveals
+     the app underneath. Content is real: cloned from the same rendered data the
+     Dashboard uses (journey, gallery, species), so it can never drift out of sync.
+     ===================================================================== */
+  html:not([data-entered]) .app,
+  html:not([data-entered]) .foot,
+  html:not([data-entered]) .bottom-nav,
+  html:not([data-entered]) .az-index,
+  html:not([data-entered]) .az-bubble,
+  html:not([data-entered]) #nameGate.open { display: none; }
+  html[data-entered] #landing { opacity: 0; visibility: hidden; pointer-events: none; }
+  html[data-entered] #landing.lj-gone { display: none; }
+  #landing { transition: opacity 620ms var(--ease-out), visibility 0s linear 620ms; }
+  #landing * { box-sizing: border-box; }
+
+  .lj-scrollbar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 80; background: transparent; transform-origin: left; }
+  .lj-scrollbar::before { content: ""; position: absolute; inset: 0; width: var(--ljp, 0%); background: linear-gradient(90deg, var(--gold), var(--coral)); box-shadow: 0 0 12px rgba(240, 166, 74, 0.5); transition: width 80ms linear; }
+
+  /* reveal-on-scroll: fades and rises once, staggered by --i or data-reveal-delay */
+  [data-reveal] { opacity: 0; transform: translateY(30px); transition: opacity 800ms var(--ease-out), transform 900ms var(--ease-out); transition-delay: calc(var(--rd, 0) * 90ms); }
+  [data-reveal].in { opacity: 1; transform: none; }
+  .motion-ok [data-reveal] { will-change: opacity, transform; }
+  @media (prefers-reduced-motion: reduce) { [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; } }
+
+  .lj { position: relative; max-width: none; }
+  .lj-section-head { max-width: 62ch; margin: 0 auto 44px; text-align: center; }
+  .lj-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; color: var(--gold-text); margin-bottom: 10px; }
+  .lj-section-head h2 { font-family: var(--serif); font-size: clamp(28px, 4vw, 44px); font-weight: 600; letter-spacing: 0.005em; line-height: 1.15; color: var(--title); }
+  .lj-sub { margin-top: 12px; font-size: 15px; color: var(--ink-2); line-height: 1.6; }
+
+  /* ---------- hero ---------- */
+  .lj-hero {
+    position: relative; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 100px 20px 60px; overflow: hidden;
+  }
+  .lj-hero-fish { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .lj-swim { position: absolute; width: 160px; opacity: 0.16; color: var(--gold); }
+  .lj-swim path { fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .lj-swim-a { top: 22%; left: -12%; animation: ljSwimA 34s linear infinite; }
+  .lj-swim-b { top: 66%; right: -14%; width: 120px; opacity: 0.11; transform: scaleX(-1); animation: ljSwimB 42s linear infinite; animation-delay: -8s; }
+  @keyframes ljSwimA { from { transform: translateX(0) translateY(0); } 50% { transform: translateX(58vw) translateY(-30px); } to { transform: translateX(126vw) translateY(0); } }
+  @keyframes ljSwimB { from { transform: scaleX(-1) translateX(0) translateY(0); } 50% { transform: scaleX(-1) translateX(-58vw) translateY(24px); } to { transform: scaleX(-1) translateX(-126vw) translateY(0); } }
+  .motion-ok .lj-swim { animation-play-state: running; }
+  .lj-eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.34em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px; }
+  .lj-title { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 9vw, 104px); line-height: 1.08; letter-spacing: 0.01em; text-transform: uppercase; color: var(--title); text-wrap: balance; }
+  .lj-word { display: inline-block; opacity: 0; transform: translateY(0.5em) rotate(1.5deg); animation: ljWordIn 900ms var(--ease-out) both; animation-delay: calc(200ms + var(--i) * 160ms); }
+  @keyframes ljWordIn { from { opacity: 0; transform: translateY(0.5em) rotate(1.5deg); } to { opacity: 1; transform: none; } }
+  .lj-word-accent { color: transparent; background-image: linear-gradient(105deg, transparent 43%, rgba(255, 255, 255, 0.55) 50%, transparent 57%), linear-gradient(180deg, var(--gold) 0%, var(--amber) 60%, var(--coral) 100%); background-size: 300% 100%, 100% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .motion-ok .lj-word-accent { animation: ljWordIn 900ms var(--ease-out) both, ljShine 5s ease-in-out 2.4s infinite; animation-delay: calc(200ms + var(--i) * 160ms), 0s; }
+  @keyframes ljShine { 0% { background-position: 0% 0, 0 0; } 26% { background-position: 100% 0, 0 0; } 100% { background-position: 100% 0, 0 0; } }
+  .lj-tagline { margin-top: 26px; max-width: 46ch; font-family: var(--serif); font-size: clamp(16px, 2vw, 19px); line-height: 1.6; color: var(--ink-2); }
+  .lj-hero-cta { margin-top: 40px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .lj-enter {
+    display: inline-flex; align-items: center; gap: 10px; padding: 15px 28px; border: none; border-radius: 999px; cursor: pointer;
+    font: 700 15px/1 var(--sans); letter-spacing: 0.02em; color: var(--on-amber);
+    background: linear-gradient(180deg, var(--gold) 0%, var(--amber) 100%);
+    box-shadow: 0 14px 34px -10px rgba(240, 166, 74, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  }
+  .lj-enter svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 260ms var(--ease-out); }
+  .lj-enter:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -8px rgba(240, 166, 74, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+  .lj-enter:hover svg { transform: translateX(4px); }
+  .lj-scrolldown { position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ink-3); }
+  .lj-scrolldown span { width: 1px; height: 34px; background: linear-gradient(var(--ink-3), transparent); position: relative; overflow: hidden; }
+  .motion-ok .lj-scrolldown span::after { content: ""; position: absolute; left: 0; top: -100%; width: 100%; height: 100%; background: linear-gradient(var(--gold), transparent); animation: ljDrip 1.8s ease-in-out infinite; }
+  @keyframes ljDrip { to { top: 100%; } }
+
+  /* ---------- stats ---------- */
+  .lj-stats { padding: 100px 20px; text-align: center; }
+  .lj-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; max-width: 980px; margin: 0 auto; }
+  .lj-stat { padding: 26px 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+  .lj-num { display: block; font-family: var(--logo); font-weight: 600; font-size: clamp(34px, 5vw, 54px); letter-spacing: 0.03em; color: var(--gold); line-height: 1; }
+  .lj-stat span { display: block; margin-top: 10px; font-size: 12.5px; letter-spacing: 0.05em; color: var(--ink-2); }
+  .lj-stat-range { margin-top: 30px; font-family: var(--serif); font-size: 16px; color: var(--ink-2); }
+  .lj-stat-range b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- journey timeline ---------- */
+  .lj-journey { padding: 20px 20px 110px; max-width: 980px; margin: 0 auto; }
+  .lj-timeline { position: relative; display: flex; flex-direction: column; gap: 64px; }
+  .lj-timeline::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(var(--rule-strong), transparent 6%, var(--rule-strong) 94%, transparent); transform: translateX(-50%); }
+  .lj-t-row { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; align-items: center; }
+  .lj-t-row:nth-child(even) .lj-t-card { grid-column: 2; }
+  .lj-t-row:nth-child(even) .lj-t-photo { grid-column: 1; grid-row: 1; }
+  .lj-t-row:nth-child(odd) .lj-t-photo { grid-column: 2; grid-row: 1; }
+  .lj-t-dot { position: absolute; left: 50%; top: 50%; width: 13px; height: 13px; border-radius: 50%; background: var(--void); border: 2px solid var(--gold); transform: translate(-50%, -50%); box-shadow: 0 0 0 6px var(--void), 0 0 16px rgba(240, 166, 74, 0.45); }
+  .lj-t-photo { position: relative; border-radius: 18px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--frame-bg); box-shadow: 0 26px 50px -22px rgba(0, 0, 0, 0.7); }
+  /* the whole fish, never cropped out: a blurred, cover-cropped copy fills the frame behind it,
+     while the real photo sits on top letterboxed with object-fit:contain, so nothing gets cut off */
+  .lj-fill-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; filter: blur(26px) brightness(0.55) saturate(1.25); transform: scale(1.18); }
+  .lj-fill-fg { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; display: block; }
+  .lj-t-card { padding: 6px 10px; }
+  .lj-t-date { font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-text); }
+  /* .jn-date is cloned verbatim from the dashboard's own journey strip, where it's pinned
+     absolute to a fixed-height card corner - undo that here so it flows normally in ours */
+  .lj-t-date .jn-date { position: static; color: inherit; font-size: inherit; font-weight: inherit; white-space: normal; }
+  .lj-t-card .jn-title { font-family: var(--serif); font-size: 22px; font-weight: 600; margin-top: 6px; color: var(--title); }
+  .lj-t-card .jn-note { margin-top: 10px; font-size: 15px; line-height: 1.6; color: var(--ink-2); max-width: none; }
+  .lj-t-card .jn-tags { margin-top: 12px; }
+  .lj-t-card .jn-loc { margin-top: 8px; font-size: 13px; color: var(--ink-3); }
+  .lj-t-card .jn-sp { display: flex; align-items: baseline; gap: 8px; margin-top: 10px; }
+  .lj-t-card .jn-foot { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .lj-empty { text-align: center; padding: 40px 20px; color: var(--ink-3); font-size: 14px; }
+
+  /* ---------- gallery marquee ---------- */
+  .lj-gallery { padding: 20px 0 110px; }
+  .lj-marquee-wrap { display: grid; gap: 16px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .lj-marquee { display: flex; gap: 16px; width: max-content; animation: ljMarquee 60s linear infinite; }
+  .lj-marquee-rev { animation-name: ljMarqueeRev; animation-duration: 74s; }
+  @keyframes ljMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes ljMarqueeRev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  .lj-marquee-wrap:hover .lj-marquee { animation-play-state: paused; }
+  .lj-shot { position: relative; flex: 0 0 auto; width: 220px; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); cursor: pointer; background: var(--frame-bg); transition: transform 300ms var(--ease-out), border-color 200ms var(--ease-out); }
+  .lj-shot:hover { transform: translateY(-4px); border-color: var(--gold); }
+  @media (prefers-reduced-motion: reduce) { .lj-marquee { animation: none; overflow-x: auto; } }
+
+  /* ---------- species codex ---------- */
+  .lj-codex { padding: 20px 20px 120px; max-width: 1080px; margin: 0 auto; }
+  .lj-codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; }
+  .lj-codex-tile { aspect-ratio: 1 / 1; border-radius: 14px; border: 1px solid var(--line); background: var(--frame-bg); position: relative; overflow: hidden; }
+  .lj-codex-tile .tome-photo, .lj-codex-tile .fish-art { position: absolute; inset: 8%; width: 84%; height: 84%; }
+  .lj-codex-tile.is-locked .fish-art { opacity: 0.32; }
+
+  /* ---------- closing CTA ---------- */
+  .lj-cta { padding: 130px 20px 90px; text-align: center; }
+  .lj-cta-inner h2 { font-family: var(--serif); font-size: clamp(30px, 5vw, 52px); font-weight: 600; color: var(--title); }
+  .lj-cta-inner p { margin: 16px auto 34px; max-width: 46ch; color: var(--ink-2); font-size: 15.5px; }
+  .lj-credit { margin-top: 60px; font-size: 12px; letter-spacing: 0.04em; color: var(--ink-3); }
+
+  @media (max-width: 900px) {
+    .lj-t-row, .lj-t-row:nth-child(even) .lj-t-card, .lj-t-row:nth-child(even) .lj-t-photo, .lj-t-row:nth-child(odd) .lj-t-photo {
+      grid-template-columns: 1fr; grid-column: 1; grid-row: auto;
+    }
+    .lj-t-row { display: block; padding-left: 30px; }
+    .lj-timeline::before { left: 9px; }
+    .lj-t-dot { left: 9px; top: 8px; transform: translate(-50%, -50%); }
+    .lj-t-photo { margin-bottom: 18px; }
+  }
+  @media (max-width: 760px) {
+    .lj-hero { padding: 84px 18px 50px; min-height: 92svh; }
+    .lj-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lj-stats { padding: 70px 18px; }
+    .lj-journey, .lj-codex { padding-left: 18px; padding-right: 18px; }
+    .lj-shot { width: 168px; }
+    .lj-cta { padding: 90px 18px 70px; }
+  }
 </style>
 </head>
 <body class="is-loading">
 
-<a href="#" class="brand-mark" id="brandMark" aria-label="Go to the dashboard" title="Del's Catch Log"><img src="logo-192.png?v=6" alt="" width="36" height="36" decoding="async"></a>
+<a href="#" class="brand-mark" id="brandMark" aria-label="Back to the journal" title="Del's Catch Log"><img src="logo-192.png?v=6" alt="" width="36" height="36" decoding="async"></a>
 <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to light mode" title="Switch to light mode"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.2 8.2 0 1 1 9.4 4a6.6 6.6 0 0 0 10.6 10.6z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"/></svg></button>
+
+<div id="landing" class="lj">
+  <div class="lj-scrollbar" id="ljBar" aria-hidden="true"></div>
+
+  <section class="lj-hero">
+    <div class="lj-hero-fish" aria-hidden="true">
+      <svg class="lj-swim lj-swim-a" viewBox="0 0 200 100"><path class="b" d="M2 50C24 30 52 22 82 30c14 4 24 12 30 22l38-24 8 4-14 24 14 24-8 4-38-24c-6 10-16 18-30 22-30 8-58 0-80-20z"/></svg>
+      <svg class="lj-swim lj-swim-b" viewBox="0 0 200 100"><path class="b" d="M2 50C24 30 52 22 82 30c14 4 24 12 30 22l38-24 8 4-14 24 14 24-8 4-38-24c-6 10-16 18-30 22-30 8-58 0-80-20z"/></svg>
+    </div>
+    <p class="lj-eyebrow" data-reveal>The lifetime fishing journal of</p>
+    <h1 class="lj-title" aria-label="Del's Catch Log">
+      <span class="lj-word" style="--i:0">Del&rsquo;s</span>
+      <span class="lj-word lj-word-accent" style="--i:1">Catch&nbsp;Log</span>
+    </h1>
+    <p class="lj-tagline" data-reveal data-reveal-delay="1">Written in ripples and tight lines &mdash; every species a story of patience, quiet dawns at sea, and rivers that keep their secrets.</p>
+    <div class="lj-hero-cta" data-reveal data-reveal-delay="2">
+      <button type="button" class="lj-enter" data-enter>Enter the Log<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="lj-scrolldown" aria-hidden="true"><span></span>Scroll</div>
+  </section>
+
+  <section class="lj-stats" id="lj-stats">
+    <div class="lj-stat-grid">
+      <div class="lj-stat" data-reveal><b class="lj-num" id="ljStatCatches" data-target="0">0</b><span>Fish caught, lifetime</span></div>
+      <div class="lj-stat" data-reveal data-reveal-delay="1"><b class="lj-num" id="ljStatSpecies" data-target="0">0</b><span>Species identified</span></div>
+      <div class="lj-stat" data-reveal data-reveal-delay="2"><b class="lj-num" id="ljStatTrips" data-target="0">0</b><span>Fishing trips logged</span></div>
+      <div class="lj-stat" data-reveal data-reveal-delay="3"><b class="lj-num" id="ljStatLocations" data-target="0">0</b><span>Waters visited</span></div>
+    </div>
+    <p class="lj-stat-range" data-reveal data-reveal-delay="4">From <b id="ljFirst">&mdash;</b> to <b id="ljLast">&mdash;</b>, and counting.</p>
+  </section>
+
+  <section class="lj-journey" id="lj-journey">
+    <header class="lj-section-head" data-reveal>
+      <p class="lj-kicker">The journey</p>
+      <h2>Stories, records and new waters</h2>
+      <p class="lj-sub">The moments worth remembering, in the order they happened.</p>
+    </header>
+    <div class="lj-timeline" id="ljTimeline"></div>
+  </section>
+
+  <section class="lj-gallery" id="lj-gallery">
+    <header class="lj-section-head" data-reveal>
+      <p class="lj-kicker">The gallery</p>
+      <h2 id="ljGalleryTitle">Every catch, one frame at a time</h2>
+    </header>
+    <div class="lj-marquee-wrap">
+      <div class="lj-marquee" id="ljMarqueeTop"></div>
+      <div class="lj-marquee lj-marquee-rev" id="ljMarqueeBottom"></div>
+    </div>
+  </section>
+
+  <section class="lj-codex" id="lj-codex">
+    <header class="lj-section-head" data-reveal>
+      <p class="lj-kicker">The codex</p>
+      <h2>A collection, one species at a time</h2>
+      <p class="lj-sub" id="ljCodexSub">&mdash;</p>
+    </header>
+    <div class="lj-codex-grid" id="ljCodexGrid"></div>
+  </section>
+
+  <section class="lj-cta">
+    <div class="lj-cta-inner" data-reveal>
+      <h2>Ready to see it all?</h2>
+      <p>Dashboards, tides, gear, and every fish logged the day it happened.</p>
+      <button type="button" class="lj-enter" data-enter>Enter the Log<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <p class="lj-credit">A personal fishing journal, kept around Karimun and the Riau Islands.</p>
+  </section>
+</div>
+
 <div class="app">
   <header class="deck">
     <nav class="nav-group" aria-label="Sections">
@@ -1520,7 +1734,6 @@
             <div><dt>Latest catch</dt><dd id="heroLast">—</dd></div>
           </dl>
         </div>
-        <div class="hero-streak" aria-hidden="true"></div>
                   <div class="cells">
             <div class="cell">
               <div class="cell-label">Species</div>
@@ -1892,7 +2105,6 @@
 
 <div id="nameGate" class="modal-overlay open">
   <div class="modal-box">
-    <img class="modal-logo" src="logo-192.png?v=6" alt="" width="72" height="72" decoding="async">
     <div class="modal-title">Welcome</div>
     <p class="modal-text" style="margin-bottom:16px;">What's your name? It'll be shown when you visit, and logged so Del knows who's been checking out the catch log.</p>
     <input type="text" id="nameGateInput" class="input" placeholder="Your name" aria-label="Your name" style="margin-bottom:12px;" />
@@ -1903,7 +2115,7 @@
 <div id="aboutModal" class="modal-overlay">
   <div class="modal-box">
     <button id="closeModal" class="modal-close" aria-label="Close"></button>
-    <span class="about-photo"><img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" /><img class="about-logo" src="logo-192.png?v=6" alt="" width="46" height="46" decoding="async"></span>
+    <img data-del src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" alt="Del fishing from a small boat" class="modal-photo" />
     <h2 class="modal-title">Del</h2>
     <p class="modal-text">
       My name is Del, and this is the journal of my life, written in ripples and tight lines. Every species in this log represents a story of patience, of quiet dawns out on the open sea, and magical sunsets hidden along winding rivers. From the unpredictable currents of the saltwater to the serene depths of freshwater, each fish holds the memory of the exact day nature and I crossed paths. This isn't just a catch log — it is a map of my lifetime adventures.
@@ -6555,6 +6767,231 @@ A backup file is downloaded first.`)) return;
   });
 </script>
 <script>
+/* The Journal: landing-page behaviour. A plain script (not a module), so it can only read the DOM
+   the main app has already rendered (even while hidden) and simulate clicks on real elements -
+   it never touches the app's internal state directly, and never needs to. */
+(function () {
+  var root = document.getElementById("landing");
+  if (!root) return;
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- entering the app ---------- */
+  // the Dashboard renders behind the landing page while it's still up (so its stats/photos are
+  // ready the moment you enter), but that means the journey strip and the photo gallery first
+  // compute their "land on the newest" scroll position and their arrow-disabled state while
+  // display:none - every measurement reads 0 then, so both get stuck looking empty/at the oldest
+  // entry once actually shown. Redo both, now that they're really visible.
+  function fixHiddenRenderMeasurements() {
+    var js = document.getElementById("journeyStrip");
+    if (js && js.scrollWidth > js.clientWidth) {
+      js.scrollLeft = js.scrollWidth;
+      var jp = document.getElementById("journeyPrev"), jn = document.getElementById("journeyNext");
+      if (jp) jp.disabled = js.scrollLeft <= 2;
+      if (jn) jn.disabled = js.scrollLeft + js.clientWidth >= js.scrollWidth - 2;
+    }
+    var gs = document.getElementById("galleryStrip");
+    if (gs && gs.scrollWidth > gs.clientWidth) {
+      var max = gs.scrollWidth - gs.clientWidth, pos = Math.abs(gs.scrollLeft);
+      var gp = document.getElementById("galleryPrev"), gn = document.getElementById("galleryNext");
+      if (gp) gp.disabled = pos >= max - 2;
+      if (gn) gn.disabled = pos <= 2;
+      var bar = document.querySelector("#galleryProgress i"), wrap = document.getElementById("galleryProgress");
+      if (bar && wrap) {
+        var w = (gs.clientWidth / gs.scrollWidth) * 100;
+        bar.style.width = w + "%";
+        bar.style.right = ((pos / max) * (100 - w)) + "%";
+        wrap.style.visibility = "";
+      }
+      gs.classList.toggle("has-more", pos < max - 4);
+    }
+  }
+  function enter() {
+    document.documentElement.setAttribute("data-entered", "1");
+    try { sessionStorage.setItem("catchlog_entered", "1"); } catch (e) { /* no storage */ }
+    requestAnimationFrame(fixHiddenRenderMeasurements);
+    setTimeout(function () { root.classList.add("lj-gone"); }, reduce ? 0 : 650);
+  }
+  root.addEventListener("click", function (e) { if (e.target.closest("[data-enter]")) enter(); });
+  if (document.documentElement.hasAttribute("data-entered")) root.classList.add("lj-gone");
+
+  /* ---------- leaving the app, back to the journal (the logo's "go home") ---------- */
+  function leave() {
+    root.classList.remove("lj-gone");
+    document.documentElement.removeAttribute("data-entered");
+    try { sessionStorage.removeItem("catchlog_entered"); } catch (e) { /* no storage */ }
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  }
+  window.showJournalLanding = leave;
+
+  /* ---------- scroll progress + reveal-on-scroll ---------- */
+  var bar = document.getElementById("ljBar");
+  function onScroll() {
+    if (!bar || document.documentElement.hasAttribute("data-entered")) return;
+    var h = document.documentElement.scrollHeight - innerHeight;
+    bar.style.setProperty("--ljp", (h > 0 ? Math.min(100, Math.max(0, (scrollY / h) * 100)) : 0) + "%");
+  }
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  var revealed = new WeakSet();
+  var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting || revealed.has(en.target)) return;
+      revealed.add(en.target);
+      var d = en.target.dataset.revealDelay; if (d) en.target.style.setProperty("--rd", d);
+      en.target.classList.add("in");
+      io.unobserve(en.target);
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }) : null;
+  function watchReveals() {
+    root.querySelectorAll("[data-reveal]").forEach(function (el) {
+      if (revealed.has(el)) return;
+      if (io) io.observe(el); else { el.classList.add("in"); revealed.add(el); }
+    });
+  }
+  watchReveals();
+
+  /* ---------- stats: mirror the Dashboard's own numbers, count up once visible ---------- */
+  var statPairs = [["statCatches", "ljStatCatches"], ["statSpecies", "ljStatSpecies"], ["statTrips", "ljStatTrips"], ["statLocations", "ljStatLocations"]];
+  var counted = {};
+  function animateCount(el, to) {
+    if (reduce) { el.textContent = to; return; }
+    var from = parseInt(el.textContent, 10) || 0, t0 = performance.now(), dur = Math.min(1400, 500 + to * 12);
+    (function step(t) {
+      var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+      el.textContent = Math.round(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function syncStats() {
+    var ready = true;
+    statPairs.forEach(function (p) {
+      var src = document.getElementById(p[0]), dst = document.getElementById(p[1]);
+      if (!src || !dst) return;
+      var n = parseInt(src.textContent, 10) || 0;
+      dst.dataset.target = n;
+      if (n === 0) ready = false;
+      if (counted[p[1]] && counted[p[1]].seen) { dst.textContent = n; }
+    });
+    var first = document.getElementById("heroFirst"), last = document.getElementById("heroLast");
+    var ljFirst = document.getElementById("ljFirst"), ljLast = document.getElementById("ljLast");
+    if (first && ljFirst && first.textContent !== "—") ljFirst.textContent = first.textContent;
+    if (last && ljLast && last.textContent !== "—") ljLast.textContent = last.textContent;
+    return ready;
+  }
+  var statsBox = document.getElementById("lj-stats");
+  if (statsBox && io) {
+    var statsIO = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      statPairs.forEach(function (p) {
+        var dst = document.getElementById(p[1]);
+        if (dst && !(counted[p[1]] && counted[p[1]].seen)) { counted[p[1]] = { seen: true }; animateCount(dst, parseInt(dst.dataset.target, 10) || 0); }
+      });
+      statsIO.disconnect();
+    }, { threshold: 0.3 });
+    statsIO.observe(statsBox);
+  }
+  syncStats();
+  var statSrc = document.getElementById("statCatches");
+  if (statSrc) new MutationObserver(syncStats).observe(statSrc.closest(".hero") || document.body, { childList: true, characterData: true, subtree: true });
+
+  /* ---------- journey: clone the real timeline, minus the "next catch" teaser ---------- */
+  var journeySig = "";
+  function syncJourney() {
+    var timeline = document.getElementById("ljTimeline"), src = document.getElementById("journeyStrip");
+    if (!timeline || !src) return;
+    var items = [].slice.call(src.querySelectorAll(".jn-item")).filter(function (n) { return !n.classList.contains("jn-next"); });
+    // the signature also tracks whether each item's photo has arrived yet (it loads in async,
+    // after the titles are already known), so a photo landing later still triggers a re-clone
+    var sig = items.length + ":" + items.map(function (n) {
+      var title = n.querySelector(".jn-title");
+      var photoState = n.querySelector(".jn-photo.has-img") ? "p1" : (n.querySelector(".jn-photo") ? "p0" : "pn");
+      return (title ? title.textContent : "") + photoState;
+    }).join("|");
+    if (sig === journeySig) return;
+    journeySig = sig;
+    if (!items.length) { timeline.innerHTML = '<p class="lj-empty">The first entry will appear here once it is logged.</p>'; return; }
+    timeline.innerHTML = items.map(function (n, i) {
+      var date = n.querySelector(".jn-date"), title = n.querySelector(".jn-title"), note = n.querySelector(".jn-note"),
+        tags = n.querySelector(".jn-tags"), loc = n.querySelector(".jn-loc"), sp = n.querySelector(".jn-sp"),
+        photoImg = n.querySelector(".jn-photo.has-img img");
+      // the whole fish stays visible (never cropped to a fixed box): a blurred cover-fit copy fills
+      // the frame, the real photo sits on top letterboxed with object-fit:contain
+      var photoHtml = photoImg ? "<div class=\"lj-t-photo\"><img class=\"lj-fill-bg\" src=\"" + photoImg.src + "\" alt=\"\" aria-hidden=\"true\"><img class=\"lj-fill-fg\" src=\"" + photoImg.src + "\" alt=\"" + (photoImg.alt || "").replace(/"/g, "&quot;") + "\" loading=\"lazy\"></div>" : "";
+      return "<div class=\"lj-t-row\" data-reveal data-reveal-delay=\"" + (i % 3) + "\"><span class=\"lj-t-dot\" aria-hidden=\"true\"></span>" +
+        photoHtml +
+        "<div class=\"lj-t-card\">" +
+        (date ? "<div class=\"lj-t-date\">" + date.outerHTML + "</div>" : "") +
+        (title ? title.outerHTML : "") + (note ? note.outerHTML : "") + (tags ? tags.outerHTML : "") +
+        (loc ? loc.outerHTML : "") + (sp ? sp.outerHTML : "") + "</div></div>";
+    }).join("");
+    watchReveals();
+  }
+  syncJourney();
+  var journeyBox = document.getElementById("journeyBox");
+  if (journeyBox) new MutationObserver(syncJourney).observe(journeyBox, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] });
+
+  /* ---------- gallery: a two-row marquee, cloned from the real photo strip ---------- */
+  var gallerySig = "";
+  function syncGallery() {
+    var top = document.getElementById("ljMarqueeTop"), bottom = document.getElementById("ljMarqueeBottom");
+    var src = document.getElementById("galleryStrip"), section = document.getElementById("lj-gallery");
+    if (!top || !bottom || !src || !section) return;
+    var shots = [].slice.call(src.querySelectorAll(".shot"));
+    var sig = shots.length + ":" + (shots[0] ? shots[0].dataset.idx : "");
+    if (sig === gallerySig) return;
+    gallerySig = sig;
+    section.style.display = shots.length ? "" : "none";
+    if (!shots.length) return;
+    var title = document.getElementById("ljGalleryTitle"), count = document.getElementById("galleryCount");
+    if (title && count && count.textContent) title.textContent = count.textContent + ", one frame at a time";
+    var build = function (list) {
+      return list.map(function (s) {
+        var img = s.querySelector("img");
+        // same letterbox trick as the timeline: a blurred cover-fit copy fills the tile, the real
+        // photo sits on top with object-fit:contain, so no catch gets cropped out of frame
+        var photoHtml = img ? "<img class=\"lj-fill-bg\" src=\"" + img.src + "\" alt=\"\" aria-hidden=\"true\"><img class=\"lj-fill-fg\" src=\"" + img.src + "\" alt=\"\" loading=\"lazy\">" : "";
+        return "<button type=\"button\" class=\"lj-shot\" data-idx=\"" + s.dataset.idx + "\" aria-label=\"" + (s.getAttribute("aria-label") || "").replace(/"/g, "&quot;") + "\">" + photoHtml + "</button>";
+      }).join("");
+    };
+    top.innerHTML = build(shots) + build(shots);
+    bottom.innerHTML = build(shots.slice().reverse()) + build(shots.slice().reverse());
+    var dur = Math.max(28, shots.length * 5.5);
+    top.style.animationDuration = dur + "s"; bottom.style.animationDuration = (dur * 1.2) + "s";
+  }
+  root.addEventListener("click", function (e) {
+    var b = e.target.closest(".lj-shot"); if (!b) return;
+    var orig = document.querySelector("#galleryStrip .shot[data-idx=\"" + b.dataset.idx + "\"]");
+    if (orig) orig.click();
+  });
+  syncGallery();
+  var galleryBox = document.getElementById("galleryBox");
+  if (galleryBox) new MutationObserver(syncGallery).observe(galleryBox, { childList: true, subtree: true, attributes: true, attributeFilter: ["style"] });
+
+  /* ---------- codex: a preview grid of species tiles, visual only ---------- */
+  var codexSig = "";
+  function syncCodex() {
+    var grid = document.getElementById("ljCodexGrid"), sub = document.getElementById("ljCodexSub"), src = document.getElementById("speciesList");
+    if (!grid || !src) return;
+    var tiles = [].slice.call(src.querySelectorAll(".tome"));
+    var sig = tiles.length + ":" + (document.querySelector(".tome-of") ? document.querySelector(".tome-of").textContent : "");
+    if (sig === codexSig || !tiles.length) return;
+    codexSig = sig;
+    var of = document.querySelector(".tome-of");
+    if (sub && of) sub.textContent = of.textContent;
+    grid.innerHTML = tiles.slice(0, 24).map(function (t, i) {
+      var art = t.querySelector(".fish-art"), photo = t.querySelector(".tome-photo img");
+      var inner = photo ? "<img src=\"" + photo.src + "\" alt=\"\" style=\"position:absolute;inset:0;width:100%;height:100%;object-fit:cover\">" : (art ? art.outerHTML : "");
+      return "<div class=\"lj-codex-tile" + (t.classList.contains("is-locked") ? " is-locked" : "") + "\" data-reveal data-reveal-delay=\"" + (i % 6) + "\">" + inner + "</div>";
+    }).join("");
+    watchReveals();
+  }
+  syncCodex();
+  var speciesList = document.getElementById("speciesList");
+  if (speciesList) new MutationObserver(syncCodex).observe(speciesList, { childList: true, subtree: true });
+})();
+</script>
+<script>
 /* Drifting embers (dust motes in daylight) behind every screen, and the dark / light switch. */
 (function () {
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -6637,13 +7074,11 @@ A backup file is downloaded first.`)) return;
     resize(); kick();
   }
 
-  /* ---------- the logo takes you to the dashboard ---------- */
+  /* ---------- the logo takes you back to the journal (the landing page) ---------- */
   var brand = $("brandMark");
   if (brand) brand.addEventListener("click", function (e) {
     e.preventDefault();
-    var tab = document.querySelector('.nav-item[data-tab="dashboard"]');
-    if (tab) tab.click();
-    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    if (window.showJournalLanding) window.showJournalLanding();
   });
 
   /* ---------- dark / light switch ---------- */
